@@ -1,4 +1,4 @@
- # agent_logic.py — CodeSentinel AI (World-Class Reviewer)
+# agent_logic.py — CodeSentinel AI (World-Class Reviewer)
  
 import os
 import uuid
@@ -29,8 +29,7 @@ OPENROUTER_MODEL = os.getenv(
     "openai/gpt-oss-120b:free"
 )
 
-
- # INIT OPENROUTER CLIENT
+# INIT OPENROUTER CLIENT
 client = None
 if OpenAI and OPENROUTER_API_KEY:
     try:
@@ -49,7 +48,7 @@ if OpenAI and OPENROUTER_API_KEY:
         client = None
 
 
- # IN-MEMORY SESSION STORE
+# IN-MEMORY SESSION STORE
 _sessions = {}
 
 
