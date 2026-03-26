@@ -1,0 +1,61 @@
+code,label
+"for i in range(len(arr)): print(arr[i])",Smelly
+"for x in arr: print(x)",Clean
+"if x == True: print('ok')",Smelly
+"if x: print('ok')",Clean
+"import math\nimport json\nx=5",Smelly
+"def add(a,b): return a+b",Clean
+"while True: pass",Smelly
+"print(sum([i*i for i in range(10)]))",Clean
+"try: x=1/0\nexcept: pass",Smelly
+"try:\n    x=1/0\nexcept ZeroDivisionError:\n    print('error')",Clean
+"def calc():\n    return None",Smelly
+"def calc(a,b):\n    return a+b",Clean
+"print('debug')",Smelly
+"logging.info('Task completed')",Clean
+"for i in range(0, len(data)):\n    process(data[i])",Smelly
+"for item in data:\n    process(item)",Clean
+"x = 10\nx = 20",Smelly
+"x = 10\ny = 20",Clean
+"if flag == False:\n    return",Smelly
+"if not flag:\n    return",Clean
+"import os\nimport sys\nimport math",Smelly
+"import os",Clean
+"def func():\n    pass",Smelly
+"def func():\n    '''Does nothing for now'''",Clean
+"a = []\nfor i in range(10):\n    a.append(i)",Smelly
+"a = [i for i in range(10)]",Clean
+"print(x);print(y)",Smelly
+"print(x, y)",Clean
+"def foo():\n    global x\n    x=5",Smelly
+"def foo(x):\n    return x+5",Clean
+"if a == b or a == c or a == d:",Smelly
+"if a in (b, c, d):",Clean
+"if True:\n    print('always')",Smelly
+"if condition:\n    print('conditional')",Clean
+"for i in range(len(my_list)):\n    print(i, my_list[i])",Smelly
+"for i, val in enumerate(my_list):\n    print(i, val)",Clean
+"try:\n    something()\nexcept Exception as e:\n    pass",Smelly
+"try:\n    something()\nexcept SpecificError as e:\n    handle(e)",Clean
+"result = []\nfor i in range(100):\n    result.append(i*i)",Smelly
+"result = [i*i for i in range(100)]",Clean
+"if len(items) == 0:\n    print('Empty')",Smelly
+"if not items:\n    print('Empty')",Clean
+"def multiply(a,b):\n    return a*b\nprint(multiply(2,3))",Clean
+"def multiply(a,b):\n    print(a*b)",Smelly
+"def calc(x,y):\n    z = x+y\n    return z\n    print(z)",Smelly
+"def calc(x,y):\n    z = x+y\n    return z",Clean
+"import os, sys, re, math",Smelly
+"import os\nimport sys",Clean
+"class A:\n    pass",Smelly
+"class A:\n    def __init__(self):\n        self.value = 0",Clean
+"def unused(a,b):\n    x = a+b",Smelly
+"def used(a,b):\n    x = a+b\n    return x",Clean
+"x = [1,2,3]\nfor i in range(len(x)):\n    print(x[i])",Smelly
+"x = [1,2,3]\nfor val in x:\n    print(val)",Clean
+"if user == None:\n    return",Smelly
+"if user is None:\n    return",Clean
+"if not a == b:",Smelly
+"if a != b:",Clean
+"print('Value: ' + str(x))",Smelly
+"print(f'Value: {x}')",Clean

@@ -1,0 +1,103 @@
+/* =========================================
+   GLOBAL RESET
+========================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* =========================================
+   BODY
+========================================= */
+
+body {
+  margin: 0;
+  padding: 0;
+
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  background: radial-gradient(circle at top, #0f172a 0%, #020617 70%);
+  color: #e5e7eb;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================
+   ROOT APP CONTAINER
+========================================= */
+
+#root {
+  min-height: 100vh;
+}
+
+/* =========================================
+   LINKS
+========================================= */
+
+a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   SCROLLBAR (MODERN UI)
+========================================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* =========================================
+   TEXT SELECTION
+========================================= */
+
+::selection {
+  background: #3b82f6;
+  color: white;
+}
+
+/* =========================================
+   DEFAULT BUTTON RESET
+========================================= */
+
+button {
+  font-family: inherit;
+}
+
+/* =========================================
+   INPUT RESET
+========================================= */
+
+input,
+textarea {
+  font-family: inherit;
+}
+
+/* =========================================
+   MARKDOWN IMAGES
+========================================= */
+
+img {
+  max-width: 100%;
+  display: block;
+}

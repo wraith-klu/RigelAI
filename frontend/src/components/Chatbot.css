@@ -1,0 +1,253 @@
+/* =========================
+   WRAPPER
+========================= */
+
+.chat-wrapper {
+    height: calc(100vh - 40px);
+
+    width: 95%;
+    max-width: 1400px;
+
+    margin: 20px auto;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #0b1220;
+    border-radius: 16px;
+    border: 2px solid #1d78f8;
+    overflow: hidden;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.chat-header {
+    padding: 16px 20px;
+
+    background: #0f172a;
+    border-bottom: 1px solid #1a70e7;
+
+    color: #f22727;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* =========================
+   BODY
+========================= */
+
+.chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    background: #020617;
+}
+
+/* =========================
+   MESSAGE ROW
+========================= */
+
+.message {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+/* =========================
+   AVATAR
+========================= */
+
+.avatar {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+    background: #2563eb;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 14px;
+    font-weight: bold;
+    color: #39ec8d;
+}
+
+/* =========================
+   BUBBLE
+========================= */
+
+.bubble {
+    max-width: 75%;
+
+    padding: 14px 16px;
+
+    border-radius: 14px;
+    font-size: 16px;
+    line-height: 1.6;
+
+    background: #0f172a;
+    border: 1px solid #1f7af9;
+
+    color: #f8f9fa;
+    word-break: break-word;
+}
+
+/* USER MESSAGE */
+
+.message.user .bubble {
+    background: #2563eb;
+    border: none;
+    color: white;
+}
+
+/* =========================
+   MARKDOWN
+========================= */
+
+.bubble h1,
+.bubble h2,
+.bubble h3 {
+    margin: 2px 0 8px;
+    color: #f9fafb;
+}
+
+.bubble p {
+    margin: 6px 0;
+}
+
+.bubble pre {
+    background: #020617;
+    padding: 12px;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.bubble code {
+    color: #60a5fa;
+}
+
+/* =========================
+   INPUT BAR
+========================= */
+
+.chat-input-bar {
+    display: flex;
+    gap: 10px;
+
+    padding: 14px;
+
+    background: #0f172a;
+    border-top: 1px solid #2e6aeb;
+}
+
+.chat-input-bar textarea {
+    flex: 1;
+    resize: none;
+
+    padding: 10px 12px;
+
+    border-radius: 10px;
+    border: 1px solid #2b77f2;
+
+    background: #020617;
+    color: #e5e7eb;
+
+    font-size: 14px;
+    outline: none;
+
+    max-height: 140px;
+}
+
+.chat-input-bar textarea:focus {
+    border-color: #3b82f6;
+}
+
+.chat-input-bar button {
+    padding: 10px 18px;
+
+    border-radius: 10px;
+    border: none;
+
+    background: #3b82f6;
+    color: white;
+
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* =========================
+   MOBILE RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+    .chat-wrapper {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .chat-header {
+        font-size: 16px;
+        padding: 14px 16px;
+    }
+
+    .chat-body {
+        padding: 14px;
+        gap: 14px;
+    }
+
+    .bubble {
+        max-width: 85%;
+        font-size: 14px;
+    }
+
+    .avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .chat-input-bar {
+        padding: 10px;
+    }
+
+    .chat-input-bar textarea {
+        font-size: 14px;
+    }
+
+    .chat-input-bar button {
+        padding: 10px 14px;
+    }
+}
+
+/* =========================
+   SMALL PHONES
+========================= */
+
+@media (max-width: 480px) {
+
+    .bubble {
+        max-width: 90%;
+        padding: 12px 14px;
+    }
+
+    .chat-body {
+        padding: 8px;
+    }
+}

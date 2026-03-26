@@ -1,0 +1,239 @@
+/* =========================
+   CONTAINER
+========================= */
+
+.upload-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.upload-card {
+  width: 100%;
+  max-width: 900px;
+  padding: 32px;
+
+  background: linear-gradient(180deg, #0f172a, #020617);
+  border-radius: 18px;
+  border: 2px solid #589af7;
+
+  box-shadow: 0 20px 60px rgba(100, 202, 245, 0.55);
+  backdrop-filter: blur(10px);
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.upload-header h2 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+  color: #f62c5f;
+}
+
+.upload-header p {
+  margin-top: 6px;
+  color: #6399e3;
+  font-size: 20px;
+}
+
+/* =========================
+   DROPZONE
+========================= */
+
+.upload-dropzone {
+  margin-top: 22px;
+  padding: 38px;
+
+  border-radius: 14px;
+  border: 2px dashed #334155;
+
+  background: #020617;
+  text-align: center;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-dropzone:hover {
+  border-color: #3b82f6;
+  background: #020617;
+}
+
+.upload-dropzone.active {
+  border-color: #60a5fa;
+  background: #020617;
+}
+
+/* =========================
+   PLACEHOLDER
+========================= */
+
+.upload-placeholder {
+  color: #d8dce1;
+}
+
+.upload-placeholder p {
+  margin: 6px 0;
+  font-size: 15px;
+}
+
+.upload-placeholder span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.upload-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+/* =========================
+   FILE SELECTED
+========================= */
+
+.file-selected {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  color: #0db75a;
+  font-size: 14px;
+}
+
+.file-icon {
+  font-size: 18px;
+}
+
+.file-name {
+  font-weight: 500;
+}
+
+/* =========================
+   INPUT + BUTTON ROW
+========================= */
+
+.upload-controls {
+  display: flex;
+  gap: 14px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+/* =========================
+   QUERY INPUT
+========================= */
+
+.query-input {
+  flex: 1;
+  padding: 12px 14px;
+
+  border-radius: 10px;
+  border: 1px solid #3d73ca;
+
+  background: #020617;
+  color: #e5e7eb;
+
+  font-size: 14px;
+  outline: none;
+}
+
+.query-input::placeholder {
+  color: #6b7280;
+}
+
+.query-input:focus {
+  border-color: #3b82f6;
+}
+
+/* =========================
+   BUTTON GROUP
+========================= */
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+/* ANALYZE BUTTON */
+
+.analyze-btn {
+  padding: 10px 20px;
+
+  border-radius: 10px;
+  border: none;
+
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.analyze-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.analyze-btn:disabled {
+  background: #374151;
+  cursor: not-allowed;
+}
+
+/* RESET BUTTON */
+
+.reset-btn {
+  padding: 10px 18px;
+
+  border-radius: 10px;
+  border: 1px solid #374151;
+
+  background: #020617;
+  color: #e5e7eb;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+  background: #111827;
+}
+
+/* =========================
+   ERROR MESSAGE
+========================= */
+
+.upload-error {
+  margin-top: 14px;
+  padding: 10px;
+
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+
+  color: #f87171;
+  font-size: 13px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 720px) {
+  .upload-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .button-group {
+    justify-content: space-between;
+  }
+}

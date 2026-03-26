@@ -1,0 +1,57 @@
+.input-panel {
+    background: #0b1220;
+    border: 3px solid #6b87f0;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+/* Tabs */
+
+.input-tabs {
+    display: flex;
+    border-bottom: 1px solid #40b1f3;
+}
+
+.input-tabs button {
+    flex: 1;
+    padding: 20px;
+    background: transparent;
+    color: #67e981;
+    border: none;
+    cursor: pointer;
+}
+
+.input-tabs button.active {
+    background:linear-gradient(135deg, #59c7f7, #2e31e9);
+    color: white;
+    font-weight: 900;
+    font-size: large;
+}
+
+/* Toolbar */
+
+.editor-toolbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #0a0a0a;
+}
+
+.editor-toolbar select {
+    background: #121213;
+    color: rgb(252, 250, 252);
+    font-size: 16px;
+    font-weight: 700;
+    border: 2px solid #2d79f3;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.editor-toolbar button {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    border: 2px solid #0c0c0c;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
