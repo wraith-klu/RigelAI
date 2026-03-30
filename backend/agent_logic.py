@@ -26,7 +26,7 @@ if os.path.exists(dotenv_path):
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_MODEL = os.getenv(
     "OPENROUTER_MODEL",
-    "openai/gpt-oss-120b:free"
+    "nvidia/nemotron-3-nano-30b-a3b:free"
 )
 
 # INIT OPENROUTER CLIENT
