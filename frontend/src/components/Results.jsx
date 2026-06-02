@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { sendFollowUp } from "../services/api";
@@ -7,23 +7,36 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import "./Results.css";
 
 export default function Results({ data }) {
-  if (!data) return null;
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const llm = data?.llm_analysis || {};
-
   const ast = llm.ast_findings || [];
   const insights = llm.llm_response || "";
   const prediction = llm.model_prediction || {};
   const optimized = llm.optimized_code || "";
   const sessionId = llm.session_id;
   const language = llm.language || "plaintext";
+  const hasData = Boolean(data);
 
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const probabilityRows = useMemo(() => {
+    if (!prediction.all_probs) return [];
+    return Object.entries(prediction.all_probs)
+      .map(([label, value]) => ({
+        label,
+        value: typeof value === "number" ? value : Number(value) || 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [prediction.all_probs]);
+
+  useEffect(() => {
+    setMessages([]);
+    setInput("");
+  }, [sessionId]);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !sessionId || loading) return;
 
     const userMsg = { role: "user", text: input };
     setMessages((prev) => [...prev, userMsg]);
@@ -32,94 +45,115 @@ export default function Results({ data }) {
 
     try {
       const res = await sendFollowUp(input, sessionId);
-
       const botText =
-        res?.llm_analysis?.llm_response ||
-        JSON.stringify(res, null, 2);
+        res?.llm_analysis?.llm_response || JSON.stringify(res, null, 2);
 
-      const botMsg = { role: "bot", text: botText };
-
-      setMessages((prev) => [...prev, botMsg]);
+      setMessages((prev) => [...prev, { role: "bot", text: botText }]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "Server error." },
+        { role: "bot", text: "The follow-up request failed. Confirm the backend is running." },
       ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKey = (e) => {
-    if (e.key === "Enter") sendMessage();
+  const handleKey = (event) => {
+    if (event.key === "Enter") sendMessage();
   };
+
+  if (!hasData) {
+    return (
+      <div className="results-container">
+        <div className="results-empty-card">
+          <span className="panel-label">Result preview</span>
+          <h3>Your analysis report will appear here</h3>
+          <p>
+            Run an editor or file analysis to generate AST findings, model
+            confidence, LLM review notes, optimized code, and follow-up chat.
+          </p>
+          <div className="empty-report-grid">
+            <span>AST findings</span>
+            <span>Smell prediction</span>
+            <span>Refactor plan</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="results-container">
       <div className="results-card">
-
         <div className="results-header">
-          <h2>Analysis Results</h2>
-          <p>Code quality insights and improvements.</p>
+          <div>
+            <span className="panel-label">Analysis report</span>
+            <h2>Code quality results</h2>
+          </div>
+          <div className="report-status">Completed</div>
         </div>
 
-        {/* AST FINDINGS */}
-        <section className="result-section">
-          <h3>AST Findings</h3>
+        <div className="summary-grid">
+          <div className="summary-card">
+            <span>Smell type</span>
+            <strong>{prediction.smell_type || "Not detected"}</strong>
+          </div>
+          <div className="summary-card">
+            <span>Confidence</span>
+            <strong>
+              {typeof prediction.confidence === "number"
+                ? prediction.confidence.toFixed(2)
+                : "0.00"}
+            </strong>
+          </div>
+          <div className="summary-card">
+            <span>AST findings</span>
+            <strong>{ast.length}</strong>
+          </div>
+        </div>
 
+        <section className="result-section">
+          <h3>AST findings</h3>
           {ast.length ? (
             <ul className="ast-list">
-              {ast.map((item, i) => (
-                <li key={i}>{item}</li>
+              {ast.map((item, index) => (
+                <li key={`${item}-${index}`}>{item}</li>
               ))}
             </ul>
           ) : (
-            <p className="empty">No AST issues detected</p>
+            <p className="empty">No AST issues detected.</p>
           )}
         </section>
 
-        {/* LLM INSIGHTS */}
         <section className="result-section">
-          <h3>LLM Insights</h3>
-
+          <h3>AI review notes</h3>
           <div className="insights-box markdown-body">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {insights}
+              {insights || "No review notes were returned for this run."}
             </ReactMarkdown>
           </div>
         </section>
 
-        {/* MODEL PREDICTION */}
-        <section className="result-section">
-          <h3>Model Prediction</h3>
-
-          <div className="metrics-grid">
-            <div className="metric-card">
-              <span>Smell Type</span>
-              <strong>{prediction.smell_type || "N/A"}</strong>
+        {probabilityRows.length > 0 && (
+          <section className="result-section">
+            <h3>Model probability breakdown</h3>
+            <div className="probability-list">
+              {probabilityRows.map((row) => (
+                <div className="probability-row" key={row.label}>
+                  <div>
+                    <span>{row.label}</span>
+                    <strong>{(row.value * 100).toFixed(1)}%</strong>
+                  </div>
+                  <progress value={row.value} max="1" />
+                </div>
+              ))}
             </div>
+          </section>
+        )}
 
-            <div className="metric-card">
-              <span>Confidence</span>
-              <strong>
-                {prediction.confidence
-                  ? prediction.confidence.toFixed(2)
-                  : "0.00"}
-              </strong>
-            </div>
-          </div>
-
-          {prediction.all_probs && (
-            <pre className="prob-box">
-              {JSON.stringify(prediction.all_probs, null, 2)}
-            </pre>
-          )}
-        </section>
-
-        {/* OPTIMIZED CODE */}
         <section className="result-section">
-          <h3>Optimized / Refactored Code</h3>
-
+          <h3>Optimized code</h3>
           {optimized ? (
             <div className="code-block">
               <SyntaxHighlighter
@@ -132,45 +166,46 @@ export default function Results({ data }) {
               </SyntaxHighlighter>
             </div>
           ) : (
-            <p className="empty">No optimized code generated</p>
+            <p className="empty">No optimized code generated.</p>
           )}
         </section>
 
-        {/* FOLLOW-UP CHAT */}
         <section className="result-section">
-          <h3>Follow-Up Discussion</h3>
+          <h3>Follow-up discussion</h3>
+          <div className="results-chat">
+            <div className="results-chat-messages">
+              {messages.length === 0 && (
+                <div className="chat-placeholder">
+                  Ask for a cleaner refactor, edge cases, or a short
+                  explanation you can mention in your project demo.
+                </div>
+              )}
 
-          <div className="chat-container">
-
-            <div className="chat-messages">
-              {messages.map((m, i) => (
-                <div key={i} className={`chat-message ${m.role}`}>
+              {messages.map((message, index) => (
+                <div key={index} className={`result-message ${message.role}`}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {m.text}
+                    {message.text}
                   </ReactMarkdown>
                 </div>
               ))}
 
-              {loading && (
-                <div className="chat-message bot">Thinking...</div>
-              )}
+              {loading && <div className="result-message bot">Thinking...</div>}
             </div>
 
-            <div className="chat-input">
+            <div className="results-chat-input">
               <input
                 type="text"
-                placeholder="Ask anything about the analyzed code..."
+                placeholder="Ask about this analysis..."
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(event) => setInput(event.target.value)}
                 onKeyDown={handleKey}
               />
-
-              <button onClick={sendMessage}>Send</button>
+              <button onClick={sendMessage} disabled={!input.trim() || loading} type="button">
+                Send
+              </button>
             </div>
-
           </div>
         </section>
-
       </div>
     </div>
   );

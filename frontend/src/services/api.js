@@ -1,5 +1,5 @@
 // ============================================
-// CodeSentinel AI — API SERVICE (WORKING)
+// RigelAI API service for the FastAPI backend
 // Compatible with FastAPI backend
 // ============================================
 

@@ -9,124 +9,183 @@ export default function Home() {
   const [result, setResult] = useState(null);
 
   const toggleMode = () => {
-    setMode(mode === "chat" ? "analyze" : "chat");
+    setMode((current) => (current === "chat" ? "analyze" : "chat"));
   };
 
   const handleAnalyze = (data) => {
     setResult(data);
 
     setTimeout(() => {
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth",
-      });
+      document
+        .getElementById("results")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 120);
   };
 
   return (
-    <div className="home-layout">
+    <div className="app-shell">
+      <header className="site-header">
+        <a className="brand" href="#top" aria-label="RigelAI home">
+          <span className="brand-mark" aria-hidden="true">
+            <span className="brand-bot">🤖</span>
+            <span className="orbit orbit-one"></span>
+            <span className="orbit orbit-two"></span>
+            <span className="logo-star"></span>
+          </span>
+          <span>
+            <strong>RigelAI</strong>
+            <small>Cosmic Code Quality</small>
+          </span>
+        </a>
 
-      {/* MOBILE MODE TOGGLE */}
-      <button
-        className="floating-mode-btn"
-        onClick={toggleMode}
-        aria-label="Toggle mode"
-      >
-        {mode === "chat" ? "← Analyze" : "💬 Discuss"}
-      </button>
+        <nav className="site-nav" aria-label="Primary navigation">
+          <a href="#workspace">Workspace</a>
+          <a href="#capabilities">Capabilities</a>
+          <a href="#results">Results</a>
+        </nav>
 
-      {/* SIDEBAR */}
-      <aside className="sidebar">
-
-        <div className="sidebar-header">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/3296/3296716.png"
-            alt="avatar"
-            className="avatar"
-          />
-
-          <h3>Project Overview</h3>
-        </div>
-
-        <ul className="feature-list">
-          <li>🧩 Code smell detection</li>
-          <li>🧠 AI refactoring advice</li>
-          <li>🔍 AST + ML hybrid analysis</li>
-          <li>💬 Multi-turn follow-up chat</li>
-        </ul>
-
-        <div className="sidebar-footer">
-
+        <div className="mode-switch" role="group" aria-label="Mode switcher">
           <button
-            className="mode-btn"
-            onClick={toggleMode}
+            className={mode === "analyze" ? "active" : ""}
+            onClick={() => setMode("analyze")}
+            type="button"
           >
-            {mode === "chat"
-              ? "← Switch to Analyze"
-              : "💬 Switch to Discussion"}
+            Analyze
           </button>
-
-          <p className="dev">
-            Built by <strong>Wraith</strong>
-          </p>
-
+          <button
+            className={mode === "chat" ? "active" : ""}
+            onClick={() => setMode("chat")}
+            type="button"
+          >
+            Discuss
+          </button>
         </div>
+      </header>
 
-      </aside>
+      <main id="top">
+        <section className="hero-section">
+          <div className="hero-copy">
+            <div className="eyebrow">Cosmic Intelligence for Code Quality</div>
+            <h1>Navigate code smells with an AI co-pilot built for clarity.</h1>
+            <p>
+              RigelAI combines static analysis, model prediction, and
+              conversational review to help developers improve quality,
+              maintainability, and refactoring decisions in one focused
+              workspace.
+            </p>
 
-      {/* MAIN CONTENT */}
-      <main className="main-content">
-
-        <header className="hero-header">
-
-          <h1 className="hero-title">
-            <span className="title-blue">🤖 Rigel</span>
-            <span className="title-green">AI</span>
-          </h1>
-
-          <p className="hero-tagline">
-            Cosmic Intelligence for Code Quality
-          </p>
-
-          <p className="hero-description">
-            RigelAI is an intelligent code analysis agent that combines 
-            <strong> Abstract Syntax Tree (AST) analysis</strong>, 
-            <strong> Machine Learning</strong>, and 
-            <strong> Large Language Models (LLMs)</strong> to detect code smells.
-            {/* identify performance issues, and provide automated refactoring suggestions. */}
-            <br /><br />
-            {/* Designed for developers, RigelAI acts like a senior engineer reviewing your code —
-            helping you understand complexity, detect hidden bugs, and improve maintainability
-            with AI-powered insights. */}
-          </p>
-
-          <div className="hero-features">
-            <span>🔍 Static Code Analysis</span>
-            <span>🧠 AI Refactoring Suggestions</span>
-            <span>⚡ Performance Insights</span>
-            <span>💬 Follow-up Code Discussion</span>
-            <span></span>
-          </div>
-
-        </header>
-
-        {mode === "chat" ? (
-          <Chatbot />
-        ) : (
-          <div className="analysis-section">
-
-            <div className="analysis-card">
-              <h2>📝 Paste Code for Analysis</h2>
-              <CodeInputPanel onAnalyze={handleAnalyze} />
+            <div className="hero-actions">
+              <a className="primary-action" href="#workspace">
+                Start analysis
+              </a>
+              <button className="secondary-action" onClick={toggleMode} type="button">
+                {mode === "chat" ? "Open analyzer" : "Open discussion"}
+              </button>
             </div>
-
-            <Results data={result} />
-
           </div>
-        )}
 
+          <div className="hero-panel" aria-label="Product health summary">
+            <div className="panel-toolbar">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div className="score-card">
+              <span>Quality orbit score</span>
+              <strong>91</strong>
+              <small>12 signals mapped across 4 review constellations</small>
+            </div>
+            <div className="signal-list">
+              <div>
+                <span className="signal critical"></span>
+                Duplicate logic trail
+                <strong>3</strong>
+              </div>
+              <div>
+                <span className="signal warning"></span>
+                Complexity asteroids
+                <strong>5</strong>
+              </div>
+              <div>
+                <span className="signal success"></span>
+                Refactor routes
+                <strong>8</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="metrics-strip" aria-label="Platform metrics">
+          <div>
+            <strong>AST + ML</strong>
+            <span>hybrid intelligence engine</span>
+          </div>
+          <div>
+            <strong>10+</strong>
+            <span>language options</span>
+          </div>
+          <div>
+            <strong>2 MB</strong>
+            <span>quick file review limit</span>
+          </div>
+          <div>
+            <strong>Chat</strong>
+            <span>cosmic review assistant</span>
+          </div>
+        </section>
+
+        <section id="workspace" className="workspace-section">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">Mission control</span>
+              <h2>{mode === "chat" ? "Discuss code decisions" : "Analyze code quality"}</h2>
+            </div>
+            <p>
+              Paste source code, upload a file, or continue the review with
+              targeted follow-up questions.
+            </p>
+          </div>
+
+          {mode === "chat" ? (
+            <Chatbot />
+          ) : (
+            <div className="analysis-layout">
+              <div className="analysis-pane">
+                <CodeInputPanel onAnalyze={handleAnalyze} />
+              </div>
+
+              <aside id="capabilities" className="capability-pane">
+                <h3>Built for practical code missions</h3>
+                <ul>
+                  <li>
+                    <span>01</span>
+                    Detect code smells, bugs, and maintainability issues.
+                  </li>
+                  <li>
+                    <span>02</span>
+                    Compare AST findings with AI-generated remediation advice.
+                  </li>
+                  <li>
+                    <span>03</span>
+                    Keep the conversation going after each RigelAI scan.
+                  </li>
+                </ul>
+              </aside>
+            </div>
+          )}
+        </section>
+
+        {mode !== "chat" && (
+          <section id="results" className="results-section">
+            <Results data={result} />
+          </section>
+        )}
       </main>
 
+      <footer className="site-footer">
+        <span>🤖 RigelAI</span>
+        <span>Cosmic Intelligence for Code Quality.</span>
+      </footer>
     </div>
   );
 }

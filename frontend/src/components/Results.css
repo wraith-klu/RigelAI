@@ -1,225 +1,179 @@
-/* ===============================
-   RESULTS CONTAINER
-================================ */
-
 .results-container {
   width: 100%;
-  padding: 30px 20px;
-  display: flex;
-  justify-content: center;
 }
 
-/* ===============================
-   MAIN CARD
-================================ */
+.results-card,
+.results-empty-card {
+  width: 100%;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 52px rgba(24, 38, 64, 0.08);
+}
+
+.results-empty-card {
+  padding: 28px;
+}
+
+.results-empty-card h3 {
+  margin: 8px 0 8px;
+  color: #111827;
+  font-size: 24px;
+}
+
+.results-empty-card p {
+  max-width: 680px;
+  margin: 0;
+  color: #6a7485;
+  line-height: 1.65;
+}
+
+.empty-report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.empty-report-grid span {
+  min-height: 78px;
+  border: 1px dashed #cfd8e6;
+  border-radius: 8px;
+  background: #fbfdff;
+  color: #6a7485;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 16px;
+}
 
 .results-card {
-  width: 100%;
-  max-width: 1200px;
-
-  padding: 32px 36px;
-
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(16px);
-
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-
-  box-shadow: 0 30px 80px rgba(0,0,0,0.65);
+  padding: 26px;
 }
 
-/* ===============================
-   HEADER
-================================ */
+.results-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
 
 .results-header h2 {
-  margin: 0;
-  font-size: 28px;
+  margin: 6px 0 0;
+  color: #111827;
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+.report-status {
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 8px 12px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.75fr 0.75fr;
+  gap: 12px;
+}
+
+.summary-card {
+  border: 1px solid #edf1f6;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 18px;
+}
+
+.summary-card span,
+.summary-card strong {
+  display: block;
+}
+
+.summary-card span {
+  color: #6a7485;
+  font-size: 13px;
   font-weight: 800;
-  color: #60a5fa;
 }
 
-.results-header p {
-  margin-top: 6px;
-  color: #94a3b8;
-  font-size: 14px;
+.summary-card strong {
+  margin-top: 7px;
+  color: #111827;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.1;
 }
-
-/* ===============================
-   SECTIONS
-================================ */
 
 .result-section {
   margin-top: 28px;
 }
 
 .result-section h3 {
+  margin: 0 0 12px;
+  color: #172033;
   font-size: 18px;
-  margin-bottom: 10px;
-  font-weight: 700;
-  color: #c7d2fe;
 }
 
-/* ===============================
-   AST FINDINGS
-================================ */
-
 .ast-list {
-  padding-left: 20px;
-  color: #e5e7eb;
-  line-height: 1.7;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .ast-list li {
-  margin-bottom: 6px;
+  border: 1px solid #edf1f6;
+  border-left: 4px solid #2457d6;
+  border-radius: 8px;
+  background: #fbfdff;
+  color: #384253;
+  line-height: 1.55;
+  padding: 13px 14px;
 }
 
 .empty {
-  color: #64748b;
+  margin: 0;
+  color: #6a7485;
   font-size: 14px;
 }
 
-/* ===============================
-   LLM INSIGHTS PANEL
-================================ */
-
 .insights-box {
-  background: #020617;
-  border-radius: 16px;
-  border: 1px solid #1e293b;
-  padding: 20px;
-
-  color: #e5e7eb;
-  line-height: 1.6;
-
   overflow-x: auto;
+  border: 1px solid #edf1f6;
+  border-radius: 8px;
+  background: #fbfdff;
+  color: #384253;
+  line-height: 1.65;
+  padding: 18px;
 }
-
-/* Markdown */
-
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3 {
-  color: #93c5fd;
-}
-
-.markdown-body p {
-  margin: 8px 0;
-}
-
-.markdown-body ul {
-  padding-left: 20px;
-}
-
-/* tables */
-
-.markdown-body table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
-}
-
-.markdown-body th,
-.markdown-body td {
-  border: 1px solid #334155;
-  padding: 10px;
-}
-
-.markdown-body th {
-  background: #0f172a;
-  color: #93c5fd;
-}
-
-/* code inside insights */
-
-.markdown-body pre {
-  background: #020617;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid #1e293b;
-  overflow-x: auto;
-}
-
-.markdown-body code {
-  font-family: "Fira Code", monospace;
-  font-size: 13px;
-}
-
-/* ===============================
-   MARKDOWN CONTENT STYLING
-================================ */
 
 .markdown-body {
   font-size: 14px;
-  line-height: 1.7;
 }
-
-/* Base heading style */
 
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3 {
-  font-weight: 700;
-  margin-top: 18px;
-  margin-bottom: 10px;
-  padding: 6px 10px;
-  border-left: 4px solid transparent;
-  border-radius: 6px;
+  margin: 16px 0 8px;
+  color: #111827;
 }
-
-/* 🔵 Complexity / Info */
-
-.markdown-body h3:nth-of-type(1) {
-  color: #38bdf8;
-  border-left-color: #38bdf8;
-  background: rgba(56,189,248,0.08);
-}
-
-/* 🔴 Bugs / Issues */
-
-.markdown-body h3:nth-of-type(2) {
-  color: #ef4444;
-  border-left-color: #ef4444;
-  background: rgba(239,68,68,0.08);
-}
-
-/* 🟢 Improvements */
-
-.markdown-body h3:nth-of-type(3) {
-  color: #22c55e;
-  border-left-color: #22c55e;
-  background: rgba(34,197,94,0.08);
-}
-
-/* 🟠 Refactoring */
-
-.markdown-body h3:nth-of-type(4) {
-  color: #f59e0b;
-  border-left-color: #f59e0b;
-  background: rgba(245,158,11,0.08);
-}
-
-/* Paragraph spacing */
 
 .markdown-body p {
   margin: 8px 0;
-  color: #e5e7eb;
 }
 
-/* Lists */
-
-.markdown-body ul {
-  padding-left: 20px;
-  margin-top: 6px;
-  margin-bottom: 14px;
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 22px;
 }
 
 .markdown-body li {
   margin-bottom: 6px;
 }
 
-/* Tables */
-
 .markdown-body table {
   width: 100%;
   border-collapse: collapse;
@@ -228,227 +182,197 @@
 
 .markdown-body th,
 .markdown-body td {
-  border: 1px solid #334155;
+  border: 1px solid #dbe3ef;
   padding: 10px;
 }
 
 .markdown-body th {
-  background: #0f172a;
-  color: #93c5fd;
+  background: #f1f5fb;
 }
 
-/* Code blocks */
-
 .markdown-body pre {
-  background: #020617;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid #1e293b;
   overflow-x: auto;
+  border-radius: 8px;
+  background: #111827;
+  color: #f9fafb;
+  padding: 14px;
 }
 
 .markdown-body code {
-  font-family: "Fira Code", monospace;
+  font-family: "Fira Code", Consolas, monospace;
   font-size: 13px;
-  color: #e2e8f0;
 }
-/* ===============================
-   METRICS GRID
-================================ */
 
-.metrics-grid {
+.probability-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-top: 14px;
+  gap: 12px;
 }
 
-.metric-card {
-  padding: 20px;
-
-  border-radius: 16px;
-
-  background: linear-gradient(
-    135deg,
-    rgba(59,130,246,0.35),
-    rgba(99,102,241,0.35)
-  );
-
-  text-align: center;
-
-  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+.probability-row {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #edf1f6;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 14px;
 }
 
-.metric-card span {
-  display: block;
-  font-size: 13px;
-  color: #e0e7ff;
-  margin-bottom: 6px;
-}
-
-.metric-card strong {
-  font-size: 28px;
-  color: white;
+.probability-row div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #384253;
+  font-size: 14px;
   font-weight: 800;
 }
 
-/* ===============================
-   PROBABILITY BOX
-================================ */
-
-.prob-box {
-  margin-top: 14px;
-  padding: 16px;
-
-  border-radius: 14px;
-  background: #020617;
-  border: 1px solid #1e293b;
-
-  font-size: 13px;
-  color: #cbd5f5;
-  overflow-x: auto;
+.probability-row progress {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: #e8eef7;
 }
 
-/* ===============================
-   CODE BLOCK
-================================ */
+.probability-row progress::-webkit-progress-bar {
+  background: #e8eef7;
+}
+
+.probability-row progress::-webkit-progress-value {
+  background: #2457d6;
+}
 
 .code-block {
-  margin-top: 12px;
-
-  border-radius: 16px;
-  border: 1px solid #1e293b;
-
   overflow: hidden;
-
-  box-shadow:
-    inset 0 0 25px rgba(0,0,0,0.6),
-    0 10px 35px rgba(0,0,0,0.5);
+  border: 1px solid #111827;
+  border-radius: 8px;
+  background: #111827;
 }
 
-/* ===============================
-   CHAT
-================================ */
-
-.chat-container {
-  background: #020617;
-  border-radius: 16px;
-  border: 1px solid #1e293b;
-  padding: 20px;
-  width: 100%;
+.code-block pre {
+  margin: 0 !important;
 }
 
-/* Chat message area */
-
-.chat-messages {
-  min-height: 220px;
-  max-height: 520px;
-  overflow-y: auto;
-  margin-bottom: 14px;
-  padding-right: 6px;
+.results-chat {
+  border: 1px solid #edf1f6;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 14px;
 }
 
-/* Scrollbar */
-
-.chat-messages::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chat-messages::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 6px;
-}
-
-/* Chat bubbles */
-
-.chat-message {
-  max-width: 85%;
-  padding: 12px 16px;
-  border-radius: 14px;
-  margin: 8px 0;
-  line-height: 1.6;
-  font-size: 14px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-/* User message */
-
-.chat-message.user {
-  background: linear-gradient(135deg,#3b82f6,#2563eb);
-  margin-left: auto;
-  color: white;
-}
-
-/* Bot message */
-
-.chat-message.bot {
-  background: #1f2937;
-  border: 1px solid #374151;
-  color: #e5e7eb;
-}
-
-/* ===============================
-   CHAT INPUT
-================================ */
-
-.chat-input {
-  display: flex;
+.results-chat-messages {
+  display: grid;
   gap: 10px;
+  min-height: 160px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
-.chat-input input {
-  flex: 1;
-  padding: 12px 14px;
+.chat-placeholder {
+  display: grid;
+  min-height: 150px;
+  place-items: center;
+  border: 1px dashed #cfd8e6;
+  border-radius: 8px;
+  color: #6a7485;
+  line-height: 1.55;
+  text-align: center;
+  padding: 20px;
+}
 
-  border-radius: 12px;
-  border: 1px solid #374151;
-
-  background: #020617;
-  color: #e5e7eb;
-
+.result-message {
+  max-width: 84%;
+  border-radius: 8px;
   font-size: 14px;
+  line-height: 1.6;
+  padding: 12px 14px;
+  word-break: break-word;
 }
 
-.chat-input input:focus {
-  border-color: #3b82f6;
+.result-message.user {
+  justify-self: end;
+  background: #2457d6;
+  color: #ffffff;
 }
 
-.chat-input button {
-  padding: 12px 20px;
+.result-message.bot {
+  justify-self: start;
+  border: 1px solid #dbe3ef;
+  background: #ffffff;
+  color: #384253;
+}
 
-  border-radius: 12px;
-  border: none;
+.result-message p {
+  margin: 0;
+}
 
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  color: white;
+.results-chat-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  margin-top: 12px;
+}
 
-  font-weight: 600;
+.results-chat-input input {
+  min-height: 44px;
+  border: 1px solid #cfd8e6;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 14px;
+  outline: none;
+  padding: 0 14px;
+}
+
+.results-chat-input input:focus {
+  border-color: #2457d6;
+  box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.1);
+}
+
+.results-chat-input button {
+  min-height: 44px;
+  border: 1px solid #2457d6;
+  border-radius: 8px;
+  background: #2457d6;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 18px;
   cursor: pointer;
-
-  box-shadow: 0 6px 18px rgba(59,130,246,0.45);
 }
 
-.chat-input button:hover {
-  transform: translateY(-1px);
+.results-chat-input button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
-/* ===============================
-   MOBILE
-================================ */
-
-@media (max-width: 768px) {
-
-  .results-card {
-    padding: 22px;
+@media (max-width: 760px) {
+  .results-card,
+  .results-empty-card {
+    padding: 20px;
   }
 
-  .chat-messages {
-    max-height: 260px;
+  .summary-grid,
+  .empty-report-grid {
+    grid-template-columns: 1fr;
   }
 
-  .metric-card strong {
-    font-size: 24px;
+  .results-header {
+    display: block;
   }
 
+  .report-status {
+    display: inline-flex;
+    margin-top: 12px;
+  }
+
+  .result-message {
+    max-width: 94%;
+  }
+
+  .results-chat-input {
+    grid-template-columns: 1fr;
+  }
 }

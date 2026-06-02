@@ -1,57 +1,185 @@
 .input-panel {
-    background: #0b1220;
-    border: 3px solid #6b87f0;
-    border-radius: 14px;
-    overflow: hidden;
+  background: #ffffff;
 }
 
-/* Tabs */
+.input-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #edf1f6;
+}
+
+.panel-label {
+  color: #2457d6;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.input-panel-header h3 {
+  margin: 6px 0 0;
+  color: #111827;
+  font-size: 20px;
+  line-height: 1.2;
+}
 
 .input-tabs {
-    display: flex;
-    border-bottom: 1px solid #40b1f3;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #d9e0ea;
+  border-radius: 8px;
+  background: #f6f8fb;
 }
 
 .input-tabs button {
-    flex: 1;
-    padding: 20px;
-    background: transparent;
-    color: #67e981;
-    border: none;
-    cursor: pointer;
+  min-width: 88px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #5a6475;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .input-tabs button.active {
-    background:linear-gradient(135deg, #59c7f7, #2e31e9);
-    color: white;
-    font-weight: 900;
-    font-size: large;
+  background: #ffffff;
+  color: #2457d6;
+  box-shadow: 0 5px 16px rgba(36, 87, 214, 0.12);
 }
 
-/* Toolbar */
+.editor-block {
+  padding: 18px 20px 20px;
+}
 
 .editor-toolbar {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 12px;
-    background: #0a0a0a;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.editor-toolbar label {
+  display: grid;
+  gap: 6px;
+  color: #6a7485;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .editor-toolbar select {
-    background: #121213;
-    color: rgb(252, 250, 252);
-    font-size: 16px;
-    font-weight: 700;
-    border: 2px solid #2d79f3;
-    padding: 6px;
-    border-radius: 6px;
+  min-width: 160px;
+  min-height: 42px;
+  border: 1px solid #cfd8e6;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 750;
+  outline: none;
+  padding: 0 12px;
 }
 
-.editor-toolbar button {
-    background: linear-gradient(135deg, #38bdf8, #6366f1);
-    border: 2px solid #0c0c0c;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
+.editor-toolbar select:focus {
+  border-color: #2457d6;
+  box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.1);
+}
+
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.editor-actions button {
+  min-height: 42px;
+  border: 1px solid #cfd8e6;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #384253;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+.editor-actions button:hover {
+  border-color: #9dadc2;
+  background: #f8fafc;
+}
+
+.editor-actions button.primary {
+  border-color: #2457d6;
+  background: #2457d6;
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(36, 87, 214, 0.2);
+}
+
+.editor-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.editor-frame {
+  overflow: hidden;
+  border: 1px solid #111827;
+  border-radius: 8px;
+  background: #111827;
+}
+
+.error-msg {
+  margin-top: 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 14px;
+}
+
+.hint {
+  margin-top: 12px;
+  color: #6a7485;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .input-panel-header,
+  .editor-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .input-tabs {
+    width: 100%;
+  }
+
+  .input-tabs button,
+  .editor-actions button {
+    min-width: 0;
+  }
+
+  .editor-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .editor-actions button.primary {
+    grid-column: 1 / -1;
+  }
+
+  .editor-toolbar select {
+    width: 100%;
+  }
 }
