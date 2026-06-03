@@ -105,7 +105,7 @@ export default function FileUpload({ onResult }) {
           </div>
         ) : (
           <div className="upload-placeholder">
-            <div className="upload-icon">UP</div>
+            <img src="/agent-upload.svg" alt="" aria-hidden="true" />
             <p>Drop your code file here</p>
             <span>or click to browse from your device</span>
           </div>

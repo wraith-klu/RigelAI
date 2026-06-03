@@ -1,0 +1,13 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">RigelAI agent avatar</title>
+  <desc id="desc">A compact AI code review agent avatar.</desc>
+  <rect width="180" height="180" rx="36" fill="#EFF6FF"/>
+  <circle cx="90" cy="92" r="58" fill="#2457D6"/>
+  <rect x="48" y="61" width="84" height="70" rx="22" fill="white"/>
+  <rect x="66" y="39" width="48" height="38" rx="17" fill="white"/>
+  <circle cx="75" cy="94" r="7" fill="#111827"/>
+  <circle cx="105" cy="94" r="7" fill="#111827"/>
+  <path d="M73 116C84 124 99 124 108 116" stroke="#111827" stroke-width="7" stroke-linecap="round"/>
+  <path d="M48 87H31C22 87 15 94 15 103V111" stroke="#2457D6" stroke-width="12" stroke-linecap="round"/>
+  <path d="M132 87H149C158 87 165 94 165 103V111" stroke="#2457D6" stroke-width="12" stroke-linecap="round"/>
+</svg>

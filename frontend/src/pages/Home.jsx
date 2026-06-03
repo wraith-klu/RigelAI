@@ -27,14 +27,11 @@ export default function Home() {
       <header className="site-header">
         <a className="brand" href="#top" aria-label="RigelAI home">
           <span className="brand-mark" aria-hidden="true">
-            <span className="brand-bot">🤖</span>
-            <span className="orbit orbit-one"></span>
-            <span className="orbit orbit-two"></span>
-            <span className="logo-star"></span>
+            R
           </span>
           <span>
             <strong>RigelAI</strong>
-            <small>Cosmic Code Quality</small>
+            <small>Code Quality Studio</small>
           </span>
         </a>
 
@@ -65,13 +62,12 @@ export default function Home() {
       <main id="top">
         <section className="hero-section">
           <div className="hero-copy">
-            <div className="eyebrow">Cosmic Intelligence for Code Quality</div>
-            <h1>Navigate code smells with an AI co-pilot built for clarity.</h1>
+            <div className="eyebrow">AI code review workspace</div>
+            <h1>Find code smells faster, then turn feedback into better code.</h1>
             <p>
               RigelAI combines static analysis, model prediction, and
-              conversational review to help developers improve quality,
-              maintainability, and refactoring decisions in one focused
-              workspace.
+              conversational review so developers can spot risk, understand
+              tradeoffs, and ship cleaner code from one focused workspace.
             </p>
 
             <div className="hero-actions">
@@ -84,32 +80,47 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="hero-panel" aria-label="Product health summary">
-            <div className="panel-toolbar">
+          <div className="agent-showcase" aria-label="RigelAI agent preview">
+            <img
+              className="agent-hero-image"
+              src="/agent-hero.svg"
+              alt="RigelAI agent reviewing code quality signals"
+            />
+            <div className="agent-chip agent-chip-top">
               <span></span>
-              <span></span>
-              <span></span>
+              Agent online
             </div>
-            <div className="score-card">
-              <span>Quality orbit score</span>
-              <strong>91</strong>
-              <small>12 signals mapped across 4 review constellations</small>
+            <div className="agent-chip agent-chip-bottom">
+              8 refactor ideas ready
             </div>
-            <div className="signal-list">
-              <div>
-                <span className="signal critical"></span>
-                Duplicate logic trail
-                <strong>3</strong>
+            <div className="hero-panel" aria-label="Product health summary">
+              <div className="panel-toolbar">
+                <span className="status-pill">Live scan</span>
+                <span className="toolbar-dot"></span>
               </div>
-              <div>
-                <span className="signal warning"></span>
-                Complexity asteroids
-                <strong>5</strong>
+              <div className="score-card">
+                <span>Code health score</span>
+                <strong>91</strong>
+                <small>
+                  12 signals grouped across maintainability, bugs, style, and risk.
+                </small>
               </div>
-              <div>
-                <span className="signal success"></span>
-                Refactor routes
-                <strong>8</strong>
+              <div className="signal-list">
+                <div>
+                  <span className="signal critical"></span>
+                  High-risk findings
+                  <strong>3</strong>
+                </div>
+                <div>
+                  <span className="signal warning"></span>
+                  Complexity warnings
+                  <strong>5</strong>
+                </div>
+                <div>
+                  <span className="signal success"></span>
+                  Refactor suggestions
+                  <strong>8</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -118,7 +129,7 @@ export default function Home() {
         <section className="metrics-strip" aria-label="Platform metrics">
           <div>
             <strong>AST + ML</strong>
-            <span>hybrid intelligence engine</span>
+            <span>hybrid review engine</span>
           </div>
           <div>
             <strong>10+</strong>
@@ -130,14 +141,14 @@ export default function Home() {
           </div>
           <div>
             <strong>Chat</strong>
-            <span>cosmic review assistant</span>
+            <span>follow-up assistant</span>
           </div>
         </section>
 
         <section id="workspace" className="workspace-section">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Mission control</span>
+              <span className="eyebrow">Workspace</span>
               <h2>{mode === "chat" ? "Discuss code decisions" : "Analyze code quality"}</h2>
             </div>
             <p>
@@ -155,7 +166,7 @@ export default function Home() {
               </div>
 
               <aside id="capabilities" className="capability-pane">
-                <h3>Built for practical code missions</h3>
+                <h3>Built for practical review work</h3>
                 <ul>
                   <li>
                     <span>01</span>
@@ -183,8 +194,8 @@ export default function Home() {
       </main>
 
       <footer className="site-footer">
-        <span>🤖 RigelAI</span>
-        <span>Cosmic Intelligence for Code Quality.</span>
+        <span>RigelAI</span>
+        <span>AI-assisted code quality reviews.</span>
       </footer>
     </div>
   );

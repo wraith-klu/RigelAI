@@ -1,0 +1,42 @@
+<svg width="920" height="700" viewBox="0 0 920 700" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">RigelAI agent reviewing code</title>
+  <desc id="desc">A polished AI review agent beside code quality panels and analysis signals.</desc>
+  <rect width="920" height="700" rx="34" fill="#FFFFFF"/>
+  <rect x="42" y="44" width="836" height="612" rx="30" fill="#F8FBFF" stroke="#DCE7F5" stroke-width="2"/>
+  <rect x="76" y="78" width="534" height="420" rx="22" fill="#111827"/>
+  <rect x="76" y="78" width="534" height="54" rx="22" fill="#172033"/>
+  <circle cx="112" cy="105" r="8" fill="#EF4444"/>
+  <circle cx="139" cy="105" r="8" fill="#F59E0B"/>
+  <circle cx="166" cy="105" r="8" fill="#10B981"/>
+  <rect x="107" y="165" width="136" height="12" rx="6" fill="#60A5FA"/>
+  <rect x="107" y="202" width="320" height="12" rx="6" fill="#E5E7EB"/>
+  <rect x="107" y="239" width="258" height="12" rx="6" fill="#93C5FD"/>
+  <rect x="139" y="276" width="372" height="12" rx="6" fill="#E5E7EB"/>
+  <rect x="139" y="313" width="224" height="12" rx="6" fill="#5EEAD4"/>
+  <rect x="107" y="350" width="398" height="12" rx="6" fill="#E5E7EB"/>
+  <rect x="107" y="387" width="286" height="12" rx="6" fill="#A7F3D0"/>
+  <rect x="650" y="112" width="194" height="126" rx="20" fill="#FFFFFF" stroke="#D8E3F1" stroke-width="2"/>
+  <path d="M690 202C711 173 737 160 770 157C784 156 799 158 814 162" stroke="#2457D6" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="690" cy="202" r="10" fill="#2457D6"/>
+  <circle cx="770" cy="157" r="10" fill="#10B981"/>
+  <circle cx="814" cy="162" r="10" fill="#F59E0B"/>
+  <rect x="650" y="270" width="194" height="212" rx="20" fill="#FFFFFF" stroke="#D8E3F1" stroke-width="2"/>
+  <rect x="680" y="303" width="74" height="10" rx="5" fill="#2457D6"/>
+  <rect x="680" y="337" width="112" height="10" rx="5" fill="#CBD5E1"/>
+  <rect x="680" y="371" width="92" height="10" rx="5" fill="#CBD5E1"/>
+  <rect x="680" y="405" width="126" height="10" rx="5" fill="#CBD5E1"/>
+  <circle cx="520" cy="486" r="104" fill="#EAF1FF"/>
+  <circle cx="520" cy="486" r="76" fill="#2457D6"/>
+  <rect x="462" y="425" width="116" height="98" rx="28" fill="#FFFFFF"/>
+  <rect x="487" y="389" width="66" height="54" rx="24" fill="#FFFFFF"/>
+  <circle cx="498" cy="476" r="9" fill="#111827"/>
+  <circle cx="542" cy="476" r="9" fill="#111827"/>
+  <path d="M495 507C510 517 532 517 545 507" stroke="#111827" stroke-width="8" stroke-linecap="round"/>
+  <path d="M462 459H430C414 459 402 472 402 487V499" stroke="#2457D6" stroke-width="14" stroke-linecap="round"/>
+  <path d="M578 459H610C626 459 638 472 638 487V499" stroke="#2457D6" stroke-width="14" stroke-linecap="round"/>
+  <rect x="292" y="542" width="430" height="92" rx="22" fill="#FFFFFF" stroke="#D8E3F1" stroke-width="2"/>
+  <rect x="326" y="573" width="102" height="12" rx="6" fill="#10B981"/>
+  <rect x="326" y="603" width="312" height="12" rx="6" fill="#CBD5E1"/>
+  <path d="M716 84L760 118L746 134L704 101L716 84Z" fill="#F59E0B"/>
+  <path d="M238 528L260 550L238 572L216 550L238 528Z" fill="#10B981"/>
+</svg>

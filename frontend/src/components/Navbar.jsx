@@ -11,22 +11,20 @@ export default function Navbar({ mode, setMode }) {
 
   return (
     <header className="navbar">
-
       <div className="navbar-inner">
-
-        {/* LOGO */}
         <div className="nav-logo">
-          <span className="logo-icon">🧠</span>
+          <span className="logo-icon" aria-hidden="true">
+            R
+          </span>
           <span className="logo-text">RigelAI</span>
         </div>
 
-        {/* DESKTOP NAV */}
         {setMode && (
-          <nav className="nav-links desktop-nav">
-
+          <nav className="nav-links desktop-nav" aria-label="Review modes">
             <button
               className={`nav-btn ${mode === "chat" ? "active" : ""}`}
               onClick={() => switchMode("chat")}
+              type="button"
             >
               Chat
             </button>
@@ -34,45 +32,42 @@ export default function Navbar({ mode, setMode }) {
             <button
               className={`nav-btn ${mode === "analyze" ? "active" : ""}`}
               onClick={() => switchMode("analyze")}
+              type="button"
             >
               Analyze Code
             </button>
-
           </nav>
         )}
 
-        {/* MOBILE MENU BUTTON */}
         <button
           className="menu-toggle"
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
+          type="button"
         >
-          ☰
+          Menu
         </button>
-
       </div>
 
-      {/* MOBILE MENU */}
       {open && setMode && (
         <div className="mobile-menu">
-
           <button
             className={`nav-btn ${mode === "chat" ? "active" : ""}`}
             onClick={() => switchMode("chat")}
+            type="button"
           >
-            💬 Chat
+            Chat
           </button>
 
           <button
             className={`nav-btn ${mode === "analyze" ? "active" : ""}`}
             onClick={() => switchMode("analyze")}
+            type="button"
           >
-            ⚡ Analyze Code
+            Analyze Code
           </button>
-
         </div>
       )}
-
     </header>
   );
 }

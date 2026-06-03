@@ -92,9 +92,12 @@ export default function Chatbot() {
   return (
     <div className="chat-wrapper">
       <div className="chat-header">
-        <div>
+        <div className="chat-title-group">
+          <img src="/agent-avatar.svg" alt="" aria-hidden="true" />
+          <div>
           <span className="panel-label">Discussion mode</span>
           <h3>Ask RigelAI anything about your code</h3>
+          </div>
         </div>
         <button className="clear-btn" onClick={clearChat} type="button">
           New chat
@@ -105,6 +108,7 @@ export default function Chatbot() {
         {messages.length === 0 && (
           <div className="empty-state">
             <h3>Start with a code quality question</h3>
+            <img src="/agent-avatar.svg" alt="" aria-hidden="true" />
             <p>
               Ask about refactoring strategy, error handling, performance,
               readability, or how to explain the project in an interview.
@@ -114,7 +118,9 @@ export default function Chatbot() {
 
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.role}`}>
-            {message.role === "assistant" && <div className="chat-avatar">AI</div>}
+            {message.role === "assistant" && (
+              <img className="chat-avatar" src="/agent-avatar.svg" alt="RigelAI" />
+            )}
 
             <div className="bubble">
               {message.role === "assistant" ? (
@@ -132,7 +138,7 @@ export default function Chatbot() {
 
         {loading && (
           <div className="message assistant">
-            <div className="chat-avatar">AI</div>
+            <img className="chat-avatar" src="/agent-avatar.svg" alt="RigelAI" />
             <div className="bubble typing">Thinking...</div>
           </div>
         )}

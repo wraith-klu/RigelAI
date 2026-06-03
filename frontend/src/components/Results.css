@@ -8,7 +8,7 @@
   border: 1px solid #dbe3ef;
   border-radius: 8px;
   background: #ffffff;
-  box-shadow: 0 18px 52px rgba(24, 38, 64, 0.08);
+  box-shadow: 0 18px 52px rgba(24, 38, 64, 0.09);
 }
 
 .results-empty-card {
@@ -37,13 +37,14 @@
 
 .empty-report-grid span {
   min-height: 78px;
-  border: 1px dashed #cfd8e6;
+  border: 1px solid #dbe3ef;
   border-radius: 8px;
-  background: #fbfdff;
+  background: #ffffff;
   color: #6a7485;
   font-size: 14px;
   font-weight: 800;
   padding: 16px;
+  box-shadow: 0 10px 24px rgba(24, 38, 64, 0.05);
 }
 
 .results-card {
@@ -84,8 +85,14 @@
 .summary-card {
   border: 1px solid #edf1f6;
   border-radius: 8px;
-  background: #fbfdff;
+  background: #ffffff;
   padding: 18px;
+  box-shadow: 0 10px 24px rgba(24, 38, 64, 0.05);
+}
+
+.summary-card:first-child {
+  border-color: #bfdbfe;
+  background: #f8fbff;
 }
 
 .summary-card span,
@@ -128,10 +135,11 @@
   border: 1px solid #edf1f6;
   border-left: 4px solid #2457d6;
   border-radius: 8px;
-  background: #fbfdff;
+  background: #ffffff;
   color: #384253;
   line-height: 1.55;
   padding: 13px 14px;
+  box-shadow: 0 8px 20px rgba(24, 38, 64, 0.04);
 }
 
 .empty {
@@ -144,7 +152,7 @@
   overflow-x: auto;
   border: 1px solid #edf1f6;
   border-radius: 8px;
-  background: #fbfdff;
+  background: #ffffff;
   color: #384253;
   line-height: 1.65;
   padding: 18px;
@@ -213,8 +221,9 @@
   gap: 8px;
   border: 1px solid #edf1f6;
   border-radius: 8px;
-  background: #fbfdff;
+  background: #ffffff;
   padding: 14px;
+  box-shadow: 0 8px 20px rgba(24, 38, 64, 0.04);
 }
 
 .probability-row div {
@@ -248,6 +257,7 @@
   border: 1px solid #111827;
   border-radius: 8px;
   background: #111827;
+  box-shadow: 0 16px 36px rgba(17, 24, 39, 0.16);
 }
 
 .code-block pre {
@@ -257,7 +267,7 @@
 .results-chat {
   border: 1px solid #edf1f6;
   border-radius: 8px;
-  background: #fbfdff;
+  background: #ffffff;
   padding: 14px;
 }
 
