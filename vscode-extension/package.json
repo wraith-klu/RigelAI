@@ -1,0 +1,66 @@
+{
+  "name": "rigelai-code-review",
+  "displayName": "RigelAI Code Review",
+  "description": "Analyze the current file or selected code with RigelAI from VS Code.",
+  "version": "0.1.0",
+  "publisher": "wraith-klu",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:rigelai.analyzeCurrentFile",
+    "onCommand:rigelai.analyzeSelection",
+    "onCommand:rigelai.openSettings",
+    "onCommand:rigelai.openWebsite",
+    "onUri"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "RigelAI",
+      "properties": {
+        "rigelai.apiUrl": {
+          "type": "string",
+          "default": "https://rigelai.onrender.com",
+          "description": "RigelAI backend API URL."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "rigelai.analyzeCurrentFile",
+        "title": "RigelAI: Analyze Current File"
+      },
+      {
+        "command": "rigelai.analyzeSelection",
+        "title": "RigelAI: Analyze Selection"
+      },
+      {
+        "command": "rigelai.openSettings",
+        "title": "RigelAI: Open Settings"
+      },
+      {
+        "command": "rigelai.openWebsite",
+        "title": "RigelAI: Open Website"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "rigelai.analyzeCurrentFile",
+          "group": "navigation@20"
+        },
+        {
+          "command": "rigelai.analyzeSelection",
+          "when": "editorHasSelection",
+          "group": "navigation@21"
+        }
+      ]
+    }
+  }
+}

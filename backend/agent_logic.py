@@ -15,7 +15,7 @@ except Exception:
         return None
 
 try:
-    from openai import OpenAI
+    from openai import OpenAI # pyright: ignore[reportMissingImports]
 except Exception:
     OpenAI = None
 

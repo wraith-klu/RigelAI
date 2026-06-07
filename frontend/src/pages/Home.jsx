@@ -37,6 +37,7 @@ export default function Home() {
 
         <nav className="site-nav" aria-label="Primary navigation">
           <a href="#workspace">Workspace</a>
+          <a href="#vscode-extension">Extension</a>
           <a href="#capabilities">Capabilities</a>
           <a href="#results">Results</a>
         </nav>
@@ -77,6 +78,9 @@ export default function Home() {
               <button className="secondary-action" onClick={toggleMode} type="button">
                 {mode === "chat" ? "Open analyzer" : "Open discussion"}
               </button>
+              <a className="secondary-action" href="#vscode-extension">
+                VS Code extension
+              </a>
             </div>
           </div>
 
@@ -122,6 +126,44 @@ export default function Home() {
                   <strong>8</strong>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="vscode-extension" className="extension-section">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">IDE extension</span>
+              <h2>Review code without leaving VS Code</h2>
+            </div>
+            <p>
+              Install RigelAI in VS Code, connect it to the hosted backend, and run
+              analysis from the command palette or editor context menu.
+            </p>
+          </div>
+
+          <div className="extension-panel">
+            <div className="extension-copy">
+              <h3>RigelAI Code Review</h3>
+              <p>
+                Analyze the current file or selected code, then view health score,
+                severity findings, and refactor suggestions in a VS Code panel.
+              </p>
+            </div>
+            <div className="extension-actions">
+              <a
+                className="primary-action"
+                href="/extensions/rigelai-code-review-0.1.0.vsix"
+                download
+              >
+                Download VSIX
+              </a>
+              <a
+                className="secondary-action"
+                href="vscode://wraith-klu.rigelai-code-review/connect?apiUrl=https%3A%2F%2Frigelai.onrender.com"
+              >
+                Connect VS Code
+              </a>
             </div>
           </div>
         </section>

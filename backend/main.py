@@ -1,5 +1,6 @@
  # main.py — CodeSentinel AI (Production API)
- 
+import os
+from urllib.error import HTTPError
 from dotenv import load_dotenv
 from fastapi import (
     FastAPI,
@@ -24,8 +25,8 @@ from agent_logic import (
     detect_language as detect_code_language,
 )
 
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer # pyright: ignore[reportMissingModuleSource]
+from reportlab.lib.styles import getSampleStyleSheet # pyright: ignore[reportMissingModuleSource]
 
 
 
@@ -33,7 +34,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 load_dotenv()
 
 app = FastAPI(title="CodeSentinel AI", version="1.0")
-
+print("GitHub Token Loaded:", bool(os.getenv("GITHUB_TOKEN")))
 
   
 # CORS
@@ -96,17 +97,61 @@ def parse_github_repo_url(url: str) -> tuple[str, str]:
     return match.group("owner"), repo
 
 
+# def fetch_json(url: str) -> dict:
+#     request = Request(url, headers={"User-Agent": "RigelAI-CodeSentinel"})
+#     with urlopen(request, timeout=12) as response:
+#         return json.loads(response.read().decode("utf-8"))
 def fetch_json(url: str) -> dict:
-    request = Request(url, headers={"User-Agent": "RigelAI-CodeSentinel"})
-    with urlopen(request, timeout=12) as response:
-        return json.loads(response.read().decode("utf-8"))
+    headers = {
+        "User-Agent": "RigelAI-CodeSentinel"
+    }
 
+    github_token = os.getenv("GITHUB_TOKEN")
 
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
+
+    request = Request(url, headers=headers)
+
+    try:
+        with urlopen(request, timeout=12) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    except HTTPError as e:
+        if e.code == 403:
+            raise HTTPException(
+                status_code=429,
+                detail="GitHub API rate limit exceeded. Please try again later."
+            )
+        raise
+
+# def fetch_text(url: str) -> str:
+#     request = Request(url, headers={"User-Agent": "RigelAI-CodeSentinel"})
+#     with urlopen(request, timeout=12) as response:
+#         return response.read().decode("utf-8", errors="ignore")
 def fetch_text(url: str) -> str:
-    request = Request(url, headers={"User-Agent": "RigelAI-CodeSentinel"})
-    with urlopen(request, timeout=12) as response:
-        return response.read().decode("utf-8", errors="ignore")
+    headers = {
+        "User-Agent": "RigelAI-CodeSentinel"
+    }
 
+    github_token = os.getenv("GITHUB_TOKEN")
+
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
+
+    request = Request(url, headers=headers)
+
+    try:
+        with urlopen(request, timeout=12) as response:
+            return response.read().decode("utf-8", errors="ignore")
+
+    except HTTPError as e:
+        if e.code == 403:
+            raise HTTPException(
+                status_code=429,
+                detail="GitHub API rate limit exceeded. Please try again later."
+            )
+        raise
 
 def fetch_repository_files(repository_url: str, max_files: int = 12, max_bytes: int = 120_000):
     owner, repo = parse_github_repo_url(repository_url)

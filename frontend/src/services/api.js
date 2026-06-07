@@ -1,15 +1,11 @@
-// ============================================
 // RigelAI API service for the FastAPI backend
 // Compatible with FastAPI backend
-// ============================================
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 
-// ================= CHAT =================
 // POST /chat  (JSON)
-// ========================================
 export async function sendChatMessage(query) {
   const res = await fetch(`${API_URL}/chat`, {
     method: "POST",
@@ -29,9 +25,7 @@ export async function sendChatMessage(query) {
 }
 
 
-// ================= ANALYZE FILE =================
 // POST /analyze-file (FormData)
-// ================================================
 export async function analyzeFile(file, query = "Analyze and optimize this code") {
   const formData = new FormData();
   formData.append("file", file);
@@ -50,9 +44,7 @@ export async function analyzeFile(file, query = "Analyze and optimize this code"
 }
 
 
-// ================= ANALYZE EDITOR =================
 // POST /analyze-editor (JSON)
-// ================================================
 export async function analyzeEditor(code, query = "Analyze this code", sessionId = null) {
   const res = await fetch(`${API_URL}/analyze-editor`, {
     method: "POST",
@@ -74,9 +66,7 @@ export async function analyzeEditor(code, query = "Analyze this code", sessionId
 }
 
 
-// ================= ANALYZE REPOSITORY =================
 // POST /analyze-repository (JSON)
-// ======================================================
 export async function analyzeRepository(
   repositoryUrl,
   query = "Analyze this repository for bugs, smells, complexity, and refactoring opportunities."
@@ -100,9 +90,7 @@ export async function analyzeRepository(
 }
 
 
-// ================= FOLLOW-UP =================
 // POST /followup (JSON)
-// ============================================
 export async function sendFollowUp(query, sessionId) {
   const res = await fetch(`${API_URL}/followup`, {
     method: "POST",
@@ -123,9 +111,7 @@ export async function sendFollowUp(query, sessionId) {
 }
 
 
-// ================= DOWNLOAD PDF =================
 // POST /download-pdf (JSON)
-// ===============================================
 export async function downloadPDF(text) {
   const res = await fetch(`${API_URL}/download-pdf`, {
     method: "POST",

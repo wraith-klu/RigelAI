@@ -413,6 +413,44 @@ main {
   font-size: 13px;
 }
 
+.extension-section {
+  max-width: 100%;
+  scroll-margin-top: 92px;
+  padding: 64px 0 0;
+}
+
+.extension-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 24px;
+  box-shadow: 0 18px 52px rgba(24, 38, 64, 0.08);
+}
+
+.extension-copy h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 22px;
+}
+
+.extension-copy p {
+  max-width: 690px;
+  margin: 8px 0 0;
+  color: #566173;
+  line-height: 1.65;
+}
+
+.extension-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 .workspace-section,
 .results-section {
   max-width: 100%;
@@ -520,8 +558,13 @@ main {
   }
 
   .hero-section,
+  .extension-panel,
   .analysis-layout {
     grid-template-columns: 1fr;
+  }
+
+  .extension-actions {
+    justify-content: flex-start;
   }
 
   .agent-showcase {
