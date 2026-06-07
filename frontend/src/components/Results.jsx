@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { sendFollowUp } from "../services/api";
+import { downloadPDF, sendFollowUp } from "../services/api";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import "./Results.css";
@@ -18,6 +18,14 @@ export default function Results({ data }) {
   const optimized = llm.optimized_code || "";
   const sessionId = llm.session_id;
   const language = llm.language || "plaintext";
+  const report = llm.quality_report || {};
+  const findings = report.findings || [];
+  const fixes = report.fix_suggestions || [];
+  const severityCounts = report.severity_counts || {};
+  const healthScore = typeof report.health_score === "number" ? report.health_score : null;
+  const projectName = llm.project_name || "";
+  const filesAnalyzed = llm.files_analyzed || null;
+  const branch = llm.branch || "";
   const hasData = Boolean(data);
 
   const probabilityRows = useMemo(() => {
@@ -63,6 +71,43 @@ export default function Results({ data }) {
     if (event.key === "Enter") sendMessage();
   };
 
+  const exportReport = () => {
+    const lines = [
+      "RigelAI Code Quality Report",
+      projectName ? `Project: ${projectName}` : "Project: Single source analysis",
+      llm.repository_url ? `Repository: ${llm.repository_url}` : "",
+      branch ? `Branch: ${branch}` : "",
+      filesAnalyzed ? `Files analyzed: ${filesAnalyzed}` : "",
+      healthScore !== null ? `Health score: ${healthScore}/100` : "",
+      "",
+      "Severity Summary",
+      `Critical: ${severityCounts.critical || 0}`,
+      `Warnings: ${severityCounts.warning || 0}`,
+      `Suggestions: ${severityCounts.suggestion || 0}`,
+      "",
+      "Findings",
+      ...(findings.length
+        ? findings.map(
+            (finding) =>
+              `[${finding.severity}] ${finding.file || "source"}${
+                finding.line ? `:${finding.line}` : ""
+              } - ${finding.title}: ${finding.message}`
+          )
+        : ["No structured findings were reported."]),
+      "",
+      "Fix Suggestions",
+      ...(fixes.length
+        ? fixes.map((fix) => `${fix.title}: ${fix.recommendation}`)
+        : ["No fix suggestions were generated."]),
+      "",
+      "AI Review Notes",
+      insights || "No review notes were returned.",
+      optimized ? `\nOptimized Code\n${optimized}` : "",
+    ].filter(Boolean);
+
+    downloadPDF(lines.join("\n"));
+  };
+
   if (!hasData) {
     return (
       <div className="results-container">
@@ -89,12 +134,21 @@ export default function Results({ data }) {
         <div className="results-header">
           <div>
             <span className="panel-label">Analysis report</span>
-            <h2>Code quality results</h2>
+            <h2>{projectName ? `${projectName} results` : "Code quality results"}</h2>
           </div>
-          <div className="report-status">Completed</div>
+          <div className="result-header-actions">
+            <button onClick={exportReport} type="button">
+              Export PDF
+            </button>
+            <div className="report-status">Completed</div>
+          </div>
         </div>
 
         <div className="summary-grid">
+          <div className="summary-card health-card">
+            <span>Health score</span>
+            <strong>{healthScore !== null ? healthScore : "--"}</strong>
+          </div>
           <div className="summary-card">
             <span>Smell type</span>
             <strong>{prediction.smell_type || "Not detected"}</strong>
@@ -108,21 +162,60 @@ export default function Results({ data }) {
             </strong>
           </div>
           <div className="summary-card">
-            <span>AST findings</span>
-            <strong>{ast.length}</strong>
+            <span>{filesAnalyzed ? "Files analyzed" : "AST findings"}</span>
+            <strong>{filesAnalyzed || ast.length}</strong>
           </div>
         </div>
 
         <section className="result-section">
-          <h3>AST findings</h3>
-          {ast.length ? (
+          <h3>Severity dashboard</h3>
+          <div className="severity-grid">
+            <div className="severity-card critical">
+              <span>Critical</span>
+              <strong>{severityCounts.critical || 0}</strong>
+            </div>
+            <div className="severity-card warning">
+              <span>Warnings</span>
+              <strong>{severityCounts.warning || 0}</strong>
+            </div>
+            <div className="severity-card suggestion">
+              <span>Suggestions</span>
+              <strong>{severityCounts.suggestion || 0}</strong>
+            </div>
+            <div className="severity-card info">
+              <span>Info</span>
+              <strong>{severityCounts.info || 0}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="result-section">
+          <h3>Line-level findings</h3>
+          {findings.length ? (
+            <ul className="finding-list">
+              {findings.map((finding, index) => (
+                <li className={`finding-item ${finding.severity}`} key={finding.id || index}>
+                  <div>
+                    <span>{finding.severity}</span>
+                    <strong>{finding.title}</strong>
+                  </div>
+                  <p>{finding.message}</p>
+                  <small>
+                    {finding.file || "source"}
+                    {finding.line ? `:${finding.line}` : ""}
+                  </small>
+                  <em>{finding.suggestion}</em>
+                </li>
+              ))}
+            </ul>
+          ) : ast.length ? (
             <ul className="ast-list">
               {ast.map((item, index) => (
                 <li key={`${item}-${index}`}>{item}</li>
               ))}
             </ul>
           ) : (
-            <p className="empty">No AST issues detected.</p>
+            <p className="empty">No structured issues detected.</p>
           )}
         </section>
 
@@ -151,6 +244,29 @@ export default function Results({ data }) {
             </div>
           </section>
         )}
+
+        <section className="result-section">
+          <h3>Auto fix suggestions</h3>
+          {fixes.length ? (
+            <div className="fix-list">
+              {fixes.map((fix, index) => (
+                <article className={`fix-card ${fix.severity}`} key={`${fix.title}-${index}`}>
+                  <div>
+                    <span>{fix.severity}</span>
+                    <strong>{fix.title}</strong>
+                  </div>
+                  <p>{fix.recommendation}</p>
+                  <small>
+                    {fix.file || "source"}
+                    {fix.line ? `:${fix.line}` : ""}
+                  </small>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="empty">No fix suggestions generated.</p>
+          )}
+        </section>
 
         <section className="result-section">
           <h3>Optimized code</h3>

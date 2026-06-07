@@ -74,6 +74,32 @@ export async function analyzeEditor(code, query = "Analyze this code", sessionId
 }
 
 
+// ================= ANALYZE REPOSITORY =================
+// POST /analyze-repository (JSON)
+// ======================================================
+export async function analyzeRepository(
+  repositoryUrl,
+  query = "Analyze this repository for bugs, smells, complexity, and refactoring opportunities."
+) {
+  const res = await fetch(`${API_URL}/analyze-repository`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      repository_url: repositoryUrl,
+      user_query: query,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Repository analysis failed");
+  }
+
+  return res.json();
+}
+
+
 // ================= FOLLOW-UP =================
 // POST /followup (JSON)
 // ============================================

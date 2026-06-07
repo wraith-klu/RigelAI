@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./FileUpload.css";
-import { analyzeFile } from "../services/api";
+import { analyzeFile, analyzeRepository } from "../services/api";
 
 export default function FileUpload({ onResult }) {
   const [file, setFile] = useState(null);
@@ -8,6 +8,8 @@ export default function FileUpload({ onResult }) {
     "Analyze this code for smells, bugs, complexity, and refactoring opportunities."
   );
   const [loading, setLoading] = useState(false);
+  const [repoLoading, setRepoLoading] = useState(false);
+  const [repoUrl, setRepoUrl] = useState("");
   const [error, setError] = useState("");
 
   const MAX_SIZE_MB = 2;
@@ -65,8 +67,28 @@ export default function FileUpload({ onResult }) {
     }
   };
 
+  const handleRepositoryAnalyze = async () => {
+    if (!repoUrl.trim()) {
+      setError("Paste a public GitHub repository URL before running analysis.");
+      return;
+    }
+
+    setRepoLoading(true);
+    setError("");
+
+    try {
+      const data = await analyzeRepository(repoUrl, query);
+      onResult?.(data);
+    } catch (e) {
+      setError(e.message || "Repository analysis failed. Confirm the repo is public.");
+    } finally {
+      setRepoLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setFile(null);
+    setRepoUrl("");
     setQuery("Analyze this code for smells, bugs, complexity, and refactoring opportunities.");
     setError("");
     onResult?.(null);
@@ -76,11 +98,36 @@ export default function FileUpload({ onResult }) {
     if (event.key === "Enter") handleAnalyze();
   };
 
+  const handleRepoKey = (event) => {
+    if (event.key === "Enter") handleRepositoryAnalyze();
+  };
+
   return (
     <div className="upload-container">
       <div className="upload-header">
-        <h3>Upload a code file</h3>
-        <p>Use a small source file when you want a fast, focused review.</p>
+        <h3>Upload code or scan a repository</h3>
+        <p>Use a source file for focused review, or paste a public GitHub URL for a project-level scan.</p>
+      </div>
+
+      <div className="repo-analyzer">
+        <label>
+          GitHub repository
+          <input
+            type="url"
+            placeholder="https://github.com/owner/repository"
+            value={repoUrl}
+            onChange={(event) => setRepoUrl(event.target.value)}
+            onKeyDown={handleRepoKey}
+          />
+        </label>
+        <button
+          className="repo-btn"
+          onClick={handleRepositoryAnalyze}
+          disabled={repoLoading || loading}
+          type="button"
+        >
+          {repoLoading ? "Scanning..." : "Analyze repo"}
+        </button>
       </div>
 
       <label
@@ -125,7 +172,7 @@ export default function FileUpload({ onResult }) {
           <button
             className="analyze-btn"
             onClick={handleAnalyze}
-            disabled={loading || !file}
+            disabled={loading || repoLoading || !file}
             type="button"
           >
             {loading ? "Analyzing..." : "Analyze file"}
@@ -134,7 +181,7 @@ export default function FileUpload({ onResult }) {
           <button
             className="reset-btn"
             onClick={handleReset}
-            disabled={loading}
+            disabled={loading || repoLoading}
             type="button"
           >
             Reset
