@@ -47,7 +47,7 @@ const SAMPLE_CODE = {
 };
 
 export default function CodeInputPanel({ onAnalyze }) {
-  const [mode, setMode] = useState("editor");
+  const [mode, setMode] = useState("upload");
   const [code, setCode] = useState(SAMPLE_CODE.python);
   const [lang, setLang] = useState("python");
   const [loading, setLoading] = useState(false);
@@ -100,18 +100,18 @@ export default function CodeInputPanel({ onAnalyze }) {
 
         <div className="input-tabs" role="tablist" aria-label="Input type">
           <button
-            className={mode === "editor" ? "active" : ""}
-            onClick={() => setMode("editor")}
-            type="button"
-          >
-            Editor
-          </button>
-          <button
             className={mode === "upload" ? "active" : ""}
             onClick={() => setMode("upload")}
             type="button"
           >
             Upload
+          </button>
+          <button
+            className={mode === "editor" ? "active" : ""}
+            onClick={() => setMode("editor")}
+            type="button"
+          >
+            Editor
           </button>
         </div>
       </div>
