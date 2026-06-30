@@ -1,8 +1,9 @@
 const vscode = require("vscode");
 
 const WEBSITE_URL = "https://rigelai-agent.vercel.app";
+const DEFAULT_API_URL = "https://rigelai.onrender.com";
 const DEFAULT_QUERY =
-  "Analyze this code for smells, bugs, complexity, and refactoring opportunities.";
+  "Analyze this code for smells, bugs, complexity, and refactoring opportunities. Generate a corrected version when improvements are needed.";
 
 function activate(context) {
   context.subscriptions.push(
@@ -11,6 +12,9 @@ function activate(context) {
     ),
     vscode.commands.registerCommand("rigelai.analyzeSelection", () =>
       analyzeEditorContent("selection")
+    ),
+    vscode.commands.registerCommand("rigelai.generateCorrectedCode", () =>
+      analyzeEditorContent("correct")
     ),
     vscode.commands.registerCommand("rigelai.openSettings", () =>
       vscode.commands.executeCommand("workbench.action.openSettings", "rigelai.apiUrl")
@@ -30,7 +34,7 @@ function activate(context) {
         }
 
         vscode.window.showInformationMessage(
-          `RigelAI connected${apiUrl ? ` to ${apiUrl}` : ""}. Run "RigelAI: Analyze Current File" to start.`
+          `RigelAI connected${apiUrl ? ` to ${apiUrl}` : ""}. Run "RigelAI: Generate Corrected Code" to start.`
         );
       },
     })
@@ -45,10 +49,10 @@ async function analyzeEditorContent(mode) {
   }
 
   const document = editor.document;
-  const selectedText = editor.selection.isEmpty
-    ? ""
-    : document.getText(editor.selection);
-  const code = mode === "selection" ? selectedText : document.getText();
+  const hasSelection = !editor.selection.isEmpty;
+  const selectedText = hasSelection ? document.getText(editor.selection) : "";
+  const shouldUseSelection = mode === "selection" || (mode === "correct" && hasSelection);
+  const code = shouldUseSelection ? selectedText : document.getText();
 
   if (!code.trim()) {
     vscode.window.showErrorMessage("There is no code to analyze.");
@@ -57,26 +61,31 @@ async function analyzeEditorContent(mode) {
 
   const apiUrl = getApiUrl();
   const language = document.languageId || "plaintext";
-  const query =
-    mode === "selection"
-      ? `Analyze this ${language} code selection for bugs, smells, complexity, and refactoring improvements.`
-      : `Analyze this ${language} file for bugs, smells, complexity, and refactoring improvements.`;
+  const query = buildQuery(mode, shouldUseSelection, language);
+  const reviewContext = {
+    apiUrl,
+    code,
+    fileName: document.fileName,
+    language,
+    mode: shouldUseSelection ? "selection" : "file",
+    range: shouldUseSelection ? rangeToPlainObject(editor.selection) : null,
+    uri: document.uri.toString(),
+    version: document.version,
+  };
 
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: "RigelAI is analyzing your code",
+      title:
+        mode === "correct"
+          ? "RigelAI is generating corrected code"
+          : "RigelAI is reviewing your code",
       cancellable: false,
     },
     async () => {
       try {
         const result = await callRigelAI(apiUrl, code, query);
-        showResultsPanel(result, {
-          apiUrl,
-          fileName: document.fileName,
-          mode,
-          language,
-        });
+        showResultsPanel(contextWithResult(reviewContext, result));
       } catch (error) {
         vscode.window.showErrorMessage(
           `RigelAI analysis failed: ${error.message || "Unknown error"}`
@@ -86,9 +95,26 @@ async function analyzeEditorContent(mode) {
   );
 }
 
+function buildQuery(mode, isSelection, language) {
+  const scope = isSelection ? "selected code" : "entire file";
+  if (mode === "correct") {
+    return `Review this ${language} ${scope}, explain the important issues briefly, and generate a fully corrected runnable version of the ${scope}.`;
+  }
+
+  return `Analyze this ${language} ${scope} for bugs, smells, complexity, and refactoring improvements. Also generate corrected code if fixes are useful.`;
+}
+
+function contextWithResult(context, result) {
+  return {
+    ...context,
+    result,
+    optimizedCode: String(result?.llm_analysis?.optimized_code || ""),
+  };
+}
+
 function getApiUrl() {
   const configured = vscode.workspace.getConfiguration("rigelai").get("apiUrl");
-  return String(configured || "https://rigelai.onrender.com").replace(/\/$/, "");
+  return String(configured || DEFAULT_API_URL).replace(/\/$/, "");
 }
 
 async function callRigelAI(apiUrl, code, userQuery) {
@@ -104,40 +130,127 @@ async function callRigelAI(apiUrl, code, userQuery) {
   });
 
   if (!response.ok) {
-    throw new Error(`Backend returned ${response.status}`);
+    let detail = "";
+    try {
+      detail = await response.text();
+    } catch {
+      detail = "";
+    }
+    throw new Error(`Backend returned ${response.status}${detail ? `: ${detail}` : ""}`);
   }
 
   return response.json();
 }
 
-function showResultsPanel(data, context) {
+function showResultsPanel(review) {
   const panel = vscode.window.createWebviewPanel(
     "rigelaiResults",
     "RigelAI Code Review",
     vscode.ViewColumn.Beside,
     {
-      enableScripts: false,
+      enableScripts: true,
       retainContextWhenHidden: true,
     }
   );
 
-  panel.webview.html = renderResults(data, context);
+  panel.webview.html = renderResults(review);
+  panel.webview.onDidReceiveMessage((message) => handleWebviewMessage(message, review));
 }
 
-function renderResults(data, context) {
+async function handleWebviewMessage(message, review) {
+  switch (message?.command) {
+    case "applyCorrectedCode":
+      await applyCorrectedCode(review);
+      break;
+    case "copyCorrectedCode":
+      await copyCorrectedCode(review);
+      break;
+    case "previewCorrectedCode":
+      await previewCorrectedCode(review);
+      break;
+    default:
+      break;
+  }
+}
+
+async function applyCorrectedCode(review) {
+  const code = review.optimizedCode;
+  if (!code.trim()) {
+    vscode.window.showWarningMessage("RigelAI did not return corrected code for this review.");
+    return;
+  }
+
+  const uri = vscode.Uri.parse(review.uri);
+  const document = await vscode.workspace.openTextDocument(uri);
+  const editor = await vscode.window.showTextDocument(document);
+
+  if (document.version !== review.version) {
+    const choice = await vscode.window.showWarningMessage(
+      "This file changed after the RigelAI review. Apply the corrected code anyway?",
+      { modal: true },
+      "Apply"
+    );
+    if (choice !== "Apply") {
+      return;
+    }
+  }
+
+  const range = review.range ? plainObjectToRange(review.range) : fullDocumentRange(document);
+  const applied = await editor.edit((editBuilder) => {
+    editBuilder.replace(range, code);
+  });
+
+  if (applied) {
+    vscode.window.showInformationMessage(
+      review.range
+        ? "RigelAI corrected code applied to the selected range."
+        : "RigelAI corrected code applied to the current file."
+    );
+  } else {
+    vscode.window.showErrorMessage("VS Code could not apply the RigelAI correction.");
+  }
+}
+
+async function copyCorrectedCode(review) {
+  if (!review.optimizedCode.trim()) {
+    vscode.window.showWarningMessage("RigelAI did not return corrected code for this review.");
+    return;
+  }
+
+  await vscode.env.clipboard.writeText(review.optimizedCode);
+  vscode.window.showInformationMessage("Corrected code copied to clipboard.");
+}
+
+async function previewCorrectedCode(review) {
+  if (!review.optimizedCode.trim()) {
+    vscode.window.showWarningMessage("RigelAI did not return corrected code for this review.");
+    return;
+  }
+
+  const preview = await vscode.workspace.openTextDocument({
+    content: review.optimizedCode,
+    language: review.language,
+  });
+  await vscode.window.showTextDocument(preview, vscode.ViewColumn.Beside);
+}
+
+function renderResults(review) {
+  const data = review.result;
   const llm = data?.llm_analysis || {};
   const report = llm.quality_report || {};
   const findings = Array.isArray(report.findings) ? report.findings : [];
   const fixes = Array.isArray(report.fix_suggestions) ? report.fix_suggestions : [];
   const severityCounts = report.severity_counts || {};
-  const optimizedCode = llm.optimized_code || "";
+  const optimizedCode = review.optimizedCode;
   const healthScore =
     typeof report.health_score === "number" ? String(report.health_score) : "--";
+  const nonce = getNonce();
 
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -148,6 +261,26 @@ function renderResults(data, context) {
       font-family: var(--vscode-font-family);
     }
     h1, h2, h3 { margin: 0; }
+    button {
+      border: 0;
+      border-radius: 6px;
+      color: var(--vscode-button-foreground);
+      background: var(--vscode-button-background);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      padding: 9px 12px;
+    }
+    button:hover { background: var(--vscode-button-hoverBackground); }
+    button.secondary {
+      color: var(--vscode-button-secondaryForeground);
+      background: var(--vscode-button-secondaryBackground);
+    }
+    button.secondary:hover { background: var(--vscode-button-secondaryHoverBackground); }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
     .header {
       display: flex;
       justify-content: space-between;
@@ -175,13 +308,19 @@ function renderResults(data, context) {
       font-size: 34px;
       color: var(--vscode-testing-iconPassed);
     }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 22px;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
       margin-bottom: 22px;
     }
-    .card, .finding, .fix, pre {
+    .card, .finding, .fix, pre, .empty-state {
       border: 1px solid var(--vscode-panel-border);
       border-radius: 8px;
       background: var(--vscode-sideBar-background);
@@ -195,7 +334,7 @@ function renderResults(data, context) {
     section { margin-top: 24px; }
     section h2 { margin-bottom: 10px; font-size: 18px; }
     .list { display: grid; gap: 10px; }
-    .finding, .fix {
+    .finding, .fix, .empty-state {
       padding: 14px;
       border-left: 4px solid var(--vscode-button-background);
     }
@@ -235,13 +374,19 @@ function renderResults(data, context) {
   <div class="header">
     <div>
       <span class="label">RigelAI Code Review</span>
-      <h1>${escapeHtml(context.mode === "selection" ? "Selection Analysis" : "File Analysis")}</h1>
-      <p>${escapeHtml(context.fileName)}</p>
+      <h1>${escapeHtml(review.mode === "selection" ? "Selection Analysis" : "File Analysis")}</h1>
+      <p>${escapeHtml(review.fileName)}</p>
     </div>
     <div class="score">
       <span class="label">Health</span>
       <strong>${escapeHtml(healthScore)}</strong>
     </div>
+  </div>
+
+  <div class="actions">
+    <button ${optimizedCode ? "" : "disabled"} data-command="applyCorrectedCode">Apply Corrected Code</button>
+    <button class="secondary" ${optimizedCode ? "" : "disabled"} data-command="previewCorrectedCode">Preview Corrected Code</button>
+    <button class="secondary" ${optimizedCode ? "" : "disabled"} data-command="copyCorrectedCode">Copy Corrected Code</button>
   </div>
 
   <div class="grid">
@@ -274,11 +419,23 @@ function renderResults(data, context) {
     <p>${escapeHtml(llm.llm_response || "No review notes were returned.")}</p>
   </section>
 
-  ${
-    optimizedCode
-      ? `<section><h2>Optimized Code</h2><pre>${escapeHtml(optimizedCode)}</pre></section>`
-      : ""
-  }
+  <section>
+    <h2>Corrected Code</h2>
+    ${
+      optimizedCode
+        ? `<pre>${escapeHtml(optimizedCode)}</pre>`
+        : `<div class="empty-state">RigelAI did not return corrected code. Check the backend LLM configuration, then run "RigelAI: Generate Corrected Code" again.</div>`
+    }
+  </section>
+
+  <script nonce="${nonce}">
+    const vscode = acquireVsCodeApi();
+    document.querySelectorAll("button[data-command]").forEach((button) => {
+      button.addEventListener("click", () => {
+        vscode.postMessage({ command: button.dataset.command });
+      });
+    });
+  </script>
 </body>
 </html>`;
 }
@@ -300,6 +457,40 @@ function renderFix(fix) {
     <p>${escapeHtml(fix.recommendation || "")}</p>
     <small>${escapeHtml(fix.file || "source")}${fix.line ? `:${fix.line}` : ""}</small>
   </article>`;
+}
+
+function fullDocumentRange(document) {
+  const lastLine = Math.max(document.lineCount - 1, 0);
+  return new vscode.Range(new vscode.Position(0, 0), document.lineAt(lastLine).range.end);
+}
+
+function rangeToPlainObject(range) {
+  return {
+    start: {
+      line: range.start.line,
+      character: range.start.character,
+    },
+    end: {
+      line: range.end.line,
+      character: range.end.character,
+    },
+  };
+}
+
+function plainObjectToRange(range) {
+  return new vscode.Range(
+    new vscode.Position(range.start.line, range.start.character),
+    new vscode.Position(range.end.line, range.end.character)
+  );
+}
+
+function getNonce() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let text = "";
+  for (let index = 0; index < 32; index += 1) {
+    text += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return text;
 }
 
 function escapeHtml(value) {

@@ -1,8 +1,8 @@
 {
   "name": "rigelai-code-review",
   "displayName": "RigelAI Code Review",
-  "description": "Analyze the current file or selected code with RigelAI from VS Code.",
-  "version": "0.1.0",
+  "description": "Analyze, review, and apply corrected code with RigelAI from VS Code.",
+  "version": "0.2.1",
   "publisher": "wraith-klu",
   "engines": {
     "vscode": "^1.85.0"
@@ -15,6 +15,7 @@
   "activationEvents": [
     "onCommand:rigelai.analyzeCurrentFile",
     "onCommand:rigelai.analyzeSelection",
+    "onCommand:rigelai.generateCorrectedCode",
     "onCommand:rigelai.openSettings",
     "onCommand:rigelai.openWebsite",
     "onUri"
@@ -41,6 +42,10 @@
         "title": "RigelAI: Analyze Selection"
       },
       {
+        "command": "rigelai.generateCorrectedCode",
+        "title": "RigelAI: Generate Corrected Code"
+      },
+      {
         "command": "rigelai.openSettings",
         "title": "RigelAI: Open Settings"
       },
@@ -59,6 +64,10 @@
           "command": "rigelai.analyzeSelection",
           "when": "editorHasSelection",
           "group": "navigation@21"
+        },
+        {
+          "command": "rigelai.generateCorrectedCode",
+          "group": "navigation@22"
         }
       ]
     }

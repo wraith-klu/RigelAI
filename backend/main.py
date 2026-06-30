@@ -33,7 +33,7 @@ from reportlab.lib.styles import getSampleStyleSheet # pyright: ignore[reportMis
 # ENV
 load_dotenv()
 
-app = FastAPI(title="CodeSentinel AI", version="1.0")
+app = FastAPI(title="Rigel AI", version="2.0")
 print("GitHub Token Loaded:", bool(os.getenv("GITHUB_TOKEN")))
 
   

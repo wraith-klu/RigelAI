@@ -146,24 +146,23 @@ export default function Home() {
             <div className="extension-copy">
               <h3>RigelAI Code Review</h3>
               <p>
-                Analyze the current file or selected code, then view health score,
-                severity findings, and refactor suggestions in a VS Code panel.
+                Analyze the current file or selected code, review health score
+                and findings, then preview or apply RigelAI's corrected code
+                directly in your editor.
               </p>
             </div>
             <div className="extension-actions">
               <a
                 className="primary-action"
-                href="/extensions/rigelai-code-review-0.1.0.vsix"
+                href="/extensions/rigelai-code-review-0.2.1.vsix"
                 download
               >
                 Download VSIX
               </a>
-              <a
-                className="secondary-action"
-                href="vscode://wraith-klu.rigelai-code-review/connect?apiUrl=https%3A%2F%2Frigelai.onrender.com"
-              >
-                Connect VS Code
-              </a>
+              <div className="install-note">
+                In VS Code, open Extensions, choose Install from VSIX, then run
+                RigelAI: Generate Corrected Code.
+              </div>
             </div>
           </div>
         </section>

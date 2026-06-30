@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./FileUpload.css";
 import { analyzeFile, analyzeRepository } from "../services/api";
 
-export default function FileUpload({ onResult }) {
+export default function FileUpload({ onResult, onRunStateChange }) {
   const [file, setFile] = useState(null);
   const [query, setQuery] = useState(
     "Analyze this code for smells, bugs, complexity, and refactoring opportunities."
@@ -56,6 +56,11 @@ export default function FileUpload({ onResult }) {
 
     setLoading(true);
     setError("");
+    onRunStateChange?.({
+      label: `File scan: ${file.name}`,
+      estimateSeconds: 20,
+      startedAt: Date.now(),
+    });
 
     try {
       const data = await analyzeFile(file, query);
@@ -64,6 +69,7 @@ export default function FileUpload({ onResult }) {
       setError(e.message || "Analysis failed. Check that the backend is running.");
     } finally {
       setLoading(false);
+      onRunStateChange?.(null);
     }
   };
 
@@ -75,6 +81,11 @@ export default function FileUpload({ onResult }) {
 
     setRepoLoading(true);
     setError("");
+    onRunStateChange?.({
+      label: "Repository scan",
+      estimateSeconds: 34,
+      startedAt: Date.now(),
+    });
 
     try {
       const data = await analyzeRepository(repoUrl, query);
@@ -83,6 +94,7 @@ export default function FileUpload({ onResult }) {
       setError(e.message || "Repository analysis failed. Confirm the repo is public.");
     } finally {
       setRepoLoading(false);
+      onRunStateChange?.(null);
     }
   };
 
@@ -92,6 +104,7 @@ export default function FileUpload({ onResult }) {
     setQuery("Analyze this code for smells, bugs, complexity, and refactoring opportunities.");
     setError("");
     onResult?.(null);
+    onRunStateChange?.(null);
   };
 
   const handleKey = (event) => {

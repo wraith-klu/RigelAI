@@ -19,6 +19,7 @@
   padding: 16px 0;
   background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid rgba(219, 227, 239, 0.72);
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
@@ -451,6 +452,14 @@ main {
   gap: 12px;
 }
 
+.install-note {
+  max-width: 300px;
+  color: #566173;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
 .workspace-section,
 .results-section {
   max-width: 100%;
@@ -572,7 +581,7 @@ main {
   }
 
   .hero-section {
-    min-height: auto;
+    min-height: 0;
     padding-top: 34px;
   }
 
@@ -695,5 +704,408 @@ main {
 
   .mode-switch button {
     min-width: 0;
+  }
+}
+
+/* Neomorphic refresh */
+:root {
+  --neo-bg: #F0F2F5; /* clean off-white background */
+  --neo-panel: #F0F2F5; /* matches background for seamless blending */
+  --neo-panel-strong: #ffffff; /* pure white for strong contrasts */
+  --neo-ink: #0f172a; /* dark charcoal/slate heading text */
+  --neo-muted: #64748b; /* muted slate grey for supporting text */
+  --neo-blue: #2563eb; /* solid primary brand blue */
+  --neo-teal: #0f766e;
+  --neo-green: #16a34a;
+  --neo-red: #dc2626;
+  --neo-amber: #d97706;
+  --neo-shadow-dark: rgba(165, 180, 203, 0.45); /* soft darker shadow */
+  --neo-shadow-light: #ffffff; /* light shadow (white) */
+  --neo-raised: 10px 10px 20px var(--neo-shadow-dark), -10px -10px 20px var(--neo-shadow-light);
+  --neo-soft: 6px 6px 14px var(--neo-shadow-dark), -6px -6px 14px var(--neo-shadow-light);
+  --neo-inset: inset 6px 6px 12px rgba(165, 180, 203, 0.35), inset -6px -6px 12px var(--neo-shadow-light);
+}
+
+body,
+#root,
+.app-shell {
+  background-color: var(--neo-bg) !important;
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
+}
+
+.app-shell {
+  color: var(--neo-ink);
+}
+
+/* Card Radii, Borders, and Shadows overrides (Consistent 20-24px corners) */
+.site-header,
+.agent-hero-image,
+.hero-panel,
+.metrics-strip,
+.extension-panel,
+.analysis-pane,
+.capability-pane,
+.results-card,
+.results-empty-card,
+.chat-wrapper,
+.input-panel,
+.empty-state {
+  border-radius: 24px !important;
+  border: none !important;
+  box-shadow: var(--neo-raised) !important;
+  background: var(--neo-panel) !important;
+}
+
+.score-card,
+.repo-analyzer,
+.insights-box,
+.results-chat,
+.upload-dropzone {
+  border-radius: 24px !important;
+  border: none !important;
+  box-shadow: var(--neo-inset) !important;
+  background: var(--neo-panel) !important;
+}
+
+.signal-list div,
+.metrics-strip div,
+.summary-card,
+.severity-card,
+.finding-item,
+.fix-card,
+.ast-list li,
+.probability-row,
+.empty-report-grid span {
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: var(--neo-soft) !important;
+  background: var(--neo-panel) !important;
+}
+
+/* Typography & Hierarchy */
+.hero-copy h1,
+.section-heading h2,
+.results-header h2,
+.chat-header h3,
+.input-panel-header h3,
+.upload-header h3,
+.extension-copy h3,
+.score-card strong {
+  color: var(--neo-ink) !important;
+}
+
+.hero-copy p,
+.section-heading p,
+.upload-header p,
+.extension-copy p,
+.install-note,
+.capability-pane li,
+.results-empty-card p,
+.score-card span,
+.score-card small {
+  color: var(--neo-muted) !important;
+}
+
+.eyebrow,
+.panel-label {
+  color: var(--neo-blue) !important;
+}
+
+/* Embossed Status Badges & Chips */
+.agent-chip,
+.status-pill,
+.report-status {
+  border: none !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-soft) !important;
+  color: var(--neo-ink) !important;
+  font-weight: 800 !important;
+  padding: 8px 16px !important;
+  border-radius: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.agent-chip span,
+.status-pill::before {
+  background: var(--neo-green) !important;
+}
+
+.signal.success {
+  background: var(--neo-green) !important;
+}
+
+.signal.warning {
+  background: var(--neo-amber) !important;
+}
+
+.signal.critical {
+  background: var(--neo-red) !important;
+}
+
+.capability-pane li span,
+.upload-icon,
+.file-icon {
+  border: none !important;
+  background: var(--neo-panel-strong) !important;
+  color: var(--neo-blue) !important;
+  box-shadow: var(--neo-soft) !important;
+}
+
+/* Solid Brand Buttons (Tactile Raised) */
+.primary-action,
+.editor-actions button.primary,
+.analyze-btn,
+.repo-btn,
+.results-chat-input button,
+.result-header-actions button,
+.chat-input-bar button {
+  background: var(--neo-blue) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-weight: 750 !important;
+  padding: 10px 20px !important;
+  box-shadow: 4px 4px 10px rgba(37, 99, 235, 0.4), -4px -4px 10px #ffffff !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.primary-action:hover,
+.editor-actions button.primary:hover,
+.analyze-btn:hover,
+.repo-btn:hover,
+.results-chat-input button:hover,
+.result-header-actions button:hover,
+.chat-input-bar button:hover {
+  background: #1d4ed8 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 6px 6px 14px rgba(37, 99, 235, 0.45), -6px -6px 14px #ffffff !important;
+}
+
+.primary-action:active,
+.editor-actions button.primary:active,
+.analyze-btn:active,
+.repo-btn:active,
+.results-chat-input button:active,
+.result-header-actions button:active,
+.chat-input-bar button:active {
+  transform: translateY(0) !important;
+  box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+.secondary-action,
+.editor-actions button:not(.primary),
+.reset-btn,
+.clear-btn {
+  background: #ffffff !important;
+  color: var(--neo-ink) !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-weight: 750 !important;
+  padding: 10px 20px !important;
+  box-shadow: 4px 4px 10px var(--neo-shadow-dark), -4px -4px 10px var(--neo-shadow-light) !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.secondary-action:hover,
+.editor-actions button:not(.primary):hover,
+.reset-btn:hover,
+.clear-btn:hover {
+  background: #f8fafc !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 6px 6px 14px var(--neo-shadow-dark), -6px -6px 14px var(--neo-shadow-light) !important;
+}
+
+.secondary-action:active,
+.editor-actions button:not(.primary):active,
+.reset-btn:active,
+.clear-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: inset 3px 3px 6px var(--neo-shadow-dark) !important;
+}
+
+/* Top Navigation Bar & Active Highlight Tabs */
+.site-header {
+  border-radius: 30px !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-raised) !important;
+  padding: 14px 28px !important;
+  border: none !important;
+  top: 12px !important;
+}
+
+.site-nav {
+  border-radius: 24px !important;
+  padding: 6px 8px !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-inset) !important;
+  border: none !important;
+}
+
+.site-nav a {
+  border-radius: 16px !important;
+  padding: 8px 16px !important;
+  color: var(--neo-muted) !important;
+  font-weight: 800 !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.site-nav a:hover {
+  background: var(--neo-blue) !important;
+  color: #ffffff !important;
+  box-shadow: 4px 4px 10px rgba(37, 99, 235, 0.3) !important;
+  text-decoration: none !important;
+}
+
+/* Mode Switchers & Tabs active highlight */
+.mode-switch,
+.input-tabs {
+  border-radius: 24px !important;
+  padding: 6px !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-inset) !important;
+  border: none !important;
+}
+
+.mode-switch button,
+.input-tabs button {
+  border-radius: 16px !important;
+  padding: 8px 16px !important;
+  color: var(--neo-muted) !important;
+  font-weight: 800 !important;
+  transition: all 0.2s ease !important;
+}
+
+.mode-switch button.active,
+.input-tabs button.active {
+  background: var(--neo-blue) !important;
+  color: #ffffff !important;
+  box-shadow: 4px 4px 10px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Inset inputs, selects, textareas */
+.editor-toolbar select,
+.query-input,
+.repo-analyzer input,
+.results-chat-input input,
+.chat-input-bar textarea {
+  border: none !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-inset) !important;
+  border-radius: 12px !important;
+  color: var(--neo-ink) !important;
+  padding: 10px 14px !important;
+  outline: none !important;
+}
+
+.editor-toolbar select:focus,
+.query-input:focus,
+.repo-analyzer input:focus,
+.results-chat-input input:focus,
+.chat-input-bar textarea:focus {
+  box-shadow: var(--neo-inset) !important;
+}
+
+/* Score Card Inset & Large Numeric display */
+.score-card {
+  text-align: center !important;
+}
+
+.score-card strong {
+  display: block;
+  font-size: 72px !important;
+  font-weight: 900 !important;
+  color: var(--neo-ink) !important;
+  margin: 10px 0 !important;
+  line-height: 1 !important;
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8), -1px -1px 1px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Chatbot bubble overrides */
+.bubble {
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: var(--neo-soft) !important;
+  background: #ffffff !important;
+  color: var(--neo-ink) !important;
+}
+
+.message.user .bubble {
+  background: var(--neo-blue) !important;
+  color: #ffffff !important;
+  box-shadow: 4px 4px 10px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Clean code frame border & shadow */
+.editor-frame,
+.code-block {
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: var(--neo-soft) !important;
+}
+
+.site-footer {
+  border-top: 0 !important;
+}
+
+/* Chatbot panel transparency and seamless neomorphic merging */
+.chat-header,
+.chat-body,
+.chat-input-bar {
+  background: transparent !important;
+  border: none !important;
+}
+
+.chat-title-group img,
+.chat-avatar {
+  border: none !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-soft) !important;
+  border-radius: 12px !important;
+}
+
+/* File Upload dropzone neomorphism styling override */
+.upload-dropzone {
+  border: 2px dashed rgba(165, 180, 203, 0.5) !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-inset) !important;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.active {
+  border-color: var(--neo-blue) !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-inset), 0 0 0 4px rgba(37, 99, 235, 0.12) !important;
+}
+
+/* Input Panel layout seamless design */
+.input-panel-header,
+.editor-toolbar {
+  border-bottom: none !important;
+}
+
+.hint {
+  border: none !important;
+  background: var(--neo-panel) !important;
+  box-shadow: var(--neo-inset) !important;
+  border-radius: 12px !important;
+}
+
+@media (max-width: 680px) {
+  .site-header {
+    top: 0 !important;
+    border-radius: 0 !important;
   }
 }

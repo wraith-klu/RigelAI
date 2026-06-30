@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Editor from "@monaco-editor/react";
 import FileUpload from "./FileUpload";
 import { analyzeEditor } from "../services/api";
@@ -46,12 +46,92 @@ const SAMPLE_CODE = {
 }`,
 };
 
+const AGENT_STAGES = [
+  "Preparing source context",
+  "Sending request to backend",
+  "Running AST analyzer",
+  "Checking smell classifier",
+  "Drafting AI review notes",
+  "Formatting result report",
+];
+
+function AgentProgress({ run }) {
+  const [now, setNow] = useState(0);
+
+  useEffect(() => {
+    if (!run) return undefined;
+
+    const timer = window.setInterval(() => {
+      setNow(Date.now());
+    }, 500);
+
+    return () => window.clearInterval(timer);
+  }, [run]);
+
+  const elapsed = run ? Math.max(0, Math.floor((now - run.startedAt) / 1000)) : 0;
+  const progress = useMemo(() => {
+    if (!run) return 0;
+    const estimate = run.estimateSeconds || 18;
+    return Math.min(96, Math.round((elapsed / estimate) * 100));
+  }, [elapsed, run]);
+
+  if (!run) return null;
+
+  const stageIndex = Math.min(
+    AGENT_STAGES.length - 1,
+    Math.floor((progress / 100) * AGENT_STAGES.length)
+  );
+  const eta = Math.max(3, (run.estimateSeconds || 18) - elapsed);
+
+  return (
+    <div className="agent-progress" role="status" aria-live="polite">
+      <div className="agent-orb" aria-hidden="true">
+        <span></span>
+      </div>
+      <div className="agent-progress-main">
+        <div className="agent-progress-topline">
+          <div>
+            <span className="panel-label">Backend agent active</span>
+            <h4>{run.label}</h4>
+          </div>
+          <strong>{progress}%</strong>
+        </div>
+        <div className="agent-progress-track">
+          <span style={{ width: `${progress}%` }}></span>
+        </div>
+        <div className="agent-stage-grid">
+          {AGENT_STAGES.map((stage, index) => (
+            <div
+              className={
+                index < stageIndex
+                  ? "complete"
+                  : index === stageIndex
+                    ? "active"
+                    : ""
+              }
+              key={stage}
+            >
+              <span>{index + 1}</span>
+              {stage}
+            </div>
+          ))}
+        </div>
+        <div className="agent-time-row">
+          <span>Working on: {AGENT_STAGES[stageIndex]}</span>
+          <span>Wait about {eta}s more</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CodeInputPanel({ onAnalyze }) {
   const [mode, setMode] = useState("upload");
   const [code, setCode] = useState(SAMPLE_CODE.python);
   const [lang, setLang] = useState("python");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [activeRun, setActiveRun] = useState(null);
 
   const handleAnalyze = async () => {
     if (!code.trim()) {
@@ -61,6 +141,11 @@ export default function CodeInputPanel({ onAnalyze }) {
 
     setLoading(true);
     setError("");
+    setActiveRun({
+      label: "Editor analysis",
+      estimateSeconds: 18,
+      startedAt: Date.now(),
+    });
 
     try {
       const query = `Analyze this ${lang} code for bugs, smells, complexity, and refactoring improvements.`;
@@ -70,6 +155,7 @@ export default function CodeInputPanel({ onAnalyze }) {
       setError(e.message || "Analysis failed. Check that the backend is running.");
     } finally {
       setLoading(false);
+      setActiveRun(null);
     }
   };
 
@@ -179,7 +265,14 @@ export default function CodeInputPanel({ onAnalyze }) {
         </div>
       )}
 
-      {mode === "upload" && <FileUpload onResult={onAnalyze} />}
+      {mode === "upload" && (
+        <FileUpload
+          onResult={onAnalyze}
+          onRunStateChange={(run) => setActiveRun(run)}
+        />
+      )}
+
+      <AgentProgress run={activeRun} />
     </div>
   );
 }

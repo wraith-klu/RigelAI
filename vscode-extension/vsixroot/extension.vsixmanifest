@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Language="en-US" Id="rigelai-code-review" Version="0.1.0" Publisher="wraith-klu" />
+    <Identity Language="en-US" Id="rigelai-code-review" Version="0.2.1" Publisher="wraith-klu" />
     <DisplayName>RigelAI Code Review</DisplayName>
-    <Description xml:space="preserve">Analyze the current file or selected code with RigelAI from VS Code.</Description>
+    <Description xml:space="preserve">Analyze, review, and apply corrected code with RigelAI from VS Code.</Description>
     <Tags>rigelai,code review,ai,static analysis,refactoring</Tags>
     <Categories>Linters,Programming Languages,Other</Categories>
     <GalleryFlags>Public</GalleryFlags>
