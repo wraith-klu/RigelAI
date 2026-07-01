@@ -225,27 +225,78 @@
 
 @media (max-width: 760px) {
   .chat-wrapper {
-    min-height: 620px;
+    min-height: 580px;
+    border-radius: 20px !important;
   }
 
   .chat-header {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .chat-title-group {
+    gap: 10px;
+  }
+
+  .chat-title-group img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .chat-header h3 {
+    font-size: 18px;
   }
 
   .clear-btn {
-    margin-top: 12px;
+    min-height: 36px;
+    font-size: 13px;
+    padding: 0 12px;
   }
 
   .chat-body {
-    padding: 14px;
+    padding: 12px 14px;
+    gap: 10px;
   }
 
   .bubble {
     max-width: 90%;
     font-size: 14px;
+    padding: 10px 13px;
   }
 
   .chat-input-bar {
+    padding: 10px 14px;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .chat-input-bar textarea {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .chat-input-bar button {
+    min-height: 44px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-input-bar {
     grid-template-columns: 1fr;
+  }
+
+  .chat-input-bar button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .chat-wrapper {
+    min-height: 520px;
   }
 }

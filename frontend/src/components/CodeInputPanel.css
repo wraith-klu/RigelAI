@@ -163,32 +163,70 @@
 }
 
 @media (max-width: 720px) {
-  .input-panel-header,
+  .input-panel-header {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+  }
+
   .editor-toolbar {
     align-items: stretch;
     flex-direction: column;
+    gap: 10px;
   }
 
   .input-tabs {
     width: 100%;
+    border-radius: 18px !important;
   }
 
-  .input-tabs button,
-  .editor-actions button {
+  .input-tabs button {
+    flex: 1;
     min-width: 0;
+    min-height: 40px;
+    font-size: 13px;
   }
 
   .editor-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .editor-actions button {
+    min-width: 0;
+    min-height: 44px;
+    font-size: 13px;
   }
 
   .editor-actions button.primary {
     grid-column: 1 / -1;
+    min-height: 48px;
   }
 
   .editor-toolbar select {
     width: 100%;
+    min-height: 44px;
+  }
+
+  .editor-block {
+    padding: 14px 16px 18px;
+  }
+
+  .hint {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .editor-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-actions button.primary {
+    grid-column: auto;
   }
 }
 

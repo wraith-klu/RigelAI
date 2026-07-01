@@ -561,11 +561,34 @@ main {
   font-size: 14px;
 }
 
+/* =========================================================
+   RESPONSIVE — TABLET (max-width: 980px)
+   ========================================================= */
 @media (max-width: 980px) {
+
+  /* Keep nav visible as scrollable pill row */
   .site-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 4px;
+    padding: 5px 6px;
+  }
+
+  .site-nav::-webkit-scrollbar {
     display: none;
   }
 
+  .site-nav a {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 13px !important;
+    padding: 7px 12px !important;
+  }
+
+  /* Single-column content layouts */
   .hero-section,
   .extension-panel,
   .analysis-layout {
@@ -592,135 +615,335 @@ main {
   .metrics-strip {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* Wider border radius on tablet to maintain neomorphic feel */
+  .site-header {
+    border-radius: 20px !important;
+  }
 }
 
 @media (min-width: 681px) and (max-width: 980px) {
   .agent-showcase {
-    min-height: clamp(560px, 82vw, 650px);
+    min-height: clamp(380px, 60vw, 560px);
   }
 }
 
+/* =========================================================
+   RESPONSIVE — MOBILE (max-width: 680px)
+   ========================================================= */
 @media (max-width: 680px) {
+
+  /* Full-width layout */
   .site-header,
   main,
   .site-footer {
     width: 100%;
     max-width: 100%;
-    padding-right: 14px;
-    padding-left: 14px;
+    padding-right: 16px;
+    padding-left: 16px;
   }
 
+  /* Header stacks: brand row + nav pill + mode switcher */
   .site-header {
-    display: grid;
-    grid-template-columns: 1fr;
-    align-items: flex-start;
-    gap: 12px;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 30 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px 16px !important;
+    border-radius: 0 0 24px 24px !important;
+  }
+
+  /* Brand row: logo + title side by side */
+  .brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    justify-content: space-between !important;
   }
 
   .brand small {
+    display: block !important;
+    font-size: 11px !important;
+  }
+
+  .brand-mark {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Nav: scrollable pill strip */
+  .site-nav {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 4px !important;
+    padding: 4px 6px !important;
+    border-radius: 20px !important;
+    box-shadow: var(--neo-inset) !important;
+  }
+
+  .site-nav::-webkit-scrollbar {
     display: none;
   }
 
-  .brand-mark {
-    width: 42px;
-    height: 42px;
+  .site-nav a {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+    border-radius: 14px !important;
   }
 
+  /* Mode switch: full width, equal columns */
   .mode-switch {
-    width: 100%;
+    width: 100% !important;
+    border-radius: 20px !important;
   }
 
   .mode-switch button {
-    min-width: 74px;
-    padding-inline: 10px;
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Hero section adjustments */
+  .hero-section {
+    gap: 20px !important;
+    padding-top: 24px !important;
   }
 
   .hero-copy h1 {
-    font-size: 34px;
-    line-height: 1.08;
-  }
-
-  .hero-section {
-    gap: 24px;
+    font-size: clamp(26px, 8vw, 36px) !important;
+    line-height: 1.1 !important;
+    margin: 10px 0 14px !important;
   }
 
   .hero-copy p {
-    font-size: 16px;
+    font-size: 15px !important;
+    line-height: 1.6 !important;
   }
 
+  .eyebrow {
+    font-size: 11px !important;
+  }
+
+  /* CTA buttons: stacked full-width */
   .hero-actions {
-    display: grid;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-top: 20px !important;
   }
 
-  .hero-panel {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    width: 100%;
-    min-width: 0;
-    margin-top: 16px;
+  .primary-action,
+  .secondary-action {
+    width: 100% !important;
+    min-height: 48px !important;
+    border-radius: 16px !important;
+    font-size: 15px !important;
+    justify-content: center !important;
+  }
+
+  /* Agent showcase chips & panel */
+  .agent-showcase {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .agent-hero-image {
+    border-radius: 20px !important;
   }
 
   .agent-chip {
-    position: static;
-    margin-top: 10px;
+    position: static !important;
+    align-self: flex-start !important;
+    margin: 0 !important;
+    font-size: 12px !important;
+    padding: 6px 12px !important;
   }
 
-  .agent-showcase {
-    display: grid;
+  .agent-chip-top,
+  .agent-chip-bottom {
+    position: static !important;
   }
 
+  .hero-panel {
+    position: relative !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: 0 !important;
+    border-radius: 20px !important;
+  }
+
+  /* Score card */
+  .score-card strong {
+    font-size: 56px !important;
+  }
+
+  /* Metrics strip: 2-col grid */
   .metrics-strip {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    border-radius: 20px !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
+  .metrics-strip div {
+    border-radius: 18px !important;
+    padding: 16px !important;
+  }
+
+  /* Section headings */
   .section-heading {
-    display: block;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(22px, 6vw, 32px) !important;
   }
 
   .section-heading p {
-    margin-top: 12px;
+    margin: 0 !important;
+    font-size: 14px !important;
   }
 
+  /* Extension panel */
+  .extension-section {
+    padding: 40px 0 0 !important;
+  }
+
+  .extension-panel {
+    padding: 20px !important;
+    border-radius: 20px !important;
+  }
+
+  .extension-copy h3 {
+    font-size: 18px !important;
+  }
+
+  .extension-actions {
+    justify-content: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .primary-action[download],
+  a.primary-action {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* Workspace and results sections */
+  .workspace-section,
+  .results-section {
+    padding: 32px 0 0 !important;
+  }
+
+  /* Capability pane */
+  .capability-pane {
+    border-radius: 20px !important;
+    padding: 18px !important;
+  }
+
+  /* Footer */
   .site-footer {
-    display: grid;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 20px 0 28px !important;
+    font-size: 13px !important;
   }
 }
 
+/* =========================================================
+   RESPONSIVE — SMALL MOBILE (max-width: 420px)
+   ========================================================= */
 @media (max-width: 420px) {
   .site-header {
-    padding-right: 10px;
-    padding-left: 10px;
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+
+  main,
+  .site-footer {
+    padding-right: 12px;
+    padding-left: 12px;
   }
 
   .brand-mark {
-    width: 38px;
-    height: 38px;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 14px !important;
   }
 
-  .mode-switch {
-    width: 100%;
+  .hero-copy h1 {
+    font-size: clamp(22px, 7vw, 30px) !important;
+  }
+
+  .metrics-strip {
+    grid-template-columns: 1fr !important;
+  }
+
+  .score-card strong {
+    font-size: 48px !important;
   }
 
   .mode-switch button {
-    min-width: 0;
+    font-size: 12px !important;
+    padding: 7px 8px !important;
+  }
+
+  .primary-action,
+  .secondary-action {
+    font-size: 14px !important;
+    min-height: 44px !important;
+  }
+
+  .site-nav a {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
   }
 }
 
 /* Neomorphic refresh */
 :root {
-  --neo-bg: #F0F2F5; /* clean off-white background */
-  --neo-panel: #F0F2F5; /* matches background for seamless blending */
-  --neo-panel-strong: #ffffff; /* pure white for strong contrasts */
-  --neo-ink: #0f172a; /* dark charcoal/slate heading text */
-  --neo-muted: #64748b; /* muted slate grey for supporting text */
-  --neo-blue: #2563eb; /* solid primary brand blue */
+  --neo-bg: #F0F2F5;
+  /* clean off-white background */
+  --neo-panel: #F0F2F5;
+  /* matches background for seamless blending */
+  --neo-panel-strong: #ffffff;
+  /* pure white for strong contrasts */
+  --neo-ink: #0f172a;
+  /* dark charcoal/slate heading text */
+  --neo-muted: #64748b;
+  /* muted slate grey for supporting text */
+  --neo-blue: #2563eb;
+  /* solid primary brand blue */
   --neo-teal: #0f766e;
   --neo-green: #16a34a;
   --neo-red: #dc2626;
   --neo-amber: #d97706;
-  --neo-shadow-dark: rgba(165, 180, 203, 0.45); /* soft darker shadow */
-  --neo-shadow-light: #ffffff; /* light shadow (white) */
+  --neo-shadow-dark: rgba(165, 180, 203, 0.45);
+  /* soft darker shadow */
+  --neo-shadow-light: #ffffff;
+  /* light shadow (white) */
   --neo-raised: 10px 10px 20px var(--neo-shadow-dark), -10px -10px 20px var(--neo-shadow-light);
   --neo-soft: 6px 6px 14px var(--neo-shadow-dark), -6px -6px 14px var(--neo-shadow-light);
   --neo-inset: inset 6px 6px 12px rgba(165, 180, 203, 0.35), inset -6px -6px 12px var(--neo-shadow-light);
@@ -730,7 +953,7 @@ body,
 #root,
 .app-shell {
   background-color: var(--neo-bg) !important;
-  background-image: 
+  background-image:
     linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px) !important;
   background-size: 24px 24px !important;

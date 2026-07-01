@@ -520,11 +520,20 @@
 @media (max-width: 760px) {
   .results-card,
   .results-empty-card {
-    padding: 20px;
+    padding: 18px;
+    border-radius: 20px !important;
   }
 
-  .summary-grid,
-  .severity-grid,
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .severity-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
   .empty-report-grid {
     grid-template-columns: 1fr;
   }
@@ -533,9 +542,23 @@
     display: block;
   }
 
+  .results-header h2 {
+    font-size: clamp(20px, 5vw, 28px);
+  }
+
   .report-status {
     display: inline-flex;
+    margin-top: 10px;
+  }
+
+  .result-header-actions {
+    justify-content: flex-start;
     margin-top: 12px;
+  }
+
+  .result-header-actions button {
+    min-height: 40px;
+    font-size: 13px;
   }
 
   .result-message {
@@ -544,5 +567,34 @@
 
   .results-chat-input {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .results-chat-input input {
+    min-height: 48px;
+  }
+
+  .results-chat-input button {
+    min-height: 48px;
+    width: 100%;
+  }
+
+  .probability-row progress {
+    height: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-grid,
+  .severity-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-card strong {
+    font-size: clamp(20px, 5vw, 28px);
+  }
+
+  .result-section h3 {
+    font-size: 16px;
   }
 }

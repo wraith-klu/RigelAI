@@ -219,14 +219,57 @@
 @media (max-width: 720px) {
   .repo-analyzer {
     grid-template-columns: 1fr;
+    border-radius: 20px !important;
+    padding: 14px;
+  }
+
+  .repo-analyzer input {
+    min-height: 48px;
+  }
+
+  .repo-btn {
+    min-height: 48px;
+    width: 100%;
   }
 
   .upload-controls {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .query-input {
+    min-height: 48px;
   }
 
   .button-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .analyze-btn,
+  .reset-btn {
+    min-height: 48px;
+    font-size: 14px;
+  }
+
+  .upload-dropzone {
+    min-height: 180px;
+    border-radius: 20px !important;
+  }
+
+  .upload-placeholder p {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 420px) {
+  .button-group {
+    grid-template-columns: 1fr;
+  }
+
+  .analyze-btn,
+  .reset-btn {
+    width: 100%;
   }
 }
