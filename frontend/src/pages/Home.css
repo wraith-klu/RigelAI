@@ -571,10 +571,14 @@ main {
     display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
     gap: 4px;
     padding: 5px 6px;
+  }
+
+  @supports (scrollbar-width: none) {
+    .site-nav {
+      scrollbar-width: none;
+    }
   }
 
   .site-nav::-webkit-scrollbar {
@@ -682,12 +686,16 @@ main {
     display: flex !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
     gap: 4px !important;
     padding: 4px 6px !important;
     border-radius: 20px !important;
     box-shadow: var(--neo-inset) !important;
+  }
+
+  @supports (scrollbar-width: none) {
+    .site-nav {
+      scrollbar-width: none !important;
+    }
   }
 
   .site-nav::-webkit-scrollbar {
