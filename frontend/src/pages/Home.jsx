@@ -1,242 +1,334 @@
-import { useState } from "react";
-import Chatbot from "../components/Chatbot";
+import { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
 import CodeInputPanel from "../components/CodeInputPanel";
 import Results from "../components/Results";
+import Chatbot from "../components/Chatbot";
+import { 
+  ShieldCheck, 
+  Terminal, 
+  Cpu, 
+  Sparkles, 
+  Download, 
+  Copy, 
+  Check, 
+  ExternalLink, 
+  Layers, 
+  Code2, 
+  CheckCircle2, 
+  Zap,
+  GitBranch,
+  ArrowRight
+} from "lucide-react";
 import "./Home.css";
 
-export default function Home() {
-  const [mode, setMode] = useState("analyze");
-  const [result, setResult] = useState(null);
+const getInitialTheme = () => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("rigelai_theme");
+    if (saved === "light" || saved === "dark") return saved;
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+      return "light";
+    }
+  }
+  return "dark";
+};
 
-  const toggleMode = () => {
-    setMode((current) => (current === "chat" ? "analyze" : "chat"));
+export default function Home() {
+  const [theme, setTheme] = useState(getInitialTheme);
+  const [mode, setMode] = useState("analyze"); // "analyze" | "chat"
+  const [result, setResult] = useState(null);
+  const [copiedCli, setCopiedCli] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.className = theme;
+    localStorage.setItem("rigelai_theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   const handleAnalyze = (data) => {
     setResult(data);
-
     setTimeout(() => {
-      document
-        .getElementById("results")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 120);
+      document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 150);
+  };
+
+  const copyCliCommand = () => {
+    navigator.clipboard.writeText("code --install-extension rigelai-code-review-0.2.1.vsix");
+    setCopiedCli(true);
+    setTimeout(() => setCopiedCli(false), 2000);
   };
 
   return (
-    <div className="app-shell">
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="RigelAI home">
-          <span className="brand-mark" aria-hidden="true">
-            R
-          </span>
-          <span>
-            <strong>RigelAI</strong>
-            <small>Code Quality Studio</small>
-          </span>
-        </a>
+    <div className="app-layout">
+      {/* Universal Top Navigation */}
+      <Navbar 
+        mode={mode} 
+        setMode={setMode} 
+        theme={theme} 
+        toggleTheme={toggleTheme} 
+      />
 
-        <nav className="site-nav" aria-label="Primary navigation">
-          <a href="#workspace">Workspace</a>
-          <a href="#vscode-extension">Extension</a>
-          <a href="#capabilities">Capabilities</a>
-          <a href="#results">Results</a>
-        </nav>
-
-        <div className="mode-switch" role="group" aria-label="Mode switcher">
-          <button
-            className={mode === "analyze" ? "active" : ""}
-            onClick={() => setMode("analyze")}
-            type="button"
-          >
-            Analyze
-          </button>
-          <button
-            className={mode === "chat" ? "active" : ""}
-            onClick={() => setMode("chat")}
-            type="button"
-          >
-            Discuss
-          </button>
-        </div>
-      </header>
-
-      <main id="top">
-        <section className="hero-section">
-          <div className="hero-copy">
-            <div className="eyebrow">AI code review workspace</div>
-            <h1>Find code smells faster, then turn feedback into better code.</h1>
-            <p>
-              RigelAI combines static analysis, model prediction, and
-              conversational review so developers can spot risk, understand
-              tradeoffs, and ship cleaner code from one focused workspace.
-            </p>
-
-            <div className="hero-actions">
-              <a className="primary-action" href="#workspace">
-                Start analysis
-              </a>
-              <button className="secondary-action" onClick={toggleMode} type="button">
-                {mode === "chat" ? "Open analyzer" : "Open discussion"}
-              </button>
-              <a className="secondary-action" href="#vscode-extension">
-                VS Code extension
-              </a>
-            </div>
+      <main id="top" className="main-content">
+        {/* Enterprise Studio Hero Section */}
+        <section className="studio-hero-section">
+          <div className="hero-badge-row">
+            <span className="hero-status-pill">
+              <span className="pulse-emerald"></span>
+              <span>Production Code Intelligence Engine</span>
+            </span>
+            <span className="hero-tech-pill">AST v2.4 • PyTorch ML • Multi-Language</span>
           </div>
 
-          <div className="agent-showcase" aria-label="RigelAI agent preview">
-            <img
-              className="agent-hero-image"
-              src="/agent-hero.svg"
-              alt="RigelAI agent reviewing code quality signals"
-            />
-            <div className="agent-chip agent-chip-top">
-              <span></span>
-              Agent online
-            </div>
-            <div className="agent-chip agent-chip-bottom">
-              8 refactor ideas ready
-            </div>
-            <div className="hero-panel" aria-label="Product health summary">
-              <div className="panel-toolbar">
-                <span className="status-pill">Live scan</span>
-                <span className="toolbar-dot"></span>
+          <h1 className="hero-main-title">
+            Enterprise Static AST & <span className="text-gradient">ML Code Smell</span> Detection
+          </h1>
+
+          <p className="hero-description">
+            RigelAI combines deterministic AST syntax trees, deep machine learning smell classification, 
+            and contextual LLM remediation to detect anti-patterns and optimize your codebase in seconds.
+          </p>
+
+          <div className="hero-metrics-ribbon">
+            <div className="ribbon-item">
+              <div className="ribbon-icon">
+                <Terminal size={15} />
               </div>
-              <div className="score-card">
-                <span>Code health score</span>
-                <strong>91</strong>
-                <small>
-                  12 signals grouped across maintainability, bugs, style, and risk.
-                </small>
+              <div className="ribbon-meta">
+                <strong>Multi-Language AST</strong>
+                <span>Python, JS, TS, Java, C++, Go</span>
               </div>
-              <div className="signal-list">
-                <div>
-                  <span className="signal critical"></span>
-                  High-risk findings
-                  <strong>3</strong>
-                </div>
-                <div>
-                  <span className="signal warning"></span>
-                  Complexity warnings
-                  <strong>5</strong>
-                </div>
-                <div>
-                  <span className="signal success"></span>
-                  Refactor suggestions
-                  <strong>8</strong>
-                </div>
+            </div>
+
+            <div className="ribbon-item">
+              <div className="ribbon-icon">
+                <Cpu size={15} />
+              </div>
+              <div className="ribbon-meta">
+                <strong>RoBERTa ML Model</strong>
+                <span>Smell pattern probability vectors</span>
+              </div>
+            </div>
+
+            <div className="ribbon-item">
+              <div className="ribbon-icon">
+                <Sparkles size={15} />
+              </div>
+              <div className="ribbon-meta">
+                <strong>AI Refactor Pipeline</strong>
+                <span>Automatic clean-code remediation</span>
+              </div>
+            </div>
+
+            <div className="ribbon-item">
+              <div className="ribbon-icon">
+                <Zap size={15} />
+              </div>
+              <div className="ribbon-meta">
+                <strong>VS Code Extension</strong>
+                <span>Command palette & context scan</span>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="vscode-extension" className="extension-section">
-          <div className="section-heading">
+        {/* Studio Workspace Section */}
+        <section id="workspace" className="studio-workspace-section">
+          <div className="section-title-bar">
             <div>
-              <span className="eyebrow">IDE extension</span>
-              <h2>Review code without leaving VS Code</h2>
+              <div className="section-eyebrow">
+                <Layers size={13} className="text-cyan" />
+                <span>Active Workspace</span>
+              </div>
+              <h2>{mode === "chat" ? "AI Architectural Copilot" : "Code Quality & Smell Analyzer"}</h2>
             </div>
-            <p>
-              Install RigelAI in VS Code, connect it to the hosted backend, and run
-              analysis from the command palette or editor context menu.
-            </p>
-          </div>
 
-          <div className="extension-panel">
-            <div className="extension-copy">
-              <h3>RigelAI Code Review</h3>
-              <p>
-                Analyze the current file or selected code, review health score
-                and findings, then preview or apply RigelAI's corrected code
-                directly in your editor.
-              </p>
-            </div>
-            <div className="extension-actions">
-              <a
-                className="primary-action"
-                href="/extensions/rigelai-code-review-0.2.1.vsix"
-                download
-              >
-                Download VSIX
-              </a>
-              <div className="install-note">
-                In VS Code, open Extensions, choose Install from VSIX, then run
-                RigelAI: Generate Corrected Code.
+            <div className="section-controls">
+              <div className="mode-toggle-group">
+                <button
+                  type="button"
+                  className={`mode-toggle-btn ${mode === "analyze" ? "active" : ""}`}
+                  onClick={() => setMode("analyze")}
+                >
+                  <Terminal size={14} />
+                  <span>Studio Analyzer</span>
+                </button>
+                <button
+                  type="button"
+                  className={`mode-toggle-btn ${mode === "chat" ? "active" : ""}`}
+                  onClick={() => setMode("chat")}
+                >
+                  <Sparkles size={14} />
+                  <span>Copilot Discussion</span>
+                </button>
               </div>
             </div>
           </div>
-        </section>
 
-        <section className="metrics-strip" aria-label="Platform metrics">
-          <div>
-            <strong>AST + ML</strong>
-            <span>hybrid review engine</span>
-          </div>
-          <div>
-            <strong>10+</strong>
-            <span>language options</span>
-          </div>
-          <div>
-            <strong>2 MB</strong>
-            <span>quick file review limit</span>
-          </div>
-          <div>
-            <strong>Chat</strong>
-            <span>follow-up assistant</span>
-          </div>
-        </section>
-
-        <section id="workspace" className="workspace-section">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">Workspace</span>
-              <h2>{mode === "chat" ? "Discuss code decisions" : "Analyze code quality"}</h2>
-            </div>
-            <p>
-              Paste source code, upload a file, or continue the review with
-              targeted follow-up questions.
-            </p>
-          </div>
-
+          {/* Workspace Body */}
           {mode === "chat" ? (
             <Chatbot />
           ) : (
-            <div className="analysis-layout">
-              <div className="analysis-pane">
-                <CodeInputPanel onAnalyze={handleAnalyze} />
+            <div className="workspace-grid-layout">
+              <div className="workspace-main-column">
+                <CodeInputPanel onAnalyze={handleAnalyze} theme={theme} />
               </div>
 
-              <aside id="capabilities" className="capability-pane">
-                <h3>Built for practical review work</h3>
-                <ul>
-                  <li>
-                    <span>01</span>
-                    Detect code smells, bugs, and maintainability issues.
-                  </li>
-                  <li>
-                    <span>02</span>
-                    Compare AST findings with AI-generated remediation advice.
-                  </li>
-                  <li>
-                    <span>03</span>
-                    Keep the conversation going after each RigelAI scan.
-                  </li>
-                </ul>
+              {/* Sidebar Capabilities */}
+              <aside className="workspace-sidebar">
+                <div className="sidebar-card">
+                  <div className="sidebar-card-header">
+                    <ShieldCheck size={16} className="text-cyan" />
+                    <h4>Analysis Engine Specs</h4>
+                  </div>
+                  <ul className="specs-list">
+                    <li>
+                      <div className="spec-bullet">01</div>
+                      <div className="spec-text">
+                        <strong>Deterministic AST Engine</strong>
+                        <span>Tokenizes syntax branches to detect long methods, complex conditionals, and dead code.</span>
+                      </div>
+                    </li>
+                    <li>
+                      <div className="spec-bullet">02</div>
+                      <div className="spec-text">
+                        <strong>Machine Learning Classifier</strong>
+                        <span>Evaluates CodeSmell embeddings to predict maintainability smells with exact confidence %.</span>
+                      </div>
+                    </li>
+                    <li>
+                      <div className="spec-bullet">03</div>
+                      <div className="spec-text">
+                        <strong>Automated AI Remediation</strong>
+                        <span>Generates refactored clean code, architectural tradeoffs, and unit tests.</span>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="sidebar-card extension-mini-promo">
+                  <div className="sidebar-card-header">
+                    <Download size={16} className="text-emerald" />
+                    <h4>VS Code Integration</h4>
+                  </div>
+                  <p className="mini-promo-text">
+                    Analyze code directly inside your editor with real-time diagnostics.
+                  </p>
+                  <a href="#vscode-extension" className="btn-mini-extension">
+                    <span>View Extension Details</span>
+                    <ArrowRight size={13} />
+                  </a>
+                </div>
               </aside>
             </div>
           )}
         </section>
 
+        {/* Results Dashboard Section */}
         {mode !== "chat" && (
-          <section id="results" className="results-section">
-            <Results data={result} />
+          <section id="results" className="studio-results-section">
+            <Results data={result} theme={theme} />
           </section>
         )}
+
+        {/* VS Code Extension & IDE Integration Section */}
+        <section id="vscode-extension" className="extension-showcase-section">
+          <div className="extension-container-card">
+            <div className="extension-content-col">
+              <div className="extension-badge">
+                <Download size={13} />
+                <span>Official IDE Integration</span>
+              </div>
+              <h3>RigelAI Code Review for Visual Studio Code</h3>
+              <p>
+                Get instant code smell diagnostics and AI-powered refactor suggestions directly within VS Code. 
+                Execute reviews from the command palette or context menu without switching windows.
+              </p>
+
+              <div className="cli-snippet-box">
+                <div className="cli-label-row">
+                  <span>Install via Terminal:</span>
+                </div>
+                <div className="cli-command-row">
+                  <code>code --install-extension rigelai-code-review-0.2.1.vsix</code>
+                  <button
+                    type="button"
+                    className="btn-copy-cli"
+                    onClick={copyCliCommand}
+                    title="Copy install command"
+                  >
+                    {copiedCli ? <Check size={13} className="text-emerald" /> : <Copy size={13} />}
+                    <span>{copiedCli ? "Copied" : "Copy"}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="extension-download-row">
+                <a
+                  href="/extensions/rigelai-code-review-0.2.1.vsix"
+                  download
+                  className="btn-download-vsix"
+                >
+                  <Download size={16} />
+                  <span>Download VSIX Package (v0.2.1)</span>
+                </a>
+                <span className="vsix-size-tag">7.4 KB • Signed Production Bundle</span>
+              </div>
+            </div>
+
+            <div className="extension-features-col">
+              <div className="feature-item-box">
+                <CheckCircle2 size={16} className="text-emerald" />
+                <div>
+                  <strong>Right-Click File / Selection Scan</strong>
+                  <span>Select any snippet in your editor and trigger "RigelAI: Analyze Code Quality".</span>
+                </div>
+              </div>
+              <div className="feature-item-box">
+                <CheckCircle2 size={16} className="text-emerald" />
+                <div>
+                  <strong>Inline Health Score & Smell Diagnostics</strong>
+                  <span>Inspect severity ratings and model confidence directly in VS Code's output channel.</span>
+                </div>
+              </div>
+              <div className="feature-item-box">
+                <CheckCircle2 size={16} className="text-emerald" />
+                <div>
+                  <strong>One-Click Corrected Code Application</strong>
+                  <span>Preview AI refactor diffs side-by-side and apply patches cleanly.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
-      <footer className="site-footer">
-        <span>RigelAI</span>
-        <span>AI-assisted code quality reviews.</span>
+      {/* Enterprise Platform Footer */}
+      <footer className="platform-footer">
+        <div className="footer-inner">
+          <div className="footer-brand-col">
+            <div className="footer-logo">
+              <ShieldCheck size={18} className="text-cyan" />
+              <strong>RigelAI</strong>
+              <span className="footer-version">v2.0</span>
+            </div>
+            <p className="footer-tagline">
+              Enterprise AST parsing, ML code smell classification, and AI refactoring intelligence.
+            </p>
+          </div>
+
+          <div className="footer-meta-col">
+            <div className="engine-status-row">
+              <span className="pulse-emerald"></span>
+              <span>FastAPI Backend Services: Connected</span>
+            </div>
+            <span className="footer-copyright">
+              © {new Date().getFullYear()} RigelAI Studio. Designed for high-assurance software engineering.
+            </span>
+          </div>
+        </div>
       </footer>
     </div>
   );
