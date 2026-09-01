@@ -1,37 +1,57 @@
 import { useState } from "react";
-import "./FileUpload.css";
+import { 
+  UploadCloud, 
+  GitBranch, 
+  GitFork, 
+  FileCode, 
+  CheckCircle, 
+  AlertCircle, 
+  RotateCcw, 
+  Play, 
+  Sparkles,
+  Info,
+  X
+} from "lucide-react";
 import { analyzeFile, analyzeRepository } from "../services/api";
+import "./FileUpload.css";
+
+const PRESET_QUERIES = [
+  "Comprehensive code smell & anti-pattern review",
+  "Refactoring, modularity & cognitive complexity audit",
+  "Performance bottlenecks & edge-case vulnerabilities"
+];
 
 export default function FileUpload({ onResult, onRunStateChange }) {
   const [file, setFile] = useState(null);
   const [query, setQuery] = useState(
-    "Analyze this code for smells, bugs, complexity, and refactoring opportunities."
+    "Analyze this code for code smells, anti-patterns, complexity, and refactoring opportunities."
   );
   const [loading, setLoading] = useState(false);
   const [repoLoading, setRepoLoading] = useState(false);
-  const [repoUrl, setRepoUrl] = useState("");
+  const [repoUrl, setRepoUrl] = useState("https://github.com/wraith-klu/RigelAI");
   const [error, setError] = useState("");
 
-  const MAX_SIZE_MB = 2;
+  const MAX_SIZE_MB = 4;
 
   const validateFile = (selectedFile) => {
     if (!selectedFile) return "No file selected.";
 
-    const allowed = [".py", ".java", ".cpp", ".c", ".js", ".ts"];
+    const allowed = [".py", ".java", ".cpp", ".c", ".js", ".ts", ".jsx", ".tsx", ".go", ".rs"];
     const ext = "." + selectedFile.name.split(".").pop().toLowerCase();
 
     if (!allowed.includes(ext)) {
-      return "Unsupported file type. Use Python, Java, C, C++, JavaScript, or TypeScript.";
+      return "Unsupported format. RigelAI supports Python, Java, C/C++, JS, TS, Go, and Rust.";
     }
 
     if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
-      return `File is too large. Maximum size is ${MAX_SIZE_MB} MB.`;
+      return `File exceeds ${MAX_SIZE_MB}MB size limit.`;
     }
 
     return null;
   };
 
   const handleFileChange = (selectedFile) => {
+    if (!selectedFile) return;
     const validationError = validateFile(selectedFile);
     if (validationError) {
       setError(validationError);
@@ -45,20 +65,22 @@ export default function FileUpload({ onResult, onRunStateChange }) {
 
   const handleDrop = (event) => {
     event.preventDefault();
-    handleFileChange(event.dataTransfer.files[0]);
+    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
+      handleFileChange(event.dataTransfer.files[0]);
+    }
   };
 
   const handleAnalyze = async () => {
     if (!file) {
-      setError("Upload a source file before running analysis.");
+      setError("Please select or drop a source code file.");
       return;
     }
 
     setLoading(true);
     setError("");
     onRunStateChange?.({
-      label: `File scan: ${file.name}`,
-      estimateSeconds: 20,
+      label: `AST + ML Scan: ${file.name}`,
+      estimateSeconds: 18,
       startedAt: Date.now(),
     });
 
@@ -66,7 +88,7 @@ export default function FileUpload({ onResult, onRunStateChange }) {
       const data = await analyzeFile(file, query);
       onResult?.(data);
     } catch (e) {
-      setError(e.message || "Analysis failed. Check that the backend is running.");
+      setError(e.message || "File analysis pipeline failed. Ensure the backend server is running.");
     } finally {
       setLoading(false);
       onRunStateChange?.(null);
@@ -75,15 +97,15 @@ export default function FileUpload({ onResult, onRunStateChange }) {
 
   const handleRepositoryAnalyze = async () => {
     if (!repoUrl.trim()) {
-      setError("Paste a public GitHub repository URL before running analysis.");
+      setError("Please specify a valid public GitHub repository URL.");
       return;
     }
 
     setRepoLoading(true);
     setError("");
     onRunStateChange?.({
-      label: "Repository scan",
-      estimateSeconds: 34,
+      label: `Repository Audit: ${repoUrl.replace("https://github.com/", "")}`,
+      estimateSeconds: 32,
       startedAt: Date.now(),
     });
 
@@ -91,7 +113,7 @@ export default function FileUpload({ onResult, onRunStateChange }) {
       const data = await analyzeRepository(repoUrl, query);
       onResult?.(data);
     } catch (e) {
-      setError(e.message || "Repository analysis failed. Confirm the repo is public.");
+      setError(e.message || "Repository audit failed. Check if the repo is public.");
     } finally {
       setRepoLoading(false);
       onRunStateChange?.(null);
@@ -101,108 +123,191 @@ export default function FileUpload({ onResult, onRunStateChange }) {
   const handleReset = () => {
     setFile(null);
     setRepoUrl("");
-    setQuery("Analyze this code for smells, bugs, complexity, and refactoring opportunities.");
+    setQuery("Analyze this code for code smells, anti-patterns, complexity, and refactoring opportunities.");
     setError("");
     onResult?.(null);
     onRunStateChange?.(null);
   };
 
-  const handleKey = (event) => {
-    if (event.key === "Enter") handleAnalyze();
-  };
-
-  const handleRepoKey = (event) => {
-    if (event.key === "Enter") handleRepositoryAnalyze();
-  };
-
   return (
-    <div className="upload-container">
-      <div className="upload-header">
-        <h3>Upload code or scan a repository</h3>
-        <p>Use a source file for focused review, or paste a public GitHub URL for a project-level scan.</p>
-      </div>
-
-      <div className="repo-analyzer">
-        <label>
-          GitHub repository
-          <input
-            type="url"
-            placeholder="https://github.com/owner/repository"
-            value={repoUrl}
-            onChange={(event) => setRepoUrl(event.target.value)}
-            onKeyDown={handleRepoKey}
-          />
-        </label>
-        <button
-          className="repo-btn"
-          onClick={handleRepositoryAnalyze}
-          disabled={repoLoading || loading}
-          type="button"
-        >
-          {repoLoading ? "Scanning..." : "Analyze repo"}
-        </button>
-      </div>
-
-      <label
-        className={`upload-dropzone ${file ? "active" : ""}`}
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={handleDrop}
-      >
-        <input
-          type="file"
-          accept=".py,.java,.cpp,.c,.js,.ts"
-          onChange={(event) => handleFileChange(event.target.files[0])}
-          hidden
-        />
-
-        {file ? (
-          <div className="file-selected">
-            <span className="file-icon">FILE</span>
-            <span>
-              <strong>{file.name}</strong>
-              <small>{(file.size / 1024).toFixed(1)} KB selected</small>
-            </span>
+    <div className="upload-audit-wrapper">
+      {/* GitHub Repo Scanner */}
+      <div className="audit-section-box">
+        <div className="audit-section-header">
+          <div className="audit-header-icon">
+            <GitFork size={16} />
           </div>
-        ) : (
-          <div className="upload-placeholder">
-            <img src="/agent-upload.svg" alt="" aria-hidden="true" />
-            <p>Drop your code file here</p>
-            <span>or click to browse from your device</span>
+          <div>
+            <h4>Scan Remote GitHub Repository</h4>
+            <p>Run AST parsing & smell classification across all source files in a public repo</p>
           </div>
-        )}
-      </label>
+        </div>
 
-      <div className="upload-controls">
-        <input
-          className="query-input"
-          placeholder="What should RigelAI focus on?"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={handleKey}
-        />
-
-        <div className="button-group">
+        <div className="repo-input-row">
+          <div className="repo-url-field">
+            <GitBranch size={15} className="repo-field-icon" />
+            <input
+              type="url"
+              placeholder="https://github.com/organization/repository"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleRepositoryAnalyze()}
+              aria-label="GitHub Repository URL"
+            />
+          </div>
           <button
-            className="analyze-btn"
-            onClick={handleAnalyze}
-            disabled={loading || repoLoading || !file}
             type="button"
+            className="btn-repo-scan"
+            onClick={handleRepositoryAnalyze}
+            disabled={repoLoading || loading}
           >
-            {loading ? "Analyzing..." : "Analyze file"}
-          </button>
-
-          <button
-            className="reset-btn"
-            onClick={handleReset}
-            disabled={loading || repoLoading}
-            type="button"
-          >
-            Reset
+            {repoLoading ? (
+              <>
+                <div className="spinner-compact"></div>
+                <span>Scanning Repo...</span>
+              </>
+            ) : (
+              <>
+                <Play size={13} fill="currentColor" />
+                <span>Audit Repo</span>
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {error && <div className="upload-error">{error}</div>}
+      <div className="or-divider">
+        <span>OR UPLOAD LOCAL SOURCE</span>
+      </div>
+
+      {/* Local File Dropzone */}
+      <div
+        className={`file-dropzone-box ${file ? "has-file" : ""}`}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+      >
+        <input
+          type="file"
+          id="source-file-input"
+          accept=".py,.java,.cpp,.c,.js,.ts,.jsx,.tsx,.go,.rs"
+          onChange={(e) => handleFileChange(e.target.files?.[0])}
+          hidden
+        />
+
+        {file ? (
+          <div className="file-active-card">
+            <div className="file-active-info">
+              <div className="file-icon-badge">
+                <FileCode size={20} />
+              </div>
+              <div className="file-meta">
+                <span className="file-name">{file.name}</span>
+                <span className="file-size">{(file.size / 1024).toFixed(1)} KB • Ready for AST & ML scan</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="file-remove-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setFile(null);
+              }}
+              title="Remove file"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <label htmlFor="source-file-input" className="dropzone-label">
+            <div className="dropzone-icon-glow">
+              <UploadCloud size={28} />
+            </div>
+            <div className="dropzone-text">
+              <h5>Drag and drop source code file here</h5>
+              <p>or click to browse from your workstation</p>
+            </div>
+            <div className="supported-badges">
+              <span>.py</span>
+              <span>.java</span>
+              <span>.ts</span>
+              <span>.js</span>
+              <span>.cpp</span>
+              <span>.c</span>
+              <span>.go</span>
+              <span>.rs</span>
+            </div>
+          </label>
+        )}
+      </div>
+
+      {/* Query Focus & Preset Chips */}
+      <div className="query-config-section">
+        <label className="config-label">
+          <Sparkles size={13} className="text-cyan" />
+          <span>Analysis Focus / Custom Instructions:</span>
+        </label>
+        <input
+          type="text"
+          className="custom-query-input"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Specify what RigelAI should focus on..."
+        />
+
+        <div className="query-preset-chips">
+          <span className="chips-label">Presets:</span>
+          {PRESET_QUERIES.map((p) => (
+            <button
+              key={p}
+              type="button"
+              className="query-chip"
+              onClick={() => setQuery(p)}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Footer */}
+      <div className="upload-actions-bar">
+        <button
+          type="button"
+          className="btn-reset"
+          onClick={handleReset}
+          disabled={loading || repoLoading}
+        >
+          <RotateCcw size={14} />
+          <span>Reset</span>
+        </button>
+
+        <button
+          type="button"
+          className="btn-file-analyze"
+          onClick={handleAnalyze}
+          disabled={loading || repoLoading || !file}
+        >
+          {loading ? (
+            <>
+              <div className="spinner-compact"></div>
+              <span>Processing AST & ML...</span>
+            </>
+          ) : (
+            <>
+              <Play size={14} fill="currentColor" />
+              <span>Run File Analysis</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="audit-error-banner" role="alert">
+          <AlertCircle size={16} />
+          <span>{error}</span>
+        </div>
+      )}
     </div>
   );
 }

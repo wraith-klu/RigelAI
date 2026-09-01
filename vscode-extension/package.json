@@ -1,9 +1,31 @@
 {
   "name": "rigelai-code-review",
   "displayName": "RigelAI Code Review",
-  "description": "Analyze, review, and apply corrected code with RigelAI from VS Code.",
-  "version": "0.2.1",
+  "description": "AI-powered inline code review for VS Code. Automatic red underlines, hover explanations, lightbulb fixes, and a side panel with corrected code — powered by the RigelAI backend.",
+  "version": "0.3.0",
   "publisher": "wraith-klu",
+  "icon": "icon.png",
+  "license": "MIT",
+  "homepage": "https://rigelai-agent.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wraith-klu/RigelAI"
+  },
+  "bugs": {
+    "url": "https://github.com/wraith-klu/RigelAI/issues"
+  },
+  "keywords": [
+    "ai",
+    "code review",
+    "linter",
+    "refactor",
+    "code quality",
+    "diagnostics",
+    "intellisense",
+    "code smell",
+    "bug detection",
+    "rigelai"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -12,13 +34,12 @@
     "Programming Languages",
     "Other"
   ],
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
   "activationEvents": [
-    "onCommand:rigelai.analyzeCurrentFile",
-    "onCommand:rigelai.analyzeSelection",
-    "onCommand:rigelai.generateCorrectedCode",
-    "onCommand:rigelai.openSettings",
-    "onCommand:rigelai.openWebsite",
-    "onUri"
+    "onStartupFinished"
   ],
   "main": "./src/extension.js",
   "contributes": {
@@ -29,29 +50,49 @@
           "type": "string",
           "default": "https://rigelai.onrender.com",
           "description": "RigelAI backend API URL."
+        },
+        "rigelai.autoAnalyzeOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically analyze the active file when it is saved and show inline diagnostics."
+        },
+        "rigelai.autoAnalyzeDelay": {
+          "type": "number",
+          "default": 1500,
+          "description": "Debounce delay in milliseconds before auto-analysis triggers after a file save."
         }
       }
     },
     "commands": [
       {
         "command": "rigelai.analyzeCurrentFile",
-        "title": "RigelAI: Analyze Current File"
+        "title": "RigelAI: Analyze Current File",
+        "icon": "$(search)"
       },
       {
         "command": "rigelai.analyzeSelection",
-        "title": "RigelAI: Analyze Selection"
+        "title": "RigelAI: Analyze Selection",
+        "icon": "$(selection)"
       },
       {
         "command": "rigelai.generateCorrectedCode",
-        "title": "RigelAI: Generate Corrected Code"
+        "title": "RigelAI: Generate Corrected Code",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "rigelai.clearDiagnostics",
+        "title": "RigelAI: Clear Diagnostics",
+        "icon": "$(clear-all)"
       },
       {
         "command": "rigelai.openSettings",
-        "title": "RigelAI: Open Settings"
+        "title": "RigelAI: Open Settings",
+        "icon": "$(settings-gear)"
       },
       {
         "command": "rigelai.openWebsite",
-        "title": "RigelAI: Open Website"
+        "title": "RigelAI: Open Website",
+        "icon": "$(link-external)"
       }
     ],
     "menus": {
@@ -68,6 +109,36 @@
         {
           "command": "rigelai.generateCorrectedCode",
           "group": "navigation@22"
+        },
+        {
+          "command": "rigelai.clearDiagnostics",
+          "group": "navigation@23"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "rigelai.analyzeCurrentFile",
+          "group": "navigation"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "rigelai-sidebar",
+          "title": "RigelAI",
+          "icon": "$(sparkle)"
+        }
+      ]
+    },
+    "views": {
+      "rigelai-sidebar": [
+        {
+          "type": "webview",
+          "id": "rigelai.panel",
+          "name": "Code Review",
+          "icon": "$(sparkle)",
+          "contextualTitle": "RigelAI Code Review"
         }
       ]
     }

@@ -1,71 +1,171 @@
 import { useState } from "react";
+import { 
+  ShieldCheck, 
+  Terminal, 
+  MessageSquareCode, 
+  Download, 
+  GitBranch, 
+  Activity,
+  Menu,
+  X,
+  ExternalLink,
+  Sparkles,
+  Sun,
+  Moon
+} from "lucide-react";
 import "./Navbar.css";
 
-export default function Navbar({ mode, setMode }) {
-  const [open, setOpen] = useState(false);
+export default function Navbar({ mode = "analyze", setMode, theme = "dark", toggleTheme }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const switchMode = (newMode) => {
+  const handleModeChange = (newMode) => {
     setMode?.(newMode);
-    setOpen(false);
+    setMobileOpen(false);
   };
 
   return (
-    <header className="navbar">
+    <header className="navbar-container">
       <div className="navbar-inner">
-        <div className="nav-logo">
-          <span className="logo-icon" aria-hidden="true">
-            R
-          </span>
-          <span className="logo-text">RigelAI</span>
+        {/* Brand */}
+        <a href="#top" className="navbar-brand" aria-label="RigelAI Platform">
+          <div className="brand-icon-wrapper">
+            <ShieldCheck className="brand-icon" size={20} />
+            <span className="brand-glow-orb"></span>
+          </div>
+          <div className="brand-meta">
+            <div className="brand-title">
+              <span>Rigel</span><span className="brand-ai">AI</span>
+              <span className="brand-version">v2.0</span>
+            </div>
+            <span className="brand-subtitle">Code Intelligence Studio</span>
+          </div>
+        </a>
+
+        {/* Engine Status */}
+        <div className="engine-status-pill" title="AST parser & ML smell classifier loaded">
+          <span className="pulse-dot"></span>
+          <span className="status-label">AST + ML Engine Active</span>
         </div>
 
-        {setMode && (
-          <nav className="nav-links desktop-nav" aria-label="Review modes">
-            <button
-              className={`nav-btn ${mode === "chat" ? "active" : ""}`}
-              onClick={() => switchMode("chat")}
-              type="button"
-            >
-              Chat
-            </button>
+        {/* Navigation / Mode Switcher */}
+        <nav className="navbar-nav desktop-only" aria-label="Main Navigation">
+          <button
+            type="button"
+            className={`nav-tab ${mode === "analyze" ? "active" : ""}`}
+            onClick={() => handleModeChange("analyze")}
+          >
+            <Terminal size={16} />
+            <span>Studio Workspace</span>
+          </button>
 
-            <button
-              className={`nav-btn ${mode === "analyze" ? "active" : ""}`}
-              onClick={() => switchMode("analyze")}
-              type="button"
-            >
-              Analyze Code
-            </button>
-          </nav>
-        )}
+          <button
+            type="button"
+            className={`nav-tab ${mode === "chat" ? "active" : ""}`}
+            onClick={() => handleModeChange("chat")}
+          >
+            <MessageSquareCode size={16} />
+            <span>AI Copilot</span>
+            <span className="tab-pill">Interactive</span>
+          </button>
 
+          <a href="#vscode-extension" className="nav-tab">
+            <Download size={16} />
+            <span>VS Code Extension</span>
+          </a>
+        </nav>
+
+        {/* Action buttons */}
+        <div className="navbar-actions desktop-only">
+          <button
+            type="button"
+            className="btn-icon theme-toggle-btn"
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+
+          <a
+            href="https://github.com/wraith-klu/RigelAI"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-icon"
+            title="View RigelAI on GitHub"
+            aria-label="GitHub Repository"
+          >
+            <GitBranch size={18} />
+          </a>
+          <a
+            href="#workspace"
+            className="btn-primary-compact"
+            onClick={() => handleModeChange("analyze")}
+          >
+            <Sparkles size={15} />
+            <span>Run Analysis</span>
+          </a>
+        </div>
+
+        {/* Mobile toggle */}
         <button
-          className="menu-toggle"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
           type="button"
+          className="mobile-toggle mobile-only"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle navigation menu"
         >
-          Menu
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {open && setMode && (
-        <div className="mobile-menu">
-          <button
-            className={`nav-btn ${mode === "chat" ? "active" : ""}`}
-            onClick={() => switchMode("chat")}
-            type="button"
-          >
-            Chat
-          </button>
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div className="mobile-drawer">
+          <div className="mobile-drawer-inner">
+            <button
+              type="button"
+              className={`mobile-nav-btn ${mode === "analyze" ? "active" : ""}`}
+              onClick={() => handleModeChange("analyze")}
+            >
+              <Terminal size={18} />
+              <span>Studio Workspace</span>
+            </button>
 
-          <button
-            className={`nav-btn ${mode === "analyze" ? "active" : ""}`}
-            onClick={() => switchMode("analyze")}
-            type="button"
-          >
-            Analyze Code
-          </button>
+            <button
+              type="button"
+              className={`mobile-nav-btn ${mode === "chat" ? "active" : ""}`}
+              onClick={() => handleModeChange("chat")}
+            >
+              <MessageSquareCode size={18} />
+              <span>AI Copilot Review</span>
+            </button>
+
+            <a
+              href="#vscode-extension"
+              className="mobile-nav-btn"
+              onClick={() => setMobileOpen(false)}
+            >
+              <Download size={18} />
+              <span>Download VS Code Extension</span>
+            </a>
+
+            <button
+              type="button"
+              className="mobile-nav-btn"
+              onClick={() => {
+                toggleTheme?.();
+              }}
+            >
+              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              <span>{theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}</span>
+            </button>
+
+            <div className="mobile-divider"></div>
+
+            <div className="mobile-engine-row">
+              <Activity size={16} className="text-emerald" />
+              <span>Backend Status: Online</span>
+            </div>
+          </div>
         </div>
       )}
     </header>

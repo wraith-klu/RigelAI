@@ -1,275 +1,488 @@
-.upload-container {
-  padding: 18px 20px 22px;
+/* =======================================================================
+   FILEUPLOAD.CSS — Repository Audit & File Scanner Panel
+   ======================================================================= */
+
+.upload-audit-wrapper {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.upload-header h3 {
-  margin: 0;
-  color: #111827;
-  font-size: 20px;
+/* ── Audit Section Boxes ──────────────────────────────────────────────── */
+.audit-section-box {
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.upload-header p {
-  margin: 6px 0 0;
-  color: #6a7485;
-  line-height: 1.5;
+.audit-section-box:focus-within {
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.06);
 }
 
-.repo-analyzer {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: end;
-  margin-top: 18px;
-  padding: 14px;
-  border: 1px solid #dbe3ef;
-  border-radius: 8px;
-  background: #fbfdff;
-}
-
-.repo-analyzer label {
-  display: grid;
-  gap: 7px;
-  color: #6a7485;
-  font-size: 12px;
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-.repo-analyzer input {
-  min-height: 44px;
-  width: 100%;
-  border: 1px solid #cfd8e6;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #172033;
-  font-size: 14px;
-  outline: none;
-  padding: 0 14px;
-  text-transform: none;
-}
-
-.repo-analyzer input:focus {
-  border-color: #2457d6;
-  box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.1);
-}
-
-.repo-btn {
-  min-height: 44px;
-  border: 1px solid #172033;
-  border-radius: 8px;
-  background: #172033;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 0 16px;
-  cursor: pointer;
-}
-
-.upload-dropzone {
-  display: grid;
-  min-height: 220px;
-  place-items: center;
-  margin-top: 18px;
-  border: 2px dashed #b8c5d8;
-  border-radius: 8px;
-  background: #ffffff;
-  text-align: center;
-  cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
-  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.upload-dropzone:hover,
-.upload-dropzone.active {
-  border-color: #2457d6;
-  background: #fbfdff;
-  box-shadow: 0 16px 32px rgba(36, 87, 214, 0.08);
-}
-
-.upload-placeholder {
-  color: #384253;
-}
-
-.upload-placeholder img {
-  width: min(220px, 72vw);
-  height: auto;
-  margin: 0 auto 8px;
-  filter: drop-shadow(0 16px 24px rgba(36, 87, 214, 0.12));
-}
-
-.upload-placeholder p {
-  margin: 8px 0 4px;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.upload-placeholder span {
-  color: #6a7485;
-  font-size: 14px;
-}
-
-.upload-icon,
-.file-icon {
-  display: inline-grid;
-  width: 46px;
-  height: 46px;
-  place-items: center;
-  border-radius: 8px;
-  border: 1px solid #dbeafe;
-  background: #eff6ff;
-  color: #2457d6;
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.file-selected {
+.audit-section-header {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
-  color: #172033;
+  margin-bottom: 14px;
 }
 
-.file-selected strong,
-.file-selected small {
-  display: block;
-  text-align: left;
-}
-
-.file-selected small {
-  margin-top: 3px;
-  color: #6a7485;
-}
-
-.upload-controls {
+.audit-header-icon {
+  width: 32px;
+  height: 32px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  margin-top: 18px;
-  align-items: center;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--brand-primary);
+  flex-shrink: 0;
 }
 
-.query-input {
-  min-height: 46px;
-  width: 100%;
-  border: 1px solid #cfd8e6;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #172033;
+.audit-section-header h4 {
   font-size: 14px;
-  outline: none;
-  padding: 0 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
-.query-input::placeholder {
-  color: #8a96a8;
+.audit-section-header p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
-.query-input:focus {
-  border-color: #2457d6;
-  box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.1);
-}
-
-.button-group {
+/* ── Repository Input ────────────────────────────────────────────────────── */
+.repo-input-row {
   display: flex;
+  align-items: center;
   gap: 10px;
 }
 
-.analyze-btn,
-.reset-btn {
-  min-height: 46px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 0 16px;
-  cursor: pointer;
+.repo-url-field {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
-.analyze-btn {
-  border: 1px solid #2457d6;
-  background: #2457d6;
+.repo-field-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.repo-url-field input {
+  width: 100%;
+  height: 40px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0 14px 0 36px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.repo-url-field input::placeholder {
+  color: var(--text-faint);
+}
+
+.repo-url-field input:focus {
+  border-color: var(--brand-primary);
+  background: var(--bg-surface-hover);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+.btn-repo-scan {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 18px;
+  border-radius: var(--radius-sm);
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: var(--brand-primary);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: all 0.2s var(--ease-spring);
+  flex-shrink: 0;
+}
+
+.btn-repo-scan:hover:not(:disabled) {
+  background: var(--brand-primary);
   color: #ffffff;
-  box-shadow: 0 14px 30px rgba(36, 87, 214, 0.22);
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
 }
 
-.reset-btn {
-  border: 1px solid #cfd8e6;
-  background: #ffffff;
-  color: #384253;
+.btn-repo-scan:active:not(:disabled) {
+  transform: translateY(0);
 }
 
-.analyze-btn:disabled,
-.reset-btn:disabled,
-.repo-btn:disabled {
+.btn-repo-scan:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  opacity: 0.62;
 }
 
-.upload-error {
-  margin-top: 12px;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  background: #fff1f2;
-  color: #b42318;
+/* ── OR Divider ──────────────────────────────────────────────────────────── */
+.or-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.or-divider span {
+  padding: 0 14px;
+}
+
+/* ── File Dropzone ───────────────────────────────────────────────────────── */
+.file-dropzone-box {
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  transition: all 0.2s var(--ease-spring);
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.file-dropzone-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(59,130,246,0.04), transparent);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  pointer-events: none;
+}
+
+.file-dropzone-box:hover {
+  border-color: var(--brand-primary);
+  background: var(--bg-surface-hover);
+}
+
+.file-dropzone-box:hover::before {
+  opacity: 1;
+}
+
+.file-dropzone-box.has-file {
+  border-style: solid;
+  border-color: var(--status-success-border);
+  background: var(--status-success-bg);
+}
+
+.dropzone-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 24px;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+}
+
+.dropzone-icon-glow {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  color: var(--brand-primary);
+  margin-bottom: 14px;
+  transition: all 0.22s var(--ease-spring);
+}
+
+.file-dropzone-box:hover .dropzone-icon-glow {
+  transform: translateY(-3px) scale(1.08);
+  background: rgba(59, 130, 246, 0.18);
+  box-shadow: 0 8px 22px rgba(59, 130, 246, 0.2);
+}
+
+.dropzone-text h5 {
   font-size: 14px;
   font-weight: 700;
-  padding: 12px 14px;
+  color: var(--text-primary);
 }
 
-@media (max-width: 720px) {
-  .repo-analyzer {
-    grid-template-columns: 1fr;
-    border-radius: 20px !important;
-    padding: 14px;
-  }
-
-  .repo-analyzer input {
-    min-height: 48px;
-  }
-
-  .repo-btn {
-    min-height: 48px;
-    width: 100%;
-  }
-
-  .upload-controls {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .query-input {
-    min-height: 48px;
-  }
-
-  .button-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .analyze-btn,
-  .reset-btn {
-    min-height: 48px;
-    font-size: 14px;
-  }
-
-  .upload-dropzone {
-    min-height: 180px;
-    border-radius: 20px !important;
-  }
-
-  .upload-placeholder p {
-    font-size: 15px;
-  }
+.dropzone-text p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
 }
 
-@media (max-width: 420px) {
-  .button-group {
-    grid-template-columns: 1fr;
+.supported-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.supported-badges span {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* ── Selected File Card ──────────────────────────────────────────────────── */
+.file-active-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  gap: 12px;
+}
+
+.file-active-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.file-icon-badge {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--status-success-bg);
+  border: 1px solid var(--status-success-border);
+  color: var(--status-success);
+  flex-shrink: 0;
+}
+
+.file-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.file-size {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.file-remove-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.file-remove-btn:hover {
+  background: var(--status-critical-bg);
+  border-color: var(--status-critical-border);
+  color: var(--status-critical);
+}
+
+/* ── Query Configuration ─────────────────────────────────────────────────── */
+.query-config-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.custom-query-input {
+  width: 100%;
+  height: 40px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.custom-query-input::placeholder {
+  color: var(--text-faint);
+}
+
+.custom-query-input:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+.query-preset-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips-label {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.query-chip {
+  font-size: 11.5px;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 4px 11px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.query-chip:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--brand-primary);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+/* ── Action Footer ───────────────────────────────────────────────────────── */
+.upload-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.btn-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.btn-reset:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
+  border-color: var(--border-highlight);
+}
+
+.btn-file-analyze {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 22px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-primary);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 3px 12px rgba(59, 130, 246, 0.4);
+  transition: all 0.2s var(--ease-spring);
+}
+
+.btn-file-analyze:hover:not(:disabled) {
+  background: var(--brand-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.55);
+}
+
+.btn-file-analyze:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-file-analyze:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Error Banner ────────────────────────────────────────────────────────── */
+.audit-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--status-critical-bg);
+  border: 1px solid var(--status-critical-border);
+  border-radius: var(--radius-sm);
+  color: var(--status-critical);
+  font-size: 13px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .upload-audit-wrapper {
+    padding: 16px;
+    gap: 16px;
   }
 
-  .analyze-btn,
-  .reset-btn {
-    width: 100%;
+  .repo-input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-repo-scan {
+    height: 42px;
+    justify-content: center;
+  }
+
+  .upload-actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-reset,
+  .btn-file-analyze {
+    justify-content: center;
   }
 }
