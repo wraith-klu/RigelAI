@@ -237,9 +237,14 @@ export default function Chatbot() {
       }
     } catch { /* ignore */ }
 
-    // Smooth-scroll to bottom whenever messages change
+    // Scroll ONLY the internal chatbot canvas container — NEVER the main window viewport
     requestAnimationFrame(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      if (canvasRef.current) {
+        canvasRef.current.scrollTo({
+          top: canvasRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     });
   }, [messages]);
 
