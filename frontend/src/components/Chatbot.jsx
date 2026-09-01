@@ -336,7 +336,7 @@ export default function Chatbot() {
     } finally {
       setLoading(false);
       requestAnimationFrame(resizeTextarea);
-      textareaRef.current?.focus();
+      textareaRef.current?.focus({ preventScroll: true });
     }
   }, [input, loading, resizeTextarea]);
 
@@ -361,7 +361,7 @@ export default function Chatbot() {
     localStorage.removeItem(STORAGE_KEY);
     setMessages([]);
     setLastFailedQuery(null);
-    textareaRef.current?.focus();
+    textareaRef.current?.focus({ preventScroll: true });
   }, []);
 
   const isEmpty = messages.length === 0;
@@ -520,7 +520,7 @@ export default function Chatbot() {
                   setInput("");
                   setCharCount(0);
                   resizeTextarea();
-                  textareaRef.current?.focus();
+                  textareaRef.current?.focus({ preventScroll: true });
                 }}
                 title="Clear input"
                 tabIndex={-1}
