@@ -1,5 +1,5 @@
 // RigelAI VS Code Extension — Inline Diagnostics + Review Panel
-// v0.3.0 — Seamless red-underlines, hover tooltips, code actions, premium side panel
+// v0.4.0 — Stop/Run Analysis controls, Uninstall button, rich colorful AI Notes
 
 "use strict";
 const vscode = require("vscode");
@@ -7,6 +7,7 @@ const vscode = require("vscode");
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WEBSITE_URL = "https://rigelai-agent.vercel.app";
 const DEFAULT_API_URL = "https://rigelai.onrender.com";
+const EXTENSION_ID = "wraith-klu.rigelai-code-review";
 const SUPPORTED_LANGUAGES = [
   "python", "javascript", "typescript", "java", "c", "cpp",
   "go", "rust", "php", "ruby", "csharp", "kotlin", "swift",
@@ -22,6 +23,10 @@ const reviewCache = new Map();
 const debounceTimers = new Map();
 /** @type {RigelAIPanelProvider | null} */
 let panelProvider = null;
+/** @type {AbortController | null} current in-flight analysis abort controller */
+let currentAbortController = null;
+/** @type {boolean} whether an analysis is currently running */
+let isAnalyzing = false;
 
 // ─── Activation ──────────────────────────────────────────────────────────────
 function activate(context) {
@@ -82,6 +87,9 @@ function activate(context) {
     vscode.commands.registerCommand("rigelai.generateCorrectedCode", () =>
       analyzeEditorContent("correct")
     ),
+    vscode.commands.registerCommand("rigelai.stopAnalysis", () => {
+      stopCurrentAnalysis();
+    }),
     vscode.commands.registerCommand("rigelai.clearDiagnostics", () => {
       diagnosticCollection.clear();
       reviewCache.clear();
@@ -94,6 +102,22 @@ function activate(context) {
     vscode.commands.registerCommand("rigelai.openWebsite", () =>
       vscode.env.openExternal(vscode.Uri.parse(WEBSITE_URL))
     ),
+    vscode.commands.registerCommand("rigelai.uninstallExtension", async () => {
+      const answer = await vscode.window.showWarningMessage(
+        "Are you sure you want to uninstall RigelAI Code Review?",
+        { modal: true },
+        "Yes, Uninstall"
+      );
+      if (answer === "Yes, Uninstall") {
+        await vscode.commands.executeCommand(
+          "workbench.extensions.uninstallExtension",
+          EXTENSION_ID
+        );
+        vscode.window.showInformationMessage(
+          "RigelAI has been uninstalled. Reload VS Code to complete removal."
+        );
+      }
+    }),
     vscode.commands.registerCommand("rigelai._applyFix", (uri, code) =>
       applyFixFromCommand(uri, code)
     ),
@@ -112,6 +136,17 @@ function activate(context) {
       },
     })
   );
+}
+
+// ─── Stop Analysis ────────────────────────────────────────────────────────────
+function stopCurrentAnalysis() {
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+  isAnalyzing = false;
+  panelProvider?.setAnalyzingState(false);
+  vscode.window.showInformationMessage("⛔ RigelAI analysis stopped.");
 }
 
 // ─── Debounced Analysis Scheduler ────────────────────────────────────────────
@@ -147,13 +182,23 @@ async function runAnalysis(document, mode, withProgress) {
   const code = document.getText();
   if (!code.trim()) return;
 
+  // Abort any previous in-flight request
+  if (currentAbortController) {
+    currentAbortController.abort();
+  }
+  currentAbortController = new AbortController();
+  const signal = currentAbortController.signal;
+  isAnalyzing = true;
+  panelProvider?.setAnalyzingState(true);
+
   const apiUrl = getApiUrl();
   const language = document.languageId || "plaintext";
 
   const doRun = async () => {
     try {
       const query = buildQuery(mode, false, language);
-      const result = await callRigelAI(apiUrl, code, query);
+      const result = await callRigelAI(apiUrl, code, query, signal);
+      if (signal.aborted) return; // silently cancelled
       const cacheEntry = {
         result,
         uri: document.uri.toString(),
@@ -168,9 +213,17 @@ async function runAnalysis(document, mode, withProgress) {
       applyDiagnostics(document, result);
       panelProvider?.update(cacheEntry);
     } catch (error) {
+      if (error.name === "AbortError" || signal.aborted) return;
       vscode.window.showErrorMessage(
         `RigelAI analysis failed: ${error.message || "Unknown error"}`
       );
+      panelProvider?.setAnalyzingState(false);
+    } finally {
+      if (currentAbortController?.signal === signal) {
+        currentAbortController = null;
+        isAnalyzing = false;
+        panelProvider?.setAnalyzingState(false);
+      }
     }
   };
 
@@ -179,9 +232,12 @@ async function runAnalysis(document, mode, withProgress) {
       {
         location: vscode.ProgressLocation.Notification,
         title: "RigelAI is analyzing your code…",
-        cancellable: false,
+        cancellable: true,
       },
-      doRun
+      async (_progress, token) => {
+        token.onCancellationRequested(() => stopCurrentAnalysis());
+        await doRun();
+      }
     );
   } else {
     // Silent background analysis — show status bar flash instead
@@ -190,6 +246,8 @@ async function runAnalysis(document, mode, withProgress) {
       100
     );
     statusItem.text = "$(sync~spin) RigelAI analyzing…";
+    statusItem.tooltip = "Click to stop";
+    statusItem.command = "rigelai.stopAnalysis";
     statusItem.show();
     try {
       await doRun();
@@ -226,7 +284,6 @@ function applyDiagnostics(document, result) {
     diag.source = "RigelAI";
     diag.code = finding.severity || "info";
 
-    // Attach the full finding as related info for hover provider
     if (finding.suggestion) {
       diag.relatedInformation = [
         new vscode.DiagnosticRelatedInformation(
@@ -235,7 +292,6 @@ function applyDiagnostics(document, result) {
         ),
       ];
     }
-    // Store finding data on the diagnostic for code actions
     diag._finding = finding;
     diagnostics.push(diag);
   }
@@ -286,9 +342,7 @@ function provideRigelHover(document, position) {
   const uri = document.uri.toString();
   const cached = reviewCache.get(uri);
   if (cached?.optimizedCode) {
-    const commandUri = vscode.Uri.parse(
-      `command:rigelai.analyzeCurrentFile`
-    );
+    const commandUri = vscode.Uri.parse(`command:rigelai.analyzeCurrentFile`);
     md.appendMarkdown(
       `[$(sparkle) Open Review Panel](${commandUri}) · [$(symbol-file) Apply Corrected Code](command:rigelai._applyFix?${encodeURIComponent(JSON.stringify([uri, cached.optimizedCode]))})`
     );
@@ -310,7 +364,6 @@ function provideRigelCodeActions(document, range) {
   for (const diag of diags) {
     const finding = diag._finding || {};
 
-    // "Open RigelAI Panel" action always available
     const openPanel = new vscode.CodeAction(
       `RigelAI: View Full Review`,
       vscode.CodeActionKind.QuickFix
@@ -323,7 +376,6 @@ function provideRigelCodeActions(document, range) {
     openPanel.isPreferred = false;
     actions.push(openPanel);
 
-    // "Apply corrected code" action when optimized code available
     if (cached?.optimizedCode) {
       const applyFix = new vscode.CodeAction(
         `RigelAI: Apply AI-Corrected Code for "${finding.title || "this issue"}"`,
@@ -339,7 +391,6 @@ function provideRigelCodeActions(document, range) {
       actions.push(applyFix);
     }
 
-    // "Re-analyze" action
     const reAnalyze = new vscode.CodeAction(
       "RigelAI: Re-analyze This File",
       vscode.CodeActionKind.QuickFix
@@ -383,11 +434,12 @@ function getApiUrl() {
   return String(configured || DEFAULT_API_URL).replace(/\/$/, "");
 }
 
-async function callRigelAI(apiUrl, code, userQuery) {
+async function callRigelAI(apiUrl, code, userQuery, signal) {
   const response = await fetch(`${apiUrl}/analyze-editor`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code, user_query: userQuery || "" }),
+    signal,
   });
   if (!response.ok) {
     let detail = "";
@@ -411,16 +463,15 @@ class RigelAIPanelProvider {
     this._extensionUri = extensionUri;
     this._view = null;
     this._pendingUpdate = null;
+    this._analyzing = false;
   }
 
   resolveWebviewView(webviewView) {
     this._view = webviewView;
-    webviewView.webview.options = {
-      enableScripts: true,
-    };
+    webviewView.webview.options = { enableScripts: true };
     webviewView.webview.html = this._pendingUpdate
-      ? renderPanel(this._pendingUpdate)
-      : renderWelcome();
+      ? renderPanel(this._pendingUpdate, this._analyzing)
+      : renderWelcome(this._analyzing);
     this._pendingUpdate = null;
 
     webviewView.webview.onDidReceiveMessage((msg) =>
@@ -430,7 +481,7 @@ class RigelAIPanelProvider {
 
   update(review) {
     if (this._view) {
-      this._view.webview.html = renderPanel(review);
+      this._view.webview.html = renderPanel(review, this._analyzing);
     } else {
       this._pendingUpdate = review;
     }
@@ -438,8 +489,20 @@ class RigelAIPanelProvider {
 
   showWelcome() {
     if (this._view) {
-      this._view.webview.html = renderWelcome();
+      this._view.webview.html = renderWelcome(false);
     }
+    this._pendingUpdate = null;
+  }
+
+  /** Called when analysis starts/stops to push UI state update */
+  setAnalyzingState(analyzing) {
+    this._analyzing = analyzing;
+    if (!this._view) return;
+    // Send a lightweight message instead of full re-render to preserve scroll
+    this._view.webview.postMessage({
+      type: "analyzingState",
+      analyzing,
+    });
   }
 
   async _handleMessage(message) {
@@ -466,6 +529,12 @@ class RigelAIPanelProvider {
       case "reanalyze":
         await analyzeEditorContent("file");
         break;
+      case "stopAnalysis":
+        stopCurrentAnalysis();
+        break;
+      case "uninstallExtension":
+        await vscode.commands.executeCommand("rigelai.uninstallExtension");
+        break;
       case "openFile":
         if (message.uri) {
           const doc = await vscode.workspace.openTextDocument(vscode.Uri.parse(message.uri));
@@ -479,7 +548,7 @@ class RigelAIPanelProvider {
 }
 
 // ─── Panel HTML — Welcome ─────────────────────────────────────────────────────
-function renderWelcome() {
+function renderWelcome(analyzing) {
   const nonce = getNonce();
   return `<!doctype html>
 <html lang="en">
@@ -504,14 +573,48 @@ function renderWelcome() {
       <div class="tip"><span class="tip-icon">🔴</span><span>Hover red underlines for details</span></div>
       <div class="tip"><span class="tip-icon">💡</span><span>Lightbulb → Apply AI fix</span></div>
     </div>
-    <button id="btn-analyze" class="btn-primary" data-command="reanalyze">
-      <span>⚡</span> Analyze Current File
-    </button>
+
+    <!-- Primary action buttons -->
+    <div class="welcome-actions">
+      <button id="btn-analyze" class="btn-primary ${analyzing ? "hidden" : ""}" data-command="reanalyze">
+        <span>⚡</span> Run Analysis
+      </button>
+      <button id="btn-stop" class="btn-danger ${analyzing ? "" : "hidden"}" data-command="stopAnalysis">
+        <span class="stop-icon">⬛</span> Stop Analysis
+      </button>
+    </div>
+
+    <!-- Divider -->
+    <div class="danger-zone">
+      <div class="danger-label">⚠️ Danger Zone</div>
+      <button id="btn-uninstall" class="btn-uninstall" data-command="uninstallExtension">
+        <span>🗑️</span> Uninstall Extension
+      </button>
+    </div>
   </div>
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
-    document.getElementById('btn-analyze').addEventListener('click', () => {
-      vscode.postMessage({ command: 'reanalyze' });
+
+    document.querySelectorAll('[data-command]').forEach(el => {
+      el.addEventListener('click', () => {
+        vscode.postMessage({ command: el.dataset.command });
+      });
+    });
+
+    // Listen for analyzing state changes from extension
+    window.addEventListener('message', event => {
+      const msg = event.data;
+      if (msg.type === 'analyzingState') {
+        const btnAnalyze = document.getElementById('btn-analyze');
+        const btnStop = document.getElementById('btn-stop');
+        if (msg.analyzing) {
+          btnAnalyze?.classList.add('hidden');
+          btnStop?.classList.remove('hidden');
+        } else {
+          btnAnalyze?.classList.remove('hidden');
+          btnStop?.classList.add('hidden');
+        }
+      }
     });
   </script>
 </body>
@@ -519,7 +622,7 @@ function renderWelcome() {
 }
 
 // ─── Panel HTML — Results ─────────────────────────────────────────────────────
-function renderPanel(review) {
+function renderPanel(review, analyzing) {
   const nonce = getNonce();
   const data = review.result;
   const llm = data?.llm_analysis || {};
@@ -582,9 +685,19 @@ function renderPanel(review) {
     <button class="btn-secondary" data-command="copyCorrectedCode" ${optimizedCode ? "" : "disabled"}>
       📋 Copy
     </button>
-    <button class="btn-ghost" data-command="reanalyze">
-      ↺ Re-run
+    <button class="btn-ghost" data-command="reanalyze" id="btn-run" ${analyzing ? "disabled" : ""}>
+      ⚡ Run
     </button>
+    <button class="btn-stop-inline" data-command="stopAnalysis" id="btn-stop" ${analyzing ? "" : "disabled style='display:none'"}>
+      ⬛ Stop
+    </button>
+  </div>
+
+  <!-- Analyzing Indicator -->
+  <div id="analyzing-bar" class="analyzing-bar ${analyzing ? "" : "hidden"}">
+    <span class="pulse-dot"></span>
+    <span>Analyzing your code…</span>
+    <button class="btn-stop-sm" data-command="stopAnalysis">Stop</button>
   </div>
 
   <!-- Severity grid -->
@@ -632,13 +745,13 @@ function renderPanel(review) {
     </div>
   </section>` : ""}
 
-  <!-- AI Notes -->
+  <!-- AI Notes (Rich Formatted) -->
   ${llmNotes ? `
   <section class="section">
     <div class="section-header">
       <span class="section-title">🤖 AI Review Notes</span>
     </div>
-    <div class="ai-notes">${escapeHtml(llmNotes)}</div>
+    <div class="ai-notes">${renderRichNotes(llmNotes)}</div>
   </section>` : ""}
 
   <!-- Corrected Code -->
@@ -651,6 +764,12 @@ function renderPanel(review) {
       ? `<pre class="code-block"><code>${escapeHtml(optimizedCode)}</code></pre>`
       : `<div class="empty-state">No corrected code was generated. Run "Generate Corrected Code" for a full fix.</div>`}
   </section>
+
+  <!-- Danger Zone -->
+  <div class="danger-zone-panel">
+    <div class="danger-label-sm">⚠️ Danger Zone</div>
+    <button class="btn-uninstall-sm" data-command="uninstallExtension">🗑️ Uninstall Extension</button>
+  </div>
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
@@ -669,9 +788,130 @@ function renderPanel(review) {
         card.classList.toggle('expanded');
       });
     });
+
+    // Listen for analyzing state changes
+    window.addEventListener('message', event => {
+      const msg = event.data;
+      if (msg.type === 'analyzingState') {
+        const bar = document.getElementById('analyzing-bar');
+        const btnRun = document.getElementById('btn-run');
+        const btnStop = document.getElementById('btn-stop');
+        if (msg.analyzing) {
+          bar?.classList.remove('hidden');
+          if (btnRun) btnRun.disabled = true;
+          if (btnStop) { btnStop.style.display = ''; btnStop.disabled = false; }
+        } else {
+          bar?.classList.add('hidden');
+          if (btnRun) btnRun.disabled = false;
+          if (btnStop) { btnStop.style.display = 'none'; btnStop.disabled = true; }
+        }
+      }
+    });
   </script>
 </body>
 </html>`;
+}
+
+// ─── Rich AI Notes Renderer ───────────────────────────────────────────────────
+/**
+ * Converts plain-text LLM notes (with ### headings, **bold**, `code`, code fences)
+ * into rich colorful HTML for the sidebar panel.
+ */
+function renderRichNotes(raw) {
+  const lines = raw.split("\n");
+  let html = "";
+  let inCodeFence = false;
+  let codeLang = "";
+  let codeBuffer = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Code fence open/close
+    const fenceMatch = line.match(/^```(\w*)$/);
+    if (fenceMatch) {
+      if (!inCodeFence) {
+        inCodeFence = true;
+        codeLang = fenceMatch[1] || "code";
+        codeBuffer = [];
+      } else {
+        // Close fence — emit code block
+        inCodeFence = false;
+        html += `<div class="notes-code-block"><div class="notes-code-lang">${escapeHtml(codeLang)}</div><pre><code>${escapeHtml(codeBuffer.join("\n"))}</code></pre></div>`;
+        codeBuffer = [];
+        codeLang = "";
+      }
+      continue;
+    }
+
+    if (inCodeFence) {
+      codeBuffer.push(line);
+      continue;
+    }
+
+    // Headings (### ## #)
+    const h3 = line.match(/^###\s+(.+)/);
+    const h2 = line.match(/^##\s+(.+)/);
+    const h1 = line.match(/^#\s+(.+)/);
+    if (h3) {
+      html += `<div class="notes-h3">${inlineFormat(h3[1])}</div>`;
+      continue;
+    }
+    if (h2) {
+      html += `<div class="notes-h2">${inlineFormat(h2[1])}</div>`;
+      continue;
+    }
+    if (h1) {
+      html += `<div class="notes-h1">${inlineFormat(h1[1])}</div>`;
+      continue;
+    }
+
+    // Horizontal rule
+    if (/^---+$/.test(line.trim())) {
+      html += `<hr class="notes-hr"/>`;
+      continue;
+    }
+
+    // Numbered list
+    const numList = line.match(/^(\d+)\.\s+(.+)/);
+    if (numList) {
+      html += `<div class="notes-list-item"><span class="notes-list-num">${escapeHtml(numList[1])}.</span><span>${inlineFormat(numList[2])}</span></div>`;
+      continue;
+    }
+
+    // Bullet list (- or *)
+    const bullet = line.match(/^[-*]\s+(.+)/);
+    if (bullet) {
+      html += `<div class="notes-list-item"><span class="notes-bullet">•</span><span>${inlineFormat(bullet[1])}</span></div>`;
+      continue;
+    }
+
+    // Empty line
+    if (!line.trim()) {
+      html += `<div class="notes-spacer"></div>`;
+      continue;
+    }
+
+    // Regular paragraph line
+    html += `<div class="notes-line">${inlineFormat(line)}</div>`;
+  }
+
+  return html;
+}
+
+/**
+ * Apply inline formatting: **bold**, *italic*, `code`, and escape HTML.
+ */
+function inlineFormat(text) {
+  // Escape HTML first, then apply formatting
+  let out = escapeHtml(text);
+  // Bold: **text**
+  out = out.replace(/\*\*(.+?)\*\*/g, '<strong class="notes-bold">$1</strong>');
+  // Italic: *text* (not **)
+  out = out.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em class="notes-italic">$1</em>');
+  // Inline code: `code`
+  out = out.replace(/`([^`]+)`/g, '<code class="notes-inline-code">$1</code>');
+  return out;
 }
 
 // ─── Finding / Fix Card Renderers ─────────────────────────────────────────────
@@ -733,10 +973,12 @@ function panelStyles() {
     line-height: 1.5;
   }
 
+  .hidden { display: none !important; }
+
   /* ── Welcome ── */
   .welcome {
     display: flex; flex-direction: column; align-items: center;
-    padding: 32px 16px; gap: 14px; text-align: center;
+    padding: 28px 16px; gap: 12px; text-align: center;
   }
   .logo-wrap { margin-bottom: 4px; }
   .logo-ring {
@@ -749,7 +991,7 @@ function panelStyles() {
   .logo-icon { font-size: 28px; }
   .brand { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   .tagline { color: var(--vscode-descriptionForeground); font-size: 12px; max-width: 220px; }
-  .tip-list { display: flex; flex-direction: column; gap: 8px; width: 100%; text-align: left; margin: 8px 0; }
+  .tip-list { display: flex; flex-direction: column; gap: 8px; width: 100%; text-align: left; margin: 6px 0; }
   .tip {
     display: flex; align-items: center; gap: 10px;
     background: var(--vscode-editor-background);
@@ -758,6 +1000,9 @@ function panelStyles() {
     font-size: 12px;
   }
   .tip-icon { font-size: 16px; flex-shrink: 0; }
+
+  /* Welcome actions */
+  .welcome-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 4px; }
 
   /* ── Buttons ── */
   button {
@@ -789,7 +1034,111 @@ function panelStyles() {
     background: transparent; color: var(--vscode-descriptionForeground);
     border: 1px solid var(--vscode-panel-border);
   }
-  .btn-ghost:hover { background: var(--vscode-editor-background); }
+  .btn-ghost:hover:not(:disabled) { background: var(--vscode-editor-background); }
+
+  /* ── Stop / Danger buttons ── */
+  .btn-danger {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: #fff;
+    box-shadow: 0 2px 8px #dc262633;
+    animation: pulse-red 1.8s ease-in-out infinite;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: #991b1b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px #dc262655;
+  }
+  .btn-stop-inline {
+    background: #dc262620;
+    color: #f87171;
+    border: 1px solid #dc262650;
+    border-radius: 6px; cursor: pointer;
+    font: inherit; font-weight: 600; font-size: 12px;
+    padding: 7px 12px; transition: all 0.15s ease;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-stop-inline:not(:disabled):hover {
+    background: #dc262640;
+    border-color: #f87171;
+  }
+  .btn-stop-sm {
+    background: #dc262620; color: #f87171;
+    border: 1px solid #dc262650; border-radius: 5px;
+    font-size: 11px; font-weight: 700; padding: 3px 8px; cursor: pointer;
+    margin-left: auto; transition: background 0.15s;
+  }
+  .btn-stop-sm:hover { background: #dc262640; }
+
+  /* ── Uninstall button ── */
+  .btn-uninstall {
+    background: transparent;
+    color: #f87171;
+    border: 1px dashed #f8717166;
+    border-radius: 6px; cursor: pointer;
+    font: inherit; font-size: 12px; font-weight: 600;
+    padding: 7px 14px;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+    width: 100%; justify-content: center;
+  }
+  .btn-uninstall:hover {
+    background: #f8717115;
+    border-color: #f87171;
+    box-shadow: 0 0 8px #f8717130;
+  }
+  .btn-uninstall-sm {
+    background: transparent;
+    color: #f87171;
+    border: 1px dashed #f8717166;
+    border-radius: 5px; cursor: pointer;
+    font-size: 11px; font-weight: 600;
+    padding: 5px 10px;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: all 0.15s;
+  }
+  .btn-uninstall-sm:hover {
+    background: #f8717115;
+    border-color: #f87171;
+  }
+
+  /* ── Danger Zone ── */
+  .danger-zone {
+    width: 100%; margin-top: 10px;
+    border: 1px dashed #f8717140;
+    border-radius: 8px; padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 8px; align-items: center;
+  }
+  .danger-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: #f87171; opacity: 0.7;
+  }
+  .danger-zone-panel {
+    margin-top: 16px; margin-bottom: 8px;
+    border: 1px dashed #f8717130;
+    border-radius: 8px; padding: 8px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .danger-label-sm {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: #f87171; opacity: 0.6;
+  }
+
+  /* ── Analyzing bar ── */
+  .analyzing-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(90deg, #7c3aed22, #312e5533);
+    border: 1px solid #7c3aed55;
+    border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;
+    font-size: 12px; color: #a78bfa;
+    animation: fadeIn 0.3s ease;
+  }
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #7c3aed;
+    animation: pulse-glow 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
 
   /* ── Panel header ── */
   .panel-header {
@@ -895,13 +1244,78 @@ function panelStyles() {
   }
   .suggestion-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #60a5fa; display: block; margin-bottom: 4px; }
 
-  /* ── AI Notes ── */
+  /* ── Rich AI Notes ── */
   .ai-notes {
     background: var(--vscode-editor-background);
     border: 1px solid var(--vscode-panel-border);
-    border-radius: 8px; padding: 10px 12px;
-    font-size: 12px; line-height: 1.7;
-    white-space: pre-wrap; color: var(--vscode-foreground);
+    border-radius: 10px; padding: 14px 14px;
+    font-size: 12.5px; line-height: 1.75;
+    color: var(--vscode-foreground);
+  }
+  .notes-h1 {
+    font-size: 15px; font-weight: 800;
+    color: #a78bfa;
+    border-bottom: 2px solid #7c3aed55;
+    padding-bottom: 5px; margin-bottom: 8px; margin-top: 14px;
+    letter-spacing: 0.3px;
+  }
+  .notes-h2 {
+    font-size: 13.5px; font-weight: 700;
+    color: #60a5fa;
+    border-left: 3px solid #3b82f6;
+    padding-left: 8px; margin-bottom: 6px; margin-top: 12px;
+  }
+  .notes-h3 {
+    font-size: 12.5px; font-weight: 700;
+    color: #34d399;
+    margin-bottom: 4px; margin-top: 10px;
+  }
+  .notes-h1:first-child, .notes-h2:first-child, .notes-h3:first-child { margin-top: 0; }
+  .notes-hr {
+    border: none;
+    border-top: 1px solid var(--vscode-panel-border);
+    margin: 10px 0;
+  }
+  .notes-line { color: var(--vscode-foreground); }
+  .notes-spacer { height: 6px; }
+  .notes-list-item {
+    display: flex; gap: 6px; align-items: flex-start; padding: 1px 0;
+  }
+  .notes-list-num {
+    color: #a78bfa; font-weight: 700; font-size: 12px; flex-shrink: 0; min-width: 20px;
+  }
+  .notes-bullet {
+    color: #60a5fa; font-weight: 900; font-size: 14px; flex-shrink: 0; line-height: 1.5;
+  }
+  .notes-bold { color: #facc15; font-weight: 700; }
+  .notes-italic { color: #94a3b8; font-style: italic; }
+  .notes-inline-code {
+    background: #1e1e3a; color: #f472b6;
+    border: 1px solid #7c3aed44;
+    border-radius: 4px; padding: 0 5px;
+    font-family: var(--vscode-editor-font-family, 'Cascadia Code', monospace);
+    font-size: 11.5px;
+  }
+  .notes-code-block {
+    background: #0d0d1a;
+    border: 1px solid #7c3aed55;
+    border-radius: 8px; overflow: hidden;
+    margin: 8px 0;
+    box-shadow: 0 2px 8px #00000044;
+  }
+  .notes-code-lang {
+    background: #7c3aed22;
+    color: #a78bfa; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 4px 10px;
+    border-bottom: 1px solid #7c3aed33;
+  }
+  .notes-code-block pre {
+    margin: 0; padding: 10px 12px;
+    font-family: var(--vscode-editor-font-family, 'Cascadia Code', monospace);
+    font-size: 11.5px; line-height: 1.6;
+    white-space: pre-wrap; overflow-x: auto;
+    color: #e2e8f0;
   }
 
   /* ── Code block ── */
@@ -927,6 +1341,23 @@ function panelStyles() {
 
   /* ── Inline copy btn ── */
   .inline-copy { padding: 3px 8px; font-size: 11px; }
+
+  /* ── Stop button icon ── */
+  .stop-icon { font-size: 10px; }
+
+  /* ── Animations ── */
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 2px 8px #dc262633; }
+    50% { box-shadow: 0 2px 16px #dc262688; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -963,6 +1394,10 @@ function escapeHtml(value) {
 }
 
 function deactivate() {
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
   diagnosticCollection?.clear();
   diagnosticCollection?.dispose();
   reviewCache.clear();

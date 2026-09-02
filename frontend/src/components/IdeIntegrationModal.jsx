@@ -29,13 +29,13 @@ const IDE_OPTIONS = [
     id: "vscode",
     name: "Visual Studio Code",
     tagline: "Standard Microsoft VS Code (Windows / macOS / Linux)",
-    cliCommand: "code --install-extension rigelai-code-review-0.3.0.vsix",
+    cliCommand: "code --install-extension rigelai-code-review-0.4.0.vsix",
     binaryName: "code",
     guiSteps: [
       "Open VS Code and navigate to the Extensions View (Ctrl+Shift+X or Cmd+Shift+X).",
       "Click the three dots menu (…) at the top-right of the Extensions panel.",
       "Select 'Install from VSIX…' from the dropdown list.",
-      "Browse to your downloaded 'rigelai-code-review-0.3.0.vsix' file and confirm."
+      "Browse to your downloaded 'rigelai-code-review-0.4.0.vsix' file and confirm."
     ],
     troubleshootTip: "Ensure 'code' is added to your system PATH via 'Shell Command: Install code command in PATH' inside VS Code Command Palette (Ctrl+Shift+P)."
   },
@@ -43,13 +43,13 @@ const IDE_OPTIONS = [
     id: "cursor",
     name: "Cursor AI",
     tagline: "The AI-first Code Editor built on VS Code core",
-    cliCommand: "cursor --install-extension rigelai-code-review-0.3.0.vsix",
+    cliCommand: "cursor --install-extension rigelai-code-review-0.4.0.vsix",
     binaryName: "cursor",
     guiSteps: [
       "Open Cursor and press Ctrl+Shift+X (or Cmd+Shift+X) to access Extensions.",
       "Click the '…' (More Actions) icon in the top header of the extensions sidebar.",
       "Choose 'Install from VSIX…'.",
-      "Select 'rigelai-code-review-0.3.0.vsix' and wait for the success notification."
+      "Select 'rigelai-code-review-0.4.0.vsix' and wait for the success notification."
     ],
     troubleshootTip: "If 'cursor' is not recognized in terminal, install via Cursor Command Palette: type 'Install cursor command'."
   },
@@ -58,14 +58,14 @@ const IDE_OPTIONS = [
     name: "Antigravity IDE / Windsurf",
     tagline: "Next-generation Agentic AI & Code Assistant IDEs",
     icon: "https://raw.githubusercontent.com/devicons/devicon/master/icons/vscode/vscode-original.svg",
-    cliCommand: "antigravity --install-extension rigelai-code-review-0.3.0.vsix",
+    cliCommand: "antigravity --install-extension rigelai-code-review-0.4.0.vsix",
     binaryName: "antigravity",
-    altCliCommand: "windsurf --install-extension rigelai-code-review-0.3.0.vsix",
+    altCliCommand: "windsurf --install-extension rigelai-code-review-0.4.0.vsix",
     guiSteps: [
       "Open your IDE workspace and click the Extensions icon on the Activity Bar.",
       "Click the '…' (Views and More Actions) menu in the top right corner.",
       "Click 'Install from VSIX…'.",
-      "Pick 'rigelai-code-review-0.3.0.vsix'. The RigelAI status bar & context commands will initialize instantly."
+      "Pick 'rigelai-code-review-0.4.0.vsix'. The RigelAI status bar & context commands will initialize instantly."
     ],
     troubleshootTip: "Works natively with all VS Code fork engines (Antigravity, Windsurf, Positron, VSCodium). Use the GUI VSIX installer if your terminal CLI alias is not linked."
   },
@@ -74,12 +74,12 @@ const IDE_OPTIONS = [
     name: "VSCodium / OpenVSX",
     tagline: "Free/Libre Open Source Software Binaries of VS Code",
     icon: "https://raw.githubusercontent.com/vscodium/vscodium/master/icons/vscodium.png",
-    cliCommand: "codium --install-extension rigelai-code-review-0.3.0.vsix",
+    cliCommand: "codium --install-extension rigelai-code-review-0.4.0.vsix",
     binaryName: "codium",
     guiSteps: [
       "Launch VSCodium and open the Extensions view.",
       "Click the '…' menu and select 'Install from VSIX…'.",
-      "Choose 'rigelai-code-review-0.3.0.vsix' from your disk.",
+      "Choose 'rigelai-code-review-0.4.0.vsix' from your disk.",
       "Verify that RigelAI: Analyze commands are visible in your Command Palette (F1)."
     ],
     troubleshootTip: "VSCodium uses Open-VSX by default. Direct local VSIX installation bypasses any marketplace network restrictions."
@@ -90,7 +90,7 @@ const COMMON_ERRORS = [
   {
     title: "ENOENT: no such file or directory, open '...vsix'",
     cause: "The terminal command was executed from a directory that does not contain the .vsix file (e.g. running from root P:\\ instead of P:\\CodeSentinel-AI\\).",
-    solution: "Either navigate to the directory where the VSIX file exists before running the command, or specify the full absolute path:\ncode --install-extension \"P:\\CodeSentinel-AI\\rigelai-code-review-0.3.0.vsix\""
+    solution: "Either navigate to the directory where the VSIX file exists before running the command, or specify the full absolute path:\ncode --install-extension \"P:\\CodeSentinel-AI\\vscode-extension\\rigelai-code-review-0.4.0.vsix\""
   },
   {
     title: "'code' / 'cursor' is not recognized as an internal or external command",
@@ -101,6 +101,16 @@ const COMMON_ERRORS = [
     title: "Extension fails to reach backend server (Offline/Timeout)",
     cause: "The default backend URL is pointing to a local or remote endpoint that is currently stopped or blocked by firewall.",
     solution: "Open IDE Settings (Ctrl+,), search for 'rigelai.apiUrl', and set it to your running FastAPI backend (e.g., http://localhost:8000 or https://rigelai.onrender.com)."
+  },
+  {
+    title: "v0.4.0: Stop Analysis button is greyed out / not responding",
+    cause: "The stop button is only active while an analysis HTTP request is in flight. If the backend has already responded or the request timed out, there is nothing to abort.",
+    solution: "The Stop button is enabled automatically when analysis starts and disabled immediately when it finishes. If it stays stuck, check that your backend is reachable at rigelai.apiUrl (Settings > RigelAI). A backend crash will auto-reset the button state."
+  },
+  {
+    title: "v0.4.0: Uninstall Extension button does nothing",
+    cause: "The uninstall command triggers a VS Code modal confirmation. If the modal is dismissed or the IDE requires a reload, it may appear that nothing happened.",
+    solution: "After clicking Uninstall and confirming in the modal popup, reload VS Code (Ctrl+Shift+P → 'Developer: Reload Window') to complete removal. You can also uninstall via Extensions panel (Ctrl+Shift+X) → RigelAI → Uninstall."
   }
 ];
 
@@ -190,7 +200,7 @@ export default function IdeIntegrationModal({ isOpen, onClose, onOpenCopilot }) 
             <div className="guide-header-row">
               <div className="guide-title-meta">
                 <h3>Installing RigelAI for {currentIde.name}</h3>
-                <span className="bundle-version-badge">Package: v0.3.0 (.vsix)</span>
+                <span className="bundle-version-badge">Package: v0.4.0 (.vsix)</span>
               </div>
 
               {/* Approach Switcher */}
@@ -237,12 +247,12 @@ export default function IdeIntegrationModal({ isOpen, onClose, onOpenCopilot }) 
                     <span className="step-num">Step 1</span>
                     <p>Download the VSIX package to your workspace or project root folder:</p>
                     <a
-                      href="/extensions/rigelai-code-review-0.3.0.vsix"
+                      href="/extensions/rigelai-code-review-0.4.0.vsix"
                       download
                       className="btn-download-inline"
                     >
                       <Download size={14} />
-                      <span>Download rigelai-code-review-0.3.0.vsix (391 KB)</span>
+                      <span>Download rigelai-code-review-0.4.0.vsix (386 KB)</span>
                     </a>
                   </div>
 
@@ -284,9 +294,9 @@ export default function IdeIntegrationModal({ isOpen, onClose, onOpenCopilot }) 
 
                   <div className="method-step">
                     <span className="step-num">Note</span>
-                    <p className="step-subtext">
-                      <strong>Important:</strong> If you run the command from another folder or drive, ensure you pass the <em>full absolute path</em> (e.g. <code>{currentIde.binaryName} --install-extension "P:\CodeSentinel-AI\rigelai-code-review-0.3.0.vsix"</code>) to prevent <code>ENOENT: no such file or directory</code> errors.
-                    </p>
+                      <p className="step-subtext">
+                        <strong>Important:</strong> If you run the command from another folder or drive, ensure you pass the <em>full absolute path</em> (e.g. <code>{currentIde.binaryName} --install-extension "P:\CodeSentinel-AI\vscode-extension\rigelai-code-review-0.4.0.vsix"</code>) to prevent <code>ENOENT: no such file or directory</code> errors.
+                      </p>
                   </div>
                 </div>
               )}
@@ -314,12 +324,12 @@ export default function IdeIntegrationModal({ isOpen, onClose, onOpenCopilot }) 
                   <div className="gui-download-box">
                     <span>Need the VSIX file?</span>
                     <a
-                      href="/extensions/rigelai-code-review-0.3.0.vsix"
+                      href="/extensions/rigelai-code-review-0.4.0.vsix"
                       download
                       className="btn-download-inline"
                     >
                       <Download size={14} />
-                      <span>Download rigelai-code-review-0.3.0.vsix</span>
+                      <span>Download rigelai-code-review-0.4.0.vsix</span>
                     </a>
                   </div>
                 </div>

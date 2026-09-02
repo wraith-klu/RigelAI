@@ -2,7 +2,7 @@
   "name": "rigelai-code-review",
   "displayName": "RigelAI Code Review",
   "description": "AI-powered inline code review for VS Code. Automatic red underlines, hover explanations, lightbulb fixes, and a side panel with corrected code — powered by the RigelAI backend.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "wraith-klu",
   "icon": "icon.png",
   "license": "MIT",
@@ -93,6 +93,16 @@
         "command": "rigelai.openWebsite",
         "title": "RigelAI: Open Website",
         "icon": "$(link-external)"
+      },
+      {
+        "command": "rigelai.stopAnalysis",
+        "title": "RigelAI: Stop Analysis",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "rigelai.uninstallExtension",
+        "title": "RigelAI: Uninstall Extension",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -113,6 +123,10 @@
         {
           "command": "rigelai.clearDiagnostics",
           "group": "navigation@23"
+        },
+        {
+          "command": "rigelai.stopAnalysis",
+          "group": "navigation@24"
         }
       ],
       "editor/title": [

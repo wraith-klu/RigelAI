@@ -13,12 +13,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:rigelai.analyzeCurrentFile",
-    "onCommand:rigelai.analyzeSelection",
-    "onCommand:rigelai.generateCorrectedCode",
-    "onCommand:rigelai.openSettings",
-    "onCommand:rigelai.openWebsite",
-    "onUri"
+    "onStartupFinished"
   ],
   "main": "./src/extension.js",
   "contributes": {
