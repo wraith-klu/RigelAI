@@ -281,7 +281,7 @@ export default function IdeIntegrationModal({ isOpen, onClose, onOpenCopilot }) 
                     <div className="code-snippet-card">
                       <div style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1, overflow: "hidden" }}>
                         <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600 }}>Project Workspace Folder:</span>
-                        <code>{currentIde.binaryName} --install-extension "P:\CodeSentinel-AI\vscode-extension\rigelai-code-review-0.4.0.vsix"</code>
+                        <code>{currentIde.binaryName} --install-extension "C:\Users\Admin\Downloads\rigelai-code-review-0.4.0.vsix"</code>
                       </div>
                       <button
                         type="button"
