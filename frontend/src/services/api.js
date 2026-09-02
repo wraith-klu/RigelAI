@@ -1,8 +1,16 @@
 // RigelAI API service for the FastAPI backend
-// Compatible with FastAPI backend
+// v0.4.0 — AbortSignal support for stop-analysis, improved error handling
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
+/** Thrown when a request is cancelled via AbortSignal */
+export class CancelledError extends Error {
+  constructor() {
+    super("Request cancelled by user.");
+    this.name = "CancelledError";
+  }
+}
 
 
 // POST /chat  (JSON)
@@ -26,18 +34,26 @@ export async function sendChatMessage(query) {
 
 
 // POST /analyze-file (FormData)
-export async function analyzeFile(file, query = "Analyze and optimize this code") {
+export async function analyzeFile(file, query = "Analyze and optimize this code", signal = null) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("user_query", query);
 
-  const res = await fetch(`${API_URL}/analyze-file`, {
-    method: "POST",
-    body: formData,
-  });
+  let res;
+  try {
+    res = await fetch(`${API_URL}/analyze-file`, {
+      method: "POST",
+      body: formData,
+      signal,
+    });
+  } catch (err) {
+    if (err.name === "AbortError") throw new CancelledError();
+    throw err;
+  }
 
   if (!res.ok) {
-    throw new Error("Analysis failed");
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Analysis failed (${res.status})${detail ? ': ' + detail : ""}`);
   }
 
   return res.json();
@@ -45,21 +61,23 @@ export async function analyzeFile(file, query = "Analyze and optimize this code"
 
 
 // POST /analyze-editor (JSON)
-export async function analyzeEditor(code, query = "Analyze this code", sessionId = null) {
-  const res = await fetch(`${API_URL}/analyze-editor`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      code: code,
-      user_query: query,
-      session_id: sessionId,
-    }),
-  });
+export async function analyzeEditor(code, query = "Analyze this code", sessionId = null, signal = null) {
+  let res;
+  try {
+    res = await fetch(`${API_URL}/analyze-editor`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, user_query: query, session_id: sessionId }),
+      signal,
+    });
+  } catch (err) {
+    if (err.name === "AbortError") throw new CancelledError();
+    throw err;
+  }
 
   if (!res.ok) {
-    throw new Error("Editor analysis failed");
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Editor analysis failed (${res.status})${detail ? ': ' + detail : ""}`);
   }
 
   return res.json();
