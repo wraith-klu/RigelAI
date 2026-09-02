@@ -20,32 +20,48 @@
 
 /* ── Hero Section ──────────────────────────────────────────────────────── */
 .studio-hero-section {
-  padding: 72px 0 52px;
+  padding: 88px 0 58px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* Ambient Radial Backlights */
+.studio-hero-section::after {
+  content: "";
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 650px;
+  height: 380px;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.1) 45%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Subtle grid background decoration */
 .studio-hero-section::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -40px -100px;
   background-image:
     linear-gradient(var(--border-subtle) 1px, transparent 1px),
     linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
-  background-size: 48px 48px;
-  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 80%);
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 80%);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 25%, transparent 80%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 25%, transparent 80%);
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.65;
+  z-index: 0;
 }
 
 html[data-theme="light"] .studio-hero-section::before {
-  opacity: 0.25;
+  opacity: 0.35;
 }
 
 .hero-badge-row {
@@ -53,9 +69,10 @@ html[data-theme="light"] .studio-hero-section::before {
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 28px;
   position: relative;
+  z-index: 1;
 }
 
 /* Live status pill */
@@ -65,8 +82,9 @@ html[data-theme="light"] .studio-hero-section::before {
   gap: 8px;
   padding: 6px 16px;
   border-radius: var(--radius-full);
-  background: var(--status-success-bg);
-  border: 1px solid var(--status-success-border);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);
   font-size: 11.5px;
   font-weight: 700;
   color: var(--status-success);
@@ -97,20 +115,23 @@ html[data-theme="light"] .studio-hero-section::before {
   color: var(--text-muted);
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
-  padding: 5px 12px;
+  padding: 5px 14px;
   border-radius: var(--radius-full);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 /* Main headline */
 .hero-main-title {
-  font-size: clamp(34px, 5vw, 62px);
+  font-size: clamp(36px, 5.2vw, 68px);
   font-weight: 800;
-  line-height: 1.09;
-  letter-spacing: -0.035em;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
   color: var(--text-primary);
-  max-width: 900px;
-  margin: 0 auto 20px;
+  max-width: 960px;
+  margin: 0 auto 24px;
   position: relative;
+  z-index: 1;
 }
 
 .text-gradient {
@@ -118,15 +139,17 @@ html[data-theme="light"] .studio-hero-section::before {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 20px rgba(56, 189, 248, 0.25));
 }
 
 .hero-description {
-  font-size: clamp(15px, 1.5vw, 18px);
+  font-size: clamp(15.5px, 1.5vw, 18.5px);
   color: var(--text-secondary);
-  max-width: 680px;
-  line-height: 1.65;
-  margin: 0 auto 44px;
+  max-width: 720px;
+  line-height: 1.7;
+  margin: 0 auto 48px;
   position: relative;
+  z-index: 1;
 }
 
 /* ── Metrics Ribbon ───────────────────────────────────────────────────── */
@@ -135,24 +158,27 @@ html[data-theme="light"] .studio-hero-section::before {
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1120px;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-subtle) inset;
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-subtle) inset;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   position: relative;
+  z-index: 1;
 }
 
 .ribbon-item {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px 22px;
+  padding: 20px 24px;
   border-right: 1px solid var(--border-subtle);
   text-align: left;
   position: relative;
-  transition: background var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .ribbon-item:last-child {
@@ -180,32 +206,39 @@ html[data-theme="light"] .studio-hero-section::before {
 }
 
 .ribbon-icon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   border-radius: var(--radius-sm);
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  color: var(--brand-primary);
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
   flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.ribbon-item:hover .ribbon-icon {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: scale(1.05);
 }
 
 .ribbon-meta {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .ribbon-meta strong {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
 }
 
 .ribbon-meta span {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--text-muted);
 }
 
@@ -213,6 +246,31 @@ html[data-theme="light"] .studio-hero-section::before {
 .studio-workspace-section {
   padding: 40px 0 48px;
   scroll-margin-top: 80px;
+}
+
+.main-content.copilot-fullscreen-view {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  max-height: calc(100vh - 64px);
+  padding-bottom: 16px;
+  overflow: hidden;
+}
+
+.studio-workspace-section.chat-mode {
+  padding: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.studio-workspace-section.chat-mode .chatbot-studio-wrapper {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  flex: 1;
 }
 
 .section-title-bar {
@@ -525,6 +583,98 @@ html[data-theme="light"] .studio-hero-section::before {
   transition: all var(--transition-fast);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.ribbon-item.ribbon-clickable {
+  cursor: pointer;
+}
+
+.ribbon-arrow {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--brand-primary);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all var(--transition-fast);
+}
+
+.ribbon-item.ribbon-clickable:hover .ribbon-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.btn-mini-extension {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.btn-mini-extension:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+.btn-open-ide-hub {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+  transition: all 0.2s var(--ease-spring);
+}
+
+.btn-open-ide-hub:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.55);
+  transform: translateY(-2px);
+}
+
+.ide-copilot-link-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.btn-link-copilot {
+  background: transparent;
+  border: none;
+  color: var(--brand-cyan);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.btn-link-copilot:hover {
+  color: #38bdf8;
+  text-decoration: underline;
 }
 
 .btn-copy-cli:hover {

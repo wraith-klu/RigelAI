@@ -183,17 +183,32 @@ const isSessionExpired = (timestamp) => {
   return Date.now() - Number(timestamp) >= ONE_HOUR_MS;
 };
 
-export default function Chatbot() {
+export default function Chatbot({ initialInput }) {
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialInput || "");
   const [loading, setLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
-  const [charCount, setCharCount] = useState(0);
+  const [charCount, setCharCount] = useState((initialInput || "").length);
   const [lastFailedQuery, setLastFailedQuery] = useState(null);
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const canvasRef = useRef(null);
+
+  // Auto-fill and resize when initialInput changes
+  useEffect(() => {
+    if (initialInput) {
+      setInput(initialInput);
+      setCharCount(initialInput.length);
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = "auto";
+          textareaRef.current.style.height = `${Math.min(160, textareaRef.current.scrollHeight)}px`;
+          textareaRef.current.focus({ preventScroll: true });
+        }
+      });
+    }
+  }, [initialInput]);
 
   // ── Persistence with 1-Hour Expiration ──────────────────────────────
   useEffect(() => {
@@ -336,7 +351,7 @@ export default function Chatbot() {
     } finally {
       setLoading(false);
       requestAnimationFrame(resizeTextarea);
-      textareaRef.current?.focus();
+      textareaRef.current?.focus({ preventScroll: true });
     }
   }, [input, loading, resizeTextarea]);
 
@@ -361,7 +376,7 @@ export default function Chatbot() {
     localStorage.removeItem(STORAGE_KEY);
     setMessages([]);
     setLastFailedQuery(null);
-    textareaRef.current?.focus();
+    textareaRef.current?.focus({ preventScroll: true });
   }, []);
 
   const isEmpty = messages.length === 0;
@@ -520,7 +535,7 @@ export default function Chatbot() {
                   setInput("");
                   setCharCount(0);
                   resizeTextarea();
-                  textareaRef.current?.focus();
+                  textareaRef.current?.focus({ preventScroll: true });
                 }}
                 title="Clear input"
                 tabIndex={-1}

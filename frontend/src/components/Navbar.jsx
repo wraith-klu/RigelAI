@@ -15,12 +15,19 @@ import {
 } from "lucide-react";
 import "./Navbar.css";
 
-export default function Navbar({ mode = "analyze", setMode, theme = "dark", toggleTheme }) {
+export default function Navbar({ mode = "analyze", setMode, theme = "dark", toggleTheme, onOpenIdeModal }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleModeChange = (newMode) => {
     setMode?.(newMode);
     setMobileOpen(false);
+  };
+
+  const handleOpenIdeHub = () => {
+    setMobileOpen(false);
+    if (onOpenIdeModal) {
+      onOpenIdeModal();
+    }
   };
 
   return (
@@ -68,10 +75,15 @@ export default function Navbar({ mode = "analyze", setMode, theme = "dark", togg
             <span className="tab-pill">Interactive</span>
           </button>
 
-          <a href="#vscode-extension" className="nav-tab">
+          <button
+            type="button"
+            className="nav-tab"
+            onClick={handleOpenIdeHub}
+            title="Open Universal IDE Integration Guide"
+          >
             <Download size={16} />
-            <span>VS Code Extension</span>
-          </a>
+            <span>IDE Extension Hub</span>
+          </button>
         </nav>
 
         {/* Action buttons */}
@@ -139,14 +151,14 @@ export default function Navbar({ mode = "analyze", setMode, theme = "dark", togg
               <span>AI Copilot Review</span>
             </button>
 
-            <a
-              href="#vscode-extension"
+            <button
+              type="button"
               className="mobile-nav-btn"
-              onClick={() => setMobileOpen(false)}
+              onClick={handleOpenIdeHub}
             >
               <Download size={18} />
-              <span>Download VS Code Extension</span>
-            </a>
+              <span>IDE Extension Setup Hub</span>
+            </button>
 
             <button
               type="button"
