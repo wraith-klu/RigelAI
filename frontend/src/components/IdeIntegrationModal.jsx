@@ -258,17 +258,39 @@ export default function IdeIntegrationModal({ isOpen, onClose, onOpenCopilot }) 
 
                   <div className="method-step">
                     <span className="step-num">Step 2</span>
-                    <p>Open your command line in the folder containing the file and execute:</p>
-                    <div className="code-snippet-card">
-                      <code>{currentIde.cliCommand}</code>
+                    <p>Open your command line and install with the full path to avoid <code>ENOENT</code> directory errors:</p>
+                    
+                    {/* Downloads path option */}
+                    <div className="code-snippet-card" style={{ marginBottom: "8px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1, overflow: "hidden" }}>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600 }}>Standard Downloads Folder:</span>
+                        <code>{currentIde.binaryName} --install-extension "C:\Users\Admin\Downloads\rigelai-code-review-0.4.0.vsix"</code>
+                      </div>
                       <button
                         type="button"
                         className="btn-copy-code"
-                        onClick={() => handleCopy(currentIde.cliCommand, "main-cli")}
+                        onClick={() => handleCopy(`${currentIde.binaryName} --install-extension "C:\\Users\\Admin\\Downloads\\rigelai-code-review-0.4.0.vsix"`, "dl-cli")}
                         title="Copy command"
                       >
-                        {copiedKey === "main-cli" ? <Check size={13} className="text-emerald" /> : <Copy size={13} />}
-                        <span>{copiedKey === "main-cli" ? "Copied" : "Copy"}</span>
+                        {copiedKey === "dl-cli" ? <Check size={13} className="text-emerald" /> : <Copy size={13} />}
+                        <span>{copiedKey === "dl-cli" ? "Copied" : "Copy"}</span>
+                      </button>
+                    </div>
+
+                    {/* Workspace path option */}
+                    <div className="code-snippet-card">
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1, overflow: "hidden" }}>
+                        <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600 }}>Project Workspace Folder:</span>
+                        <code>{currentIde.binaryName} --install-extension "P:\CodeSentinel-AI\vscode-extension\rigelai-code-review-0.4.0.vsix"</code>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-copy-code"
+                        onClick={() => handleCopy(`${currentIde.binaryName} --install-extension "P:\\CodeSentinel-AI\\vscode-extension\\rigelai-code-review-0.4.0.vsix"`, "ws-cli")}
+                        title="Copy command"
+                      >
+                        {copiedKey === "ws-cli" ? <Check size={13} className="text-emerald" /> : <Copy size={13} />}
+                        <span>{copiedKey === "ws-cli" ? "Copied" : "Copy"}</span>
                       </button>
                     </div>
                   </div>
@@ -278,11 +300,11 @@ export default function IdeIntegrationModal({ isOpen, onClose, onOpenCopilot }) 
                       <span className="step-num">Alternative</span>
                       <p>If you are using Windsurf:</p>
                       <div className="code-snippet-card">
-                        <code>{currentIde.altCliCommand}</code>
+                        <code>windsurf --install-extension "C:\Users\Admin\Downloads\rigelai-code-review-0.4.0.vsix"</code>
                         <button
                           type="button"
                           className="btn-copy-code"
-                          onClick={() => handleCopy(currentIde.altCliCommand, "alt-cli")}
+                          onClick={() => handleCopy('windsurf --install-extension "C:\\Users\\Admin\\Downloads\\rigelai-code-review-0.4.0.vsix"', "alt-cli")}
                           title="Copy command"
                         >
                           {copiedKey === "alt-cli" ? <Check size={13} className="text-emerald" /> : <Copy size={13} />}
@@ -295,7 +317,7 @@ export default function IdeIntegrationModal({ isOpen, onClose, onOpenCopilot }) 
                   <div className="method-step">
                     <span className="step-num">Note</span>
                       <p className="step-subtext">
-                        <strong>Important:</strong> If you run the command from another folder or drive, ensure you pass the <em>full absolute path</em> (e.g. <code>{currentIde.binaryName} --install-extension "P:\CodeSentinel-AI\vscode-extension\rigelai-code-review-0.4.0.vsix"</code>) to prevent <code>ENOENT: no such file or directory</code> errors.
+                        <strong>Important:</strong> Always use quotes around the full path (e.g. <code>{currentIde.binaryName} --install-extension "C:\path\to\rigelai-code-review-0.4.0.vsix"</code>) to prevent Windows spaces and <code>ENOENT: no such file or directory</code> errors.
                       </p>
                   </div>
                 </div>
