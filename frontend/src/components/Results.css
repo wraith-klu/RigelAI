@@ -410,71 +410,88 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .filter-label {
   font-size: 12px;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
 }
 
 .filter-pill {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
   background: var(--bg-surface-raised);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-default);
   color: var(--text-secondary);
   transition: all var(--transition-fast);
+  cursor: pointer;
 }
 
 .filter-pill:hover {
   color: var(--text-primary);
-  border-color: var(--border-default);
+  border-color: var(--border-highlight);
+  background: var(--bg-surface-hover);
 }
 
 .filter-pill.active {
-  background: var(--bg-surface-active);
+  background: var(--brand-primary);
   color: #ffffff;
-  border-color: var(--border-highlight);
+  border-color: var(--brand-primary);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
 }
 
 .filter-pill.critical.active {
-  background: var(--status-critical-bg);
-  border-color: var(--status-critical-border);
-  color: #fb7185;
+  background: #f43f5e;
+  border-color: #f43f5e;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
 }
 
 .filter-pill.warning.active {
-  background: var(--status-warning-bg);
-  border-color: var(--status-warning-border);
-  color: #fbbf24;
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
 }
 
 .filter-pill.suggestion.active {
-  background: var(--status-success-bg);
-  border-color: var(--status-success-border);
-  color: #34d399;
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
 
 .findings-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
+/* Redesigned Premium Finding Cards */
 .finding-card {
-  background: var(--bg-surface-raised);
-  border: 1px solid var(--border-subtle);
-  border-left: 3px solid #64748b;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-left: 4px solid var(--border-default);
   border-radius: var(--radius-md);
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
   transition: all var(--transition-fast);
+}
+
+.finding-card:hover {
+  border-color: var(--border-highlight);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .finding-card.critical {
@@ -493,11 +510,6 @@
   border-left-color: #0ea5e9;
 }
 
-.finding-card:hover {
-  border-color: var(--border-default);
-  background: var(--bg-surface-hover);
-}
-
 .finding-card-header {
   display: flex;
   align-items: center;
@@ -508,89 +520,138 @@
 .finding-title-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .finding-severity-tag {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
   font-family: var(--font-mono);
   text-transform: uppercase;
-  padding: 2px 6px;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
   border-radius: 4px;
 }
 
 .finding-severity-tag.critical {
-  background: var(--status-critical-bg);
-  color: #fb7185;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #f43f5e;
+}
+
+html[data-theme="light"] .finding-severity-tag.critical {
+  background: #ffe4e6;
+  border-color: #fecdd3;
+  color: #e11d48;
 }
 
 .finding-severity-tag.warning {
-  background: var(--status-warning-bg);
-  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+html[data-theme="light"] .finding-severity-tag.warning {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #d97706;
 }
 
 .finding-severity-tag.suggestion {
-  background: var(--status-success-bg);
-  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+html[data-theme="light"] .finding-severity-tag.suggestion {
+  background: #d1fae5;
+  border-color: #a7f3d0;
+  color: #059669;
 }
 
 .finding-severity-tag.info {
-  background: var(--status-info-bg);
-  color: #38bdf8;
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  color: #0ea5e9;
 }
 
 .finding-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .finding-location {
-  font-size: 11.5px;
+  font-size: 12px;
   font-family: var(--font-mono);
+  font-weight: 600;
   color: var(--text-muted);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  padding: 3px 8px;
+  border-radius: 4px;
 }
 
 .finding-message {
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
+/* High Contrast & Clean Recommendation Box */
 .finding-recommendation-box {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.28);
   border-radius: var(--radius-sm);
 }
 
+html[data-theme="light"] .finding-recommendation-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
 .rec-icon {
-  color: #34d399;
-  margin-top: 1px;
+  color: #10b981;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+html[data-theme="light"] .rec-icon {
+  color: #059669;
 }
 
 .rec-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .rec-label {
   font-size: 11px;
-  font-weight: 700;
-  color: #34d399;
+  font-weight: 800;
+  color: #10b981;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+}
+
+html[data-theme="light"] .rec-label {
+  color: #047857;
 }
 
 .rec-text {
-  font-size: 12.5px;
-  color: #d1fae5;
-  line-height: 1.45;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+html[data-theme="light"] .rec-text {
+  color: #064e3b;
 }
 
 /* AST Raw */
@@ -786,12 +847,104 @@
   background: var(--bg-surface-hover);
 }
 
-/* Notes Panel */
+/* Notes Panel — AI Architecture Review */
 .notes-panel {
-  background: var(--bg-surface-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 22px 26px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  box-shadow: var(--shadow-sm);
+}
+
+.notes-panel .markdown-body {
+  color: var(--text-primary);
+  font-size: 14.5px;
+  line-height: 1.75;
+}
+
+.notes-panel .markdown-body h1,
+.notes-panel .markdown-body h2,
+.notes-panel .markdown-body h3,
+.notes-panel .markdown-body h4 {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-panel .markdown-body h2 {
+  font-size: 18px;
+  color: #38bdf8;
+  border-bottom: 1px solid var(--border-default);
+  padding-bottom: 8px;
+}
+
+.notes-panel .markdown-body h3 {
+  font-size: 16px;
+  color: #818cf8;
+}
+
+html[data-theme="light"] .notes-panel .markdown-body h2 {
+  color: #0284c7;
+}
+
+html[data-theme="light"] .notes-panel .markdown-body h3 {
+  color: #4f46e5;
+}
+
+.notes-panel .markdown-body strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.notes-panel .markdown-body ul,
+.notes-panel .markdown-body ol {
+  padding-left: 24px;
+  margin: 12px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notes-panel .markdown-body li {
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.notes-panel .markdown-body li strong {
+  color: #38bdf8;
+}
+
+html[data-theme="light"] .notes-panel .markdown-body li strong {
+  color: #0369a1;
+}
+
+.notes-panel .markdown-body code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #38bdf8;
+}
+
+html[data-theme="light"] .notes-panel .markdown-body code:not(pre code) {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: #0284c7;
+}
+
+.notes-panel .markdown-body blockquote {
+  border-left: 4px solid #6366f1;
+  background: rgba(99, 102, 241, 0.06);
+  padding: 14px 18px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 16px 0;
+  color: var(--text-secondary);
 }
 
 /* Copilot Panel */

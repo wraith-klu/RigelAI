@@ -441,33 +441,46 @@ def analyze_user_query(
 
     # ---------- PROMPT ----------
     prompt = f"""
-    You are an expert senior software engineer helping a developer understand and improve their code.
-
+    You are a distinguished Principal Software Engineer and Staff AI/ML Architect conducting an in-depth, professional code review.
+    
     LANGUAGE: {language}
-
-    CODE:
+    
+    SOURCE CODE:
+    ```
     {code}
-
-    AST Findings:
+    ```
+    
+    AST STATIC ANALYSIS FINDINGS:
     {ast_findings}
-
-    ML Prediction:
+    
+    ROBERTA SMELL CLASSIFICATION:
     {model_prediction}
-
-    USER QUESTION:
+    
+    DEVELOPER INQUIRY / TASK:
     {user_query}
-
-    INSTRUCTIONS:
-    - Answer the user's question directly.
-    - If optimized code is requested, return fully corrected, runnable {language} code.
-    - Do not return the original code unless it is already correct and optimal.
-    - Preserve the user's apparent intent while fixing syntax and logic bugs.
-    - For Python, optimized_code must parse with ast.parse.
-    - Return valid JSON only. Do not wrap it in markdown.
-
+    
+    INSTRUCTIONS FOR THE "answer" FIELD:
+    - Provide a rich, highly detailed, beautifully structured explanation written in clear, natural, and accessible English.
+    - Format using clean Markdown with distinct sections:
+      ### 1. 🔍 Executive Summary & Architecture Overview
+      A clear, concise breakdown of what the code is attempting to do and its structural quality.
+      
+      ### 2. ⚠️ Critical Code Smells & Anti-Patterns Identified
+      Bullet points with specific line references, detailing *why* each issue is problematic (e.g., redundant operations, deep nesting, memory overhead, dead code, poor variable naming).
+      
+      ### 3. ⚡ Algorithmic Time & Space Complexity Analysis
+      - **Time Complexity:** Exact Big-O notation for each function and overall breakdown.
+      - **Space Complexity:** Exact auxiliary memory and allocation analysis.
+      
+      ### 4. 🛠️ Step-by-Step Remediation Strategy
+      Concrete, actionable architectural best practices and clean-code refactoring principles to solve each identified flaw.
+      
+    - If optimized code is requested by the user, provide the complete, clean, production-grade {language} code inside the "optimized_code" field.
+    - Return strictly valid JSON matching the schema below.
+    
     JSON SCHEMA:
     {{
-      "answer": "Brief review notes and explanation.",
+      "answer": "Comprehensive markdown explanation with headings, bullet points, complexity analysis, and clean formatting.",
       "optimized_code": {optimized_code_instruction}
     }}
     """
@@ -475,9 +488,9 @@ def analyze_user_query(
     # ---------- LLM CALL ----------
     llm_response = call_llm(
         prompt=prompt,
-        system_message="You are a world-class code reviewer. Return only valid JSON.",
-        temperature=0.1,
-        max_tokens=2000,
+        system_message="You are an elite Principal Software Engineer. Provide articulate, well-structured, formatted code analysis with clear markdown headings and deep technical insights. Return valid JSON only.",
+        temperature=0.15,
+        max_tokens=3000,
     )
 
     # ---------- EXTRACT AND VALIDATE CODE ----------
