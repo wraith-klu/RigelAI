@@ -1,20 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { 
-  Code2, 
-  Upload, 
-  Play, 
-  Trash2, 
-  BookOpen, 
-  Sparkles, 
-  AlertCircle, 
-  CheckCircle2, 
-  Cpu, 
-  Clock, 
-  FileCode2,
-  Layers,
-  ChevronRight
-} from "lucide-react";
+  IconUpload, 
+  IconPlay, 
+  IconTrash, 
+  IconCheck, 
+  IconCode,
+  IconAlertTriangle,
+  IconTerminal
+} from "./Icons";
 import FileUpload from "./FileUpload";
 import { analyzeEditor } from "../services/api";
 import "./CodeInputPanel.css";
@@ -32,7 +26,7 @@ const LANGUAGES = [
 
 const CODE_PRESETS = {
   python: {
-    long_method: `# Smell Example: Long Method & High Cognitive Complexity
+    long_method: `# Example: Long Method and High Cognitive Complexity
 def process_order_batch(orders, user, discount_tier, notify_webhook=True):
     total_revenue = 0
     valid_orders = []
@@ -79,13 +73,13 @@ def process_order_batch(orders, user, discount_tier, notify_webhook=True):
         "total_revenue": round(total_revenue, 2),
         "errors": error_log
     }`,
-    data_clump: `# Smell Example: Data Clumps & Feature Envy
+    data_clump: `# Example: Data Clumps and Feature Envy
 class ReportGenerator:
     def __init__(self, db_conn):
         self.db = db_conn
 
     def generate_invoice(self, user_name, user_email, user_address, user_city, user_zip, user_country, items):
-        # Repeated parameter groups across multiple reporting functions
+        # Repeated parameter groups across multiple functions
         header = f"Invoice for {user_name} <{user_email}>\\n{user_address}, {user_city} {user_zip}, {user_country}"
         lines = [header, "=" * 40]
         total = sum(i["price"] * i["qty"] for i in items)
@@ -95,7 +89,7 @@ class ReportGenerator:
         return "\\n".join(lines)`
   },
   javascript: {
-    long_method: `// Smell Example: Complex Nested Callbacks & Long Function
+    long_method: `// Example: Complex Nested Callbacks and Long Function
 function calculateCartBreakdown(cart, customer, promoCode, callback) {
   let subtotal = 0;
   let appliedDiscount = 0;
@@ -111,7 +105,7 @@ function calculateCartBreakdown(cart, customer, promoCode, callback) {
     }
   }
 
-  if (promoCode === "CYBER15" && subtotal > 100) {
+  if (promoCode === "SAVE15" && subtotal > 100) {
     appliedDiscount = subtotal * 0.15;
   } else if (promoCode === "SAVE5") {
     appliedDiscount = 5;
@@ -124,10 +118,10 @@ function calculateCartBreakdown(cart, customer, promoCode, callback) {
 };
 
 const AGENT_STAGES = [
-  { id: "ast", title: "AST Syntax & Tree Parsing", desc: "Extracting symbol tokens and cyclomatic branches" },
-  { id: "ml", title: "Smell Classifier Inference", desc: "Running CodeSmell-RoBERTa / AST pattern vector model" },
-  { id: "llm", title: "AI Remediation Analysis", desc: "Evaluating maintainability, bugs, and refactoring pathways" },
-  { id: "report", title: "Compiling Quality Matrix", desc: "Synthesizing health scorecard, diffs, and remediation" },
+  { id: "ast", title: "AST Syntax Parsing", desc: "Extracting symbol tokens and cyclomatic branches" },
+  { id: "ml", title: "Smell Classifier Inference", desc: "Evaluating pattern vectors and code smell probabilities" },
+  { id: "llm", title: "Refactoring Remediation", desc: "Generating modular structure and architectural diffs" },
+  { id: "report", title: "Compiling Quality Matrix", desc: "Synthesizing health scorecard and findings" },
 ];
 
 function PipelineExecutionHUD({ run }) {
@@ -148,32 +142,17 @@ function PipelineExecutionHUD({ run }) {
     AGENT_STAGES.length - 1,
     Math.floor((progressPercent / 100) * AGENT_STAGES.length)
   );
-  const eta = Math.max(2, estimate - elapsed);
 
   return (
     <div className="telemetry-hud" role="status" aria-live="polite">
       <div className="telemetry-hud-top">
         <div className="telemetry-title-group">
-          <div className="telemetry-pulse-orb">
-            <Cpu size={16} className="text-cyan" />
-          </div>
-          <div>
-            <div className="telemetry-tag">
-              <span className="dot-active"></span>
-              Execution Pipeline Active
-            </div>
-            <h4>{run.label}</h4>
-          </div>
+          <strong>Analysis Pipeline Active:</strong>
+          <span>{run.label}</span>
         </div>
         <div className="telemetry-stats">
-          <div className="stat-unit">
-            <Clock size={13} />
-            <span>Elapsed: <strong>{elapsed}s</strong></span>
-          </div>
-          <div className="stat-unit eta">
-            <span>ETA: ~<strong>{eta}s</strong></span>
-          </div>
-          <div className="telemetry-percent">{progressPercent}%</div>
+          <span>{elapsed}s elapsed</span>
+          <span>{progressPercent}%</span>
         </div>
       </div>
 
@@ -181,9 +160,7 @@ function PipelineExecutionHUD({ run }) {
         <div 
           className="telemetry-progress-fill" 
           style={{ width: `${progressPercent}%` }}
-        >
-          <span className="telemetry-shimmer"></span>
-        </div>
+        />
       </div>
 
       <div className="telemetry-stage-grid">
@@ -197,7 +174,7 @@ function PipelineExecutionHUD({ run }) {
             >
               <div className="stage-step-header">
                 <span className="stage-num">
-                  {isComplete ? <CheckCircle2 size={12} /> : idx + 1}
+                  {isComplete ? <IconCheck size={12} /> : idx + 1}
                 </span>
                 <span className="stage-title">{stage.title}</span>
               </div>
@@ -210,20 +187,30 @@ function PipelineExecutionHUD({ run }) {
   );
 }
 
-export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
-  const [inputMode, setInputMode] = useState("upload"); // "upload" | "editor"
+export default function CodeInputPanel({ onAnalyze }) {
+  const [inputMode, setInputMode] = useState("upload"); // Default to upload so File & Repo Audit is visible always
   const [lang, setLang] = useState("python");
   const [code, setCode] = useState(CODE_PRESETS.python.long_method);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeRun, setActiveRun] = useState(null);
 
-  // Line count and character statistics
   const stats = useMemo(() => {
     const lines = code ? code.split("\n").length : 0;
     const chars = code ? code.length : 0;
     return { lines, chars };
   }, [code]);
+
+  const handleOpenFileInEditor = (fileText, fileName) => {
+    setCode(fileText);
+    const ext = fileName.split(".").pop().toLowerCase();
+    const langMap = {
+      py: "python", js: "javascript", ts: "typescript", jsx: "javascript", tsx: "typescript",
+      java: "java", cpp: "cpp", c: "c", go: "go", rs: "rust"
+    };
+    if (langMap[ext]) setLang(langMap[ext]);
+    setInputMode("editor");
+  };
 
   const handleAnalyze = useCallback(async () => {
     if (!code.trim()) {
@@ -234,8 +221,8 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
     setLoading(true);
     setError("");
     setActiveRun({
-      label: `Deep AST + ML Scan (${lang.toUpperCase()})`,
-      estimateSeconds: 16,
+      label: `AST + ML Scan (${lang.toUpperCase()})`,
+      estimateSeconds: 12,
       startedAt: Date.now(),
     });
 
@@ -244,7 +231,7 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
       const data = await analyzeEditor(code, query);
       onAnalyze?.(data);
     } catch (e) {
-      setError(e.message || "Analysis pipeline error. Verify the FastAPI backend is running.");
+      setError(e.message || "Analysis error. Verify the backend service is running or inspect browser console.");
     } finally {
       setLoading(false);
       setActiveRun(null);
@@ -271,7 +258,6 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
     }
   };
 
-  // Keyboard shortcut: Ctrl/Cmd + Enter to run analysis
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
@@ -286,38 +272,44 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
   }, [inputMode, loading, handleAnalyze]);
 
   return (
-    <div className="input-studio-card">
+    <div className="input-studio-card card">
       {/* Studio Header & Modality Switch */}
       <div className="studio-card-header">
         <div className="studio-header-left">
-          <div className="studio-mode-pills" role="tablist" aria-label="Input modality">
+          <div className="studio-tab-group" role="tablist" aria-label="Input modality">
             <button
               type="button"
-              className={`mode-pill ${inputMode === "upload" ? "active" : ""}`}
+              className={`studio-tab-btn tab-upload ${inputMode === "upload" ? "active" : ""}`}
               onClick={() => setInputMode("upload")}
               role="tab"
               aria-selected={inputMode === "upload"}
             >
-              <Upload size={15} />
-              <span>File & Repository Audit</span>
+              <span className="tab-icon-chip purple" aria-hidden="true">
+                <IconUpload size={14} />
+              </span>
+              <span>File and Repository Audit</span>
+              {inputMode === "upload" && <span className="tab-active-indicator" aria-hidden="true"></span>}
             </button>
             <button
               type="button"
-              className={`mode-pill ${inputMode === "editor" ? "active" : ""}`}
+              className={`studio-tab-btn tab-editor ${inputMode === "editor" ? "active" : ""}`}
               onClick={() => setInputMode("editor")}
               role="tab"
               aria-selected={inputMode === "editor"}
             >
-              <Code2 size={15} />
-              <span>Interactive Monaco IDE</span>
+              <span className="tab-icon-chip blue" aria-hidden="true">
+                <IconCode size={14} />
+              </span>
+              <span>Interactive Code Editor</span>
+              {inputMode === "editor" && <span className="tab-active-indicator" aria-hidden="true"></span>}
             </button>
           </div>
         </div>
 
         <div className="studio-header-right">
-          <span className="engine-badge">
-            <Cpu size={12} />
-            <span>AST v2.4 + PyTorch ML</span>
+          <span className="engine-badge active-engine">
+            <span className="engine-status-dot" aria-hidden="true"></span>
+            <span>AST Engine Active · Deterministic</span>
           </span>
         </div>
       </div>
@@ -327,36 +319,33 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
           {/* Editor Control Toolbar */}
           <div className="editor-control-bar">
             <div className="control-bar-left">
-              {/* Language Selector */}
-              <div className="select-wrapper">
-                <FileCode2 size={14} className="select-icon" />
-                <select
-                  value={lang}
-                  onChange={(e) => handleLanguageChange(e.target.value)}
-                  className="modern-select"
-                  aria-label="Select source language"
-                >
-                  {LANGUAGES.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.label} ({l.ext})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <label htmlFor="language-select" className="visually-hidden">Programming Language</label>
+              <select
+                id="language-select"
+                value={lang}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+                className="select-input"
+                aria-label="Select source language"
+              >
+                {LANGUAGES.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.label} ({l.ext})
+                  </option>
+                ))}
+              </select>
 
               {/* Sample Presets */}
               {CODE_PRESETS[lang] && (
                 <div className="preset-buttons">
-                  <span className="preset-label">Smell Presets:</span>
+                  <span className="preset-label">Presets:</span>
                   {Object.keys(CODE_PRESETS[lang]).map((k) => (
                     <button
                       key={k}
                       type="button"
-                      className="preset-pill-btn"
+                      className="preset-btn"
                       onClick={() => handlePresetSelect(k)}
                     >
-                      <BookOpen size={12} />
-                      <span>{k.replace("_", " ")}</span>
+                      {k === "long_method" ? "Long Method" : "Data Clump"}
                     </button>
                   ))}
                 </div>
@@ -366,29 +355,35 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
             <div className="control-bar-right">
               <button
                 type="button"
-                className="btn-toolbar"
+                className="btn-switch-upload-chip"
+                onClick={() => setInputMode("upload")}
+                title="Switch back to File and Repository Audit"
+              >
+                <span>📁 File &amp; Repo Audit</span>
+              </button>
+
+              <button
+                type="button"
+                className="btn-text"
                 onClick={handleClear}
                 title="Clear code editor"
               >
-                <Trash2 size={14} />
+                <IconTrash size={13} />
                 <span>Clear</span>
               </button>
 
               <button
                 type="button"
-                className="btn-run-analysis"
+                className="btn-primary"
                 onClick={handleAnalyze}
                 disabled={loading}
               >
                 {loading ? (
-                  <>
-                    <div className="spinner-compact"></div>
-                    <span>Analyzing...</span>
-                  </>
+                  <span>Analyzing...</span>
                 ) : (
                   <>
-                    <Play size={14} fill="currentColor" />
-                    <span>Run AST + ML Analysis</span>
+                    <IconPlay size={12} />
+                    <span>Run Analysis</span>
                   </>
                 )}
               </button>
@@ -398,23 +393,23 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
           {/* Monaco Editor Pane */}
           <div className="monaco-pane-frame">
             <Editor
-              height="480px"
+              height="420px"
               language={lang}
-              theme={theme === "light" ? "vs" : "vs-dark"}
+              theme="vs"
               value={code}
               onChange={(val) => setCode(val || "")}
               options={{
                 minimap: { enabled: false },
                 wordWrap: "on",
-                fontSize: 13.5,
-                fontFamily: "'JetBrains Mono', Consolas, Monaco, monospace",
-                lineHeight: 22,
+                fontSize: 13,
+                fontFamily: "ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, monospace",
+                lineHeight: 20,
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
                 renderLineHighlight: "all",
-                cursorBlinking: "smooth",
-                smoothScrolling: true,
-                padding: { top: 14, bottom: 14 },
+                cursorBlinking: "solid",
+                smoothScrolling: false,
+                padding: { top: 12, bottom: 12 },
                 bracketPairColorization: { enabled: true },
                 guides: { indentation: true, bracketPairs: true },
               }}
@@ -424,17 +419,14 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
           {/* Editor Status Bar */}
           <div className="editor-status-bar">
             <div className="status-bar-left">
-              <span className="status-item">
-                <FileCode2 size={12} />
-                <span>{lang.toUpperCase()}</span>
-              </span>
-              <span className="status-separator">•</span>
-              <span className="status-item">{stats.lines} lines</span>
-              <span className="status-separator">•</span>
-              <span className="status-item">{stats.chars} characters</span>
+              <span>{lang.toUpperCase()}</span>
+              <span>•</span>
+              <span>{stats.lines} lines</span>
+              <span>•</span>
+              <span>{stats.chars} characters</span>
             </div>
             <div className="status-bar-right">
-              <kbd className="hotkey-pill">⌘/Ctrl + Enter</kbd>
+              <kbd className="hotkey-pill">Ctrl+Enter</kbd>
               <span className="hotkey-hint">to run analysis</span>
             </div>
           </div>
@@ -442,7 +434,7 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
           {/* Error Banner */}
           {error && (
             <div className="studio-error-banner" role="alert">
-              <AlertCircle size={16} />
+              <IconAlertTriangle size={15} />
               <span>{error}</span>
             </div>
           )}
@@ -454,11 +446,13 @@ export default function CodeInputPanel({ onAnalyze, theme = "dark" }) {
           <FileUpload
             onResult={onAnalyze}
             onRunStateChange={(run) => setActiveRun(run)}
+            onSwitchToEditor={() => setInputMode("editor")}
+            onOpenFileInEditor={handleOpenFileInEditor}
           />
         </div>
       )}
 
-      {/* Real-time Telemetry Pipeline HUD */}
+      {/* Execution HUD */}
       <PipelineExecutionHUD run={activeRun} />
     </div>
   );

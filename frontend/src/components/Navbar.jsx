@@ -1,22 +1,43 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
-  ShieldCheck, 
-  Terminal, 
-  MessageSquareCode, 
-  Download, 
-  GitBranch, 
-  Activity,
-  Menu,
-  X,
-  ExternalLink,
-  Sparkles,
-  Sun,
-  Moon
-} from "lucide-react";
+  IconTerminal, 
+  IconChat, 
+  IconDownload, 
+  IconExternalLink,
+  IconClose,
+  IconGlobe,
+  IconSun,
+  IconMoon
+} from "./Icons";
 import "./Navbar.css";
 
-export default function Navbar({ mode = "analyze", setMode, theme = "dark", toggleTheme, onOpenIdeModal }) {
+export default function Navbar({ 
+  mode = "analyze", 
+  setMode, 
+  onOpenIdeModal,
+  onOpenDomainModal,
+  onOpenPalette
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("rigel_theme");
+      if (saved) return saved;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(theme);
+    localStorage.setItem("rigel_theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === "dark" ? "light" : "dark"));
+  };
 
   const handleModeChange = (newMode) => {
     setMode?.(newMode);
@@ -25,64 +46,61 @@ export default function Navbar({ mode = "analyze", setMode, theme = "dark", togg
 
   const handleOpenIdeHub = () => {
     setMobileOpen(false);
-    if (onOpenIdeModal) {
-      onOpenIdeModal();
-    }
+    onOpenIdeModal?.();
+  };
+
+  const handleOpenDomain = () => {
+    setMobileOpen(false);
+    onOpenDomainModal?.();
   };
 
   return (
     <header className="navbar-container">
       <div className="navbar-inner">
         {/* Brand */}
-        <a href="#top" className="navbar-brand" aria-label="RigelAI Platform">
-          <div className="brand-icon-wrapper">
-            <ShieldCheck className="brand-icon" size={20} />
-            <span className="brand-glow-orb"></span>
-          </div>
-          <div className="brand-meta">
-            <div className="brand-title">
-              <span>Rigel</span><span className="brand-ai">AI</span>
-              <span className="brand-version">v2.0</span>
-            </div>
-            <span className="brand-subtitle">Code Intelligence Studio</span>
-          </div>
+        <a href="#top" className="navbar-brand" aria-label="Rigel AI Homepage">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none" className="brand-symbol" aria-hidden="true">
+            <rect width="32" height="32" rx="6" fill="#1d1d1f"/>
+            <path d="M16 6L24 16L16 26L8 16Z" stroke="#fbfbfa" strokeWidth="2" strokeLinejoin="round"/>
+            <circle cx="16" cy="16" r="3" fill="#0066cc"/>
+          </svg>
+          <span className="brand-name">Rigel AI</span>
         </a>
-
-        {/* Engine Status */}
-        <div className="engine-status-pill" title="AST parser & ML smell classifier loaded">
-          <span className="pulse-dot"></span>
-          <span className="status-label">AST + ML Engine Active</span>
-        </div>
 
         {/* Navigation / Mode Switcher */}
         <nav className="navbar-nav desktop-only" aria-label="Main Navigation">
+          <a href="#overview" className="nav-link">
+            Overview
+          </a>
           <button
             type="button"
-            className={`nav-tab ${mode === "analyze" ? "active" : ""}`}
+            className={`nav-link-btn ${mode === "analyze" ? "active" : ""}`}
             onClick={() => handleModeChange("analyze")}
           >
-            <Terminal size={16} />
-            <span>Studio Workspace</span>
+            Live Studio
           </button>
-
           <button
             type="button"
-            className={`nav-tab ${mode === "chat" ? "active" : ""}`}
+            className={`nav-link-btn ${mode === "chat" ? "active" : ""}`}
             onClick={() => handleModeChange("chat")}
+            data-mode="chat"
           >
-            <MessageSquareCode size={16} />
-            <span>AI Copilot</span>
-            <span className="tab-pill">Interactive</span>
+            Copilot Chat
           </button>
-
           <button
             type="button"
-            className="nav-tab"
+            className="nav-link-btn"
             onClick={handleOpenIdeHub}
-            title="Open Universal IDE Integration Guide"
           >
-            <Download size={16} />
-            <span>IDE Extension Hub</span>
+            IDE Extension
+          </button>
+          <button
+            type="button"
+            className="nav-link-btn"
+            onClick={handleOpenDomain}
+            title="Custom Domain Verification"
+          >
+            Domain Setup
           </button>
         </nav>
 
@@ -90,31 +108,50 @@ export default function Navbar({ mode = "analyze", setMode, theme = "dark", togg
         <div className="navbar-actions desktop-only">
           <button
             type="button"
-            className="btn-icon theme-toggle-btn"
-            onClick={toggleTheme}
-            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            aria-label="Toggle theme"
+            className="nav-cmd-k-btn"
+            onClick={onOpenPalette}
+            title="Open Command Palette (⌘K or Ctrl+K)"
           >
-            {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+            <span className="cmd-k-text">Quick Actions</span>
+            <kbd className="cmd-k-chip">⌘K</kbd>
           </button>
 
           <a
             href="https://github.com/wraith-klu/RigelAI"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-icon"
-            title="View RigelAI on GitHub"
-            aria-label="GitHub Repository"
+            className="nav-secondary-link"
+            title="Source Code Repository"
           >
-            <GitBranch size={18} />
+            <span>GitHub</span>
+            <IconExternalLink size={13} />
           </a>
+
+          {/* Master 36x36px Square Sun/Moon Theme Switcher */}
+          <button
+            type="button"
+            className="nav-theme-toggle"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+            title={theme === "dark" ? "Switch to Japanese Linen light mode" : "Switch to Obsidian dark mode"}
+          >
+            {theme === "dark" ? <IconSun size={17} /> : <IconMoon size={17} />}
+          </button>
+
+          <button
+            type="button"
+            className={`btn-copilot${mode === "chat" ? " nav-btn-active" : ""}`}
+            onClick={() => { handleModeChange("chat"); window.location.hash = "workspace"; }}
+          >
+            <IconChat size={13} />
+            <span>Copilot Chat</span>
+          </button>
           <a
             href="#workspace"
-            className="btn-primary-compact"
+            className="btn-primary"
             onClick={() => handleModeChange("analyze")}
           >
-            <Sparkles size={15} />
-            <span>Run Analysis</span>
+            Run Analysis
           </a>
         </div>
 
@@ -123,9 +160,16 @@ export default function Navbar({ mode = "analyze", setMode, theme = "dark", togg
           type="button"
           className="mobile-toggle mobile-only"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle navigation menu"
+          aria-label={mobileOpen ? "Close menu" : "Open navigation menu"}
+          aria-expanded={mobileOpen}
         >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          {mobileOpen ? <IconClose size={20} /> : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          )}
         </button>
       </div>
 
@@ -133,13 +177,20 @@ export default function Navbar({ mode = "analyze", setMode, theme = "dark", togg
       {mobileOpen && (
         <div className="mobile-drawer">
           <div className="mobile-drawer-inner">
+            <a 
+              href="#overview" 
+              className="mobile-nav-btn"
+              onClick={() => setMobileOpen(false)}
+            >
+              Overview
+            </a>
             <button
               type="button"
               className={`mobile-nav-btn ${mode === "analyze" ? "active" : ""}`}
               onClick={() => handleModeChange("analyze")}
             >
-              <Terminal size={18} />
-              <span>Studio Workspace</span>
+              <IconTerminal size={16} />
+              <span>Live Studio</span>
             </button>
 
             <button
@@ -147,8 +198,8 @@ export default function Navbar({ mode = "analyze", setMode, theme = "dark", togg
               className={`mobile-nav-btn ${mode === "chat" ? "active" : ""}`}
               onClick={() => handleModeChange("chat")}
             >
-              <MessageSquareCode size={18} />
-              <span>AI Copilot Review</span>
+              <IconChat size={16} />
+              <span>Copilot Chat</span>
             </button>
 
             <button
@@ -156,27 +207,30 @@ export default function Navbar({ mode = "analyze", setMode, theme = "dark", togg
               className="mobile-nav-btn"
               onClick={handleOpenIdeHub}
             >
-              <Download size={18} />
-              <span>IDE Extension Setup Hub</span>
+              <IconDownload size={16} />
+              <span>IDE Extension</span>
             </button>
 
             <button
               type="button"
               className="mobile-nav-btn"
-              onClick={() => {
-                toggleTheme?.();
-              }}
+              onClick={handleOpenDomain}
             >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-              <span>{theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}</span>
+              <IconGlobe size={16} />
+              <span>Domain Setup Guide</span>
             </button>
 
             <div className="mobile-divider"></div>
 
-            <div className="mobile-engine-row">
-              <Activity size={16} className="text-emerald" />
-              <span>Backend Status: Online</span>
-            </div>
+            <a
+              href="https://github.com/wraith-klu/RigelAI"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mobile-nav-btn"
+            >
+              <span>GitHub Repository</span>
+              <IconExternalLink size={14} />
+            </a>
           </div>
         </div>
       )}
