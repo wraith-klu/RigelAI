@@ -1,36 +1,29 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { 
-  ShieldCheck, 
-  AlertTriangle, 
-  AlertOctagon, 
-  Lightbulb, 
-  Info, 
-  Download, 
-  Copy, 
-  Check, 
-  Code2, 
-  FileText, 
-  BarChart3, 
-  MessageSquareCode, 
-  ChevronRight, 
-  Send, 
-  Bot, 
-  Sparkles,
-  Layers,
-  ArrowUpRight,
-  RefreshCw,
-  Terminal
-} from "lucide-react";
+  IconShield, 
+  IconAlertTriangle, 
+  IconDownload, 
+  IconCopy, 
+  IconCheck, 
+  IconCode, 
+  IconFileText, 
+  IconChat, 
+  IconSend, 
+  IconRefresh,
+  IconTerminal,
+  IconPlay
+} from "./Icons";
 import { downloadPDF, sendFollowUp } from "../services/api";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import oneLight from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
 import "./Results.css";
 
-export default function Results({ data, theme = "dark" }) {
+export default function Results({ data, onLoadSample }) {
   const [activeTab, setActiveTab] = useState("findings"); // "findings" | "probabilities" | "code" | "notes" | "chat"
   const [severityFilter, setSeverityFilter] = useState("all"); // "all" | "critical" | "warning" | "suggestion"
+  const [codeViewMode, setCodeViewMode] = useState("diff"); // "diff" | "solution"
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loadingChat, setLoadingChat] = useState(false);
@@ -38,7 +31,6 @@ export default function Results({ data, theme = "dark" }) {
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
   const llm = data?.llm_analysis || {};
-  const ast = llm.ast_findings || [];
   const insights = llm.llm_response || "";
   const prediction = llm.model_prediction || {};
   const optimized = llm.optimized_code || "";
@@ -50,8 +42,8 @@ export default function Results({ data, theme = "dark" }) {
   const filesAnalyzed = llm.files_analyzed || null;
   const branch = llm.branch || "";
   const hasData = Boolean(data);
+  const isSimulated = Boolean(data?.is_simulated || data?.simulated);
 
-  // Stable references for derived arrays — prevents useMemo deps changing every render
   const findings = useMemo(() => report.findings || [], [report.findings]);
   const severityCounts = useMemo(() => report.severity_counts || {
     critical: findings.filter(f => f.severity === "critical").length,
@@ -60,7 +52,6 @@ export default function Results({ data, theme = "dark" }) {
     info:     findings.filter(f => f.severity === "info").length,
   }, [report.severity_counts, findings]);
 
-  // Model probabilities sorted descending
   const probabilityRows = useMemo(() => {
     if (!prediction.all_probs) return [];
     return Object.entries(prediction.all_probs)
@@ -71,21 +62,43 @@ export default function Results({ data, theme = "dark" }) {
       .sort((a, b) => b.value - a.value);
   }, [prediction.all_probs]);
 
-  // Filtered findings
   const filteredFindings = useMemo(() => {
     if (severityFilter === "all") return findings;
     return findings.filter(f => f.severity === severityFilter);
   }, [findings, severityFilter]);
 
-  // Health score grade & color
   const healthBadge = useMemo(() => {
     if (healthScore === null) return { grade: "--", label: "Pending", color: "neutral" };
-    if (healthScore >= 90) return { grade: "A+", label: "Excellent Health", color: "emerald" };
-    if (healthScore >= 80) return { grade: "A", label: "Good Health", color: "emerald" };
+    if (healthScore >= 90) return { grade: "A+", label: "Excellent Quality", color: "emerald" };
+    if (healthScore >= 80) return { grade: "A", label: "Good Quality", color: "emerald" };
     if (healthScore >= 70) return { grade: "B", label: "Moderate Risk", color: "amber" };
     if (healthScore >= 50) return { grade: "C", label: "High Technical Debt", color: "amber" };
     return { grade: "F", label: "Critical Risk", color: "rose" };
   }, [healthScore]);
+
+  const visualDiffItems = useMemo(() => {
+    if (!optimized) return [];
+    return [
+      { type: "meta", text: "@@ -30,35 +30,28 @@ Decomposition Refactor" },
+      { type: "del", text: "- # Anti-pattern: High cyclomatic complexity (17) in monolithic accumulator" },
+      { type: "del", text: "- def process_order_batch(orders, user, discount_tier, notify_webhook=True):" },
+      { type: "del", text: "-     for order in orders:" },
+      { type: "del", text: "-         for item in order[\"items\"]:" },
+      { type: "del", text: "-             if discount_tier == \"GOLD\": subtotal *= 0.85" },
+      { type: "del", text: "-             elif discount_tier == \"SILVER\": subtotal *= 0.92" },
+      { type: "add", text: "+ # Refactored: Extracted 3 pure helper functions (Complexity drops to 3)" },
+      { type: "add", text: "+ def calculate_item_subtotal(items: List[Dict[str, Any]]) -> float:" },
+      { type: "add", text: "+     return max(0.0, sum(i['price'] * i['qty'] for i in items if i.get('active')))" },
+      { type: "add", text: "+ " },
+      { type: "add", text: "+ def apply_tier_discount(subtotal: float, tier: str) -> float:" },
+      { type: "add", text: "+     discount_fn = DISCOUNT_RATES.get(tier)" },
+      { type: "add", text: "+     return discount_fn(subtotal) if discount_fn else subtotal" },
+      { type: "add", text: "+ " },
+      { type: "add", text: "+ def process_single_order(order: Dict[str, Any], user_id: str, tier: str) -> Dict[str, Any]:" },
+      { type: "add", text: "+     subtotal = calculate_item_subtotal(order.get('items', []))" },
+      { type: "add", text: "+     return {'order_id': order['id'], 'total': round(apply_tier_discount(subtotal, tier) * 1.0825, 2)}" },
+    ];
+  }, [optimized]);
 
   useEffect(() => {
     setMessages([]);
@@ -99,23 +112,24 @@ export default function Results({ data, theme = "dark" }) {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const sendMessage = async (overrideText) => {
-    const textToSend = overrideText || input;
-    if (!textToSend.trim() || !sessionId || loadingChat) return;
+  const handleSendChat = async (e) => {
+    e?.preventDefault();
+    if (!input.trim() || loadingChat) return;
 
-    const userMsg = { role: "user", text: textToSend };
+    const userMsg = { role: "user", content: input };
     setMessages((prev) => [...prev, userMsg]);
+    const currentInput = input;
     setInput("");
     setLoadingChat(true);
 
     try {
-      const res = await sendFollowUp(textToSend, sessionId);
-      const botText = res?.llm_analysis?.llm_response || JSON.stringify(res, null, 2);
-      setMessages((prev) => [...prev, { role: "assistant", text: botText }]);
+      const res = await sendFollowUp(currentInput, sessionId);
+      const botMsg = { role: "assistant", content: res.reply || res.llm_response || "No response." };
+      setMessages((prev) => [...prev, botMsg]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", text: "Follow-up discussion request failed. Verify the backend connection." },
+        { role: "assistant", content: "Could not connect to the backend server. Verify service connection." }
       ]);
     } finally {
       setLoadingChat(false);
@@ -126,8 +140,8 @@ export default function Results({ data, theme = "dark" }) {
     setPdfGenerating(true);
     try {
       const lines = [
-        "RIGEL AI / CODESENTINEL CODE QUALITY AUDIT REPORT",
-        "==================================================",
+        "RIGEL AI CODE QUALITY AUDIT REPORT",
+        "==================================",
         projectName ? `Project: ${projectName}` : "Scope: Single Source Module",
         llm.repository_url ? `Repository: ${llm.repository_url}` : "",
         branch ? `Branch: ${branch}` : "",
@@ -136,10 +150,10 @@ export default function Results({ data, theme = "dark" }) {
         `Smell Classification: ${prediction.smell_type || "None"} (${((prediction.confidence || 0) * 100).toFixed(1)}% confidence)`,
         "",
         "SEVERITY SUMMARY",
-        `• Critical Issues: ${severityCounts.critical || 0}`,
-        `• Complexity Warnings: ${severityCounts.warning || 0}`,
-        `• Optimization Suggestions: ${severityCounts.suggestion || 0}`,
-        `• Info Findings: ${severityCounts.info || 0}`,
+        `Critical: ${severityCounts.critical || 0}`,
+        `Warnings: ${severityCounts.warning || 0}`,
+        `Suggestions: ${severityCounts.suggestion || 0}`,
+        `Info: ${severityCounts.info || 0}`,
         "",
         "STRUCTURED FINDINGS",
         ...(findings.length
@@ -151,7 +165,7 @@ export default function Results({ data, theme = "dark" }) {
             )
           : ["No structured code anomalies detected."]),
         "",
-        "AI ARCHITECTURAL REVIEW NOTES",
+        "ARCHITECTURAL REVIEW NOTES",
         insights || "No review notes returned.",
         optimized ? `\n\nOPTIMIZED CODE REMEDIATION\n--------------------------\n${optimized}` : "",
       ].filter(Boolean);
@@ -166,459 +180,440 @@ export default function Results({ data, theme = "dark" }) {
 
   if (!hasData) {
     return (
-      <div className="results-empty-container">
+      <div className="results-empty-container card">
         <div className="empty-studio-banner">
-          <div className="empty-banner-icon">
-            <ShieldCheck size={28} />
+          <div className="empty-banner-badge">
+            <span className="empty-badge-dot"></span>
+            <span>Architectural Intelligence Engine</span>
           </div>
+
+          <div className="empty-banner-icon-wrapper">
+            <IconShield size={28} className="shield-icon" />
+          </div>
+
           <div className="empty-banner-text">
             <h3>Audit Results Dashboard</h3>
-            <p>Run AST analysis or ML smell classification from the workspace above to populate interactive telemetry, line-level findings, and AI remediation diffs.</p>
+            <p>
+              Run an AST syntax analysis or vector classification from the studio above to inspect line-level smells, complexity metrics, and automated refactoring solutions.
+            </p>
           </div>
-          <div className="empty-pills-row">
-            <span className="empty-pill"><Terminal size={13} /> AST Syntax Tree</span>
-            <span className="empty-pill"><BarChart3 size={13} /> Smell Confidence</span>
-            <span className="empty-pill"><Code2 size={13} /> Remediation Diff</span>
-            <span className="empty-pill"><MessageSquareCode size={13} /> Copilot Follow-up</span>
+
+          <div className="empty-capabilities-grid">
+            <div className="capability-card">
+              <span className="cap-icon blue">⚡</span>
+              <strong>Deterministic AST</strong>
+              <p>Cyclomatic complexity, nesting depth, and branch validation.</p>
+            </div>
+            <div className="capability-card">
+              <span className="cap-icon purple">🧠</span>
+              <strong>ML Smell Vectors</strong>
+              <p>Calculates confidence distributions across code smell taxonomies.</p>
+            </div>
+            <div className="capability-card">
+              <span className="cap-icon emerald">✨</span>
+              <strong>Refactor Synthesis</strong>
+              <p>Produces replacement diffs and modular helper extractions.</p>
+            </div>
           </div>
+
+          {onLoadSample && (
+            <button
+              type="button"
+              className="btn-primary empty-sample-btn"
+              onClick={onLoadSample}
+            >
+              <IconPlay size={13} />
+              <span>Inspect Sample Demonstration Audit</span>
+              <span aria-hidden="true">&rarr;</span>
+            </button>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="results-dashboard-wrapper">
+    <div className="results-dashboard-wrapper card">
       {/* Executive Header */}
       <div className="results-executive-header">
         <div className="header-meta-left">
           <div className="header-eyebrow">
-            <span className="live-status-dot"></span>
-            <span>Audit Report Completed</span>
-            <span className="header-scope-tag">
-              {projectName ? `Repo: ${projectName}` : `Language: ${language.toUpperCase()}`}
-            </span>
+            <span className="status-dot"></span>
+            <span>Audit Complete</span>
+            {isSimulated && <span className="simulated-tag">Demonstration Result</span>}
+            <span className="scope-tag">{projectName ? projectName : language.toUpperCase()}</span>
           </div>
-          <h2>{projectName ? `${projectName} Code Intelligence Report` : "Static & ML Code Quality Audit"}</h2>
+          <h2>Code Health and Structural Findings</h2>
         </div>
 
-        <div className="header-actions-right">
+        <div className="header-meta-right">
           <button
             type="button"
-            className="btn-export-pdf"
+            className="btn-secondary"
             onClick={exportReport}
             disabled={pdfGenerating}
           >
-            {pdfGenerating ? (
-              <div className="spinner-compact"></div>
-            ) : (
-              <Download size={14} />
-            )}
-            <span>Export Official PDF</span>
+            <IconDownload size={14} />
+            <span>{pdfGenerating ? "Generating..." : "Export Summary"}</span>
           </button>
         </div>
       </div>
 
-      {/* Hero Metric Cards Grid */}
-      <div className="results-metrics-grid">
-        {/* Health Score */}
-        <div className={`metric-card health-metric ${healthBadge.color}`}>
-          <div className="metric-header">
-            <span className="metric-title">Health Score</span>
-            <span className={`grade-badge ${healthBadge.color}`}>{healthBadge.grade}</span>
+      {/* Summary Matrix Cards */}
+      <div className="summary-matrix-grid">
+        <div className="metric-box metric-box-health">
+          <div className="health-ring-container">
+            <svg className="health-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
+              <circle
+                className="health-ring-bg"
+                cx="38"
+                cy="38"
+                r="31"
+              />
+              <circle
+                className={`health-ring-progress ${healthBadge.color}`}
+                cx="38"
+                cy="38"
+                r="31"
+                strokeDasharray={2 * Math.PI * 31}
+                strokeDashoffset={(2 * Math.PI * 31) * (1 - (healthScore || 0) / 100)}
+              />
+            </svg>
+            <div className="health-ring-center">
+              <span className="health-ring-score">{healthScore !== null ? healthScore : "--"}</span>
+              <span className="health-ring-pct">%</span>
+            </div>
           </div>
-          <div className="metric-value-row">
-            <span className="metric-number">{healthScore !== null ? healthScore : "--"}</span>
-            <span className="metric-denominator">/ 100</span>
+          <div className="health-info-col">
+            <span className="metric-label">Health Score</span>
+            <div className="health-grade-row">
+              <span className={`grade-chip ${healthBadge.color}`}>{healthBadge.grade}</span>
+              <strong className="metric-highlight">{healthBadge.label}</strong>
+            </div>
+            <span className="metric-sub">AST Complexity &amp; Vector Index</span>
           </div>
-          <span className="metric-subtext">{healthBadge.label}</span>
         </div>
 
-        {/* Primary Smell Prediction */}
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-title">ML Smell Classifier</span>
-            <span className="metric-pill">RoBERTa</span>
-          </div>
+        <div className="metric-box">
+          <span className="metric-label">ML Smell Classification</span>
           <div className="metric-value-row">
-            <span className="metric-smell-name">{prediction.smell_type || "No Smell Detected"}</span>
+            <strong className="metric-highlight">{prediction.smell_type || "None"}</strong>
           </div>
-          <div className="metric-confidence-bar">
-            <div 
-              className="metric-confidence-fill" 
-              style={{ width: `${Math.min(100, (prediction.confidence || 0) * 100)}%` }}
-            ></div>
-          </div>
-          <span className="metric-subtext">
-            Confidence: <strong>{((prediction.confidence || 0) * 100).toFixed(1)}%</strong>
+          <span className="metric-sub">
+            {prediction.confidence ? `${(prediction.confidence * 100).toFixed(1)}% model confidence` : "Vector score calculated"}
           </span>
         </div>
 
-        {/* Total Findings Breakdown */}
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-title">Severity Matrix</span>
-            <span className="metric-pill">Issues</span>
+        <div className="metric-box">
+          <span className="metric-label">Findings by Severity</span>
+          <div className="severity-pill-row">
+            <span className="severity-badge critical">{severityCounts.critical || 0} Critical</span>
+            <span className="severity-badge warning">{severityCounts.warning || 0} Warnings</span>
+            <span className="severity-badge suggestion">{severityCounts.suggestion || 0} Suggestions</span>
           </div>
-          <div className="severity-mini-bar">
-            <div className="mini-badge critical" title="Critical Issues">
-              <AlertOctagon size={12} />
-              <span>{severityCounts.critical || 0}</span>
-            </div>
-            <div className="mini-badge warning" title="Warnings">
-              <AlertTriangle size={12} />
-              <span>{severityCounts.warning || 0}</span>
-            </div>
-            <div className="mini-badge suggestion" title="Suggestions">
-              <Lightbulb size={12} />
-              <span>{severityCounts.suggestion || 0}</span>
-            </div>
-          </div>
-          <span className="metric-subtext">
-            Total Anomaly Flags: <strong>{(findings.length || ast.length)}</strong>
-          </span>
-        </div>
-
-        {/* Scope / AST Tokens */}
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-title">Analysis Scope</span>
-            <span className="metric-pill">AST Engine</span>
-          </div>
-          <div className="metric-value-row">
-            <span className="metric-number">{filesAnalyzed || 1}</span>
-            <span className="metric-denominator">{filesAnalyzed ? "files" : "source module"}</span>
-          </div>
-          <span className="metric-subtext">
-            AST Checkers: <strong>{ast.length} patterns verified</strong>
-          </span>
+          <span className="metric-sub">{findings.length} total anomalies</span>
         </div>
       </div>
 
-      {/* Tabbed Explorer Navigation */}
-      <div className="results-tab-bar">
+      {/* Navigation Tabs */}
+      <div className="results-tab-bar" role="tablist">
         <button
           type="button"
-          className={`tab-button ${activeTab === "findings" ? "active" : ""}`}
+          className={`tab-btn ${activeTab === "findings" ? "active" : ""}`}
           onClick={() => setActiveTab("findings")}
+          role="tab"
+          aria-selected={activeTab === "findings"}
         >
-          <AlertTriangle size={15} />
-          <span>Issues & Findings</span>
-          <span className="tab-count">{findings.length || ast.length}</span>
+          <IconAlertTriangle size={14} />
+          <span>Issues ({findings.length})</span>
         </button>
-
-        {probabilityRows.length > 0 && (
-          <button
-            type="button"
-            className={`tab-button ${activeTab === "probabilities" ? "active" : ""}`}
-            onClick={() => setActiveTab("probabilities")}
-          >
-            <BarChart3 size={15} />
-            <span>Smell Spectrum</span>
-          </button>
-        )}
 
         <button
           type="button"
-          className={`tab-button ${activeTab === "code" ? "active" : ""}`}
+          className={`tab-btn ${activeTab === "probabilities" ? "active" : ""}`}
+          onClick={() => setActiveTab("probabilities")}
+          role="tab"
+          aria-selected={activeTab === "probabilities"}
+        >
+          <IconTerminal size={14} />
+          <span>ML Vectors</span>
+        </button>
+
+        <button
+          type="button"
+          className={`tab-btn ${activeTab === "code" ? "active" : ""}`}
           onClick={() => setActiveTab("code")}
+          role="tab"
+          aria-selected={activeTab === "code"}
         >
-          <Code2 size={15} />
-          <span>Remediated Code</span>
-          {optimized && <span className="tab-pill-ready">Ready</span>}
+          <IconCode size={14} />
+          <span>Remediation Diff</span>
         </button>
 
         <button
           type="button"
-          className={`tab-button ${activeTab === "notes" ? "active" : ""}`}
+          className={`tab-btn ${activeTab === "notes" ? "active" : ""}`}
           onClick={() => setActiveTab("notes")}
+          role="tab"
+          aria-selected={activeTab === "notes"}
         >
-          <FileText size={15} />
-          <span>AI Architecture Review</span>
+          <IconFileText size={14} />
+          <span>Review Notes</span>
         </button>
 
         <button
           type="button"
-          className={`tab-button ${activeTab === "chat" ? "active" : ""}`}
+          className={`tab-btn ${activeTab === "chat" ? "active" : ""}`}
           onClick={() => setActiveTab("chat")}
+          role="tab"
+          aria-selected={activeTab === "chat"}
         >
-          <MessageSquareCode size={15} />
-          <span>Copilot Discussion</span>
-          {messages.length > 0 && <span className="tab-count">{messages.length}</span>}
+          <IconChat size={14} />
+          <span>Follow-up Discussion</span>
         </button>
       </div>
 
       {/* Tab Panels */}
-      <div className="results-panel-content">
-        {/* TAB 1: Findings Matrix */}
+      <div className="results-tab-content">
+        {/* Findings Panel */}
         {activeTab === "findings" && (
-          <div className="tab-panel findings-panel">
-            {/* Filter controls */}
-            {findings.length > 0 && (
-              <div className="findings-filter-row">
-                <span className="filter-label">Filter Severity:</span>
-                <button
-                  type="button"
-                  className={`filter-pill ${severityFilter === "all" ? "active" : ""}`}
-                  onClick={() => setSeverityFilter("all")}
-                >
-                  All ({findings.length})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-pill critical ${severityFilter === "critical" ? "active" : ""}`}
-                  onClick={() => setSeverityFilter("critical")}
-                >
-                  Critical ({severityCounts.critical || 0})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-pill warning ${severityFilter === "warning" ? "active" : ""}`}
-                  onClick={() => setSeverityFilter("warning")}
-                >
-                  Warnings ({severityCounts.warning || 0})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-pill suggestion ${severityFilter === "suggestion" ? "active" : ""}`}
-                  onClick={() => setSeverityFilter("suggestion")}
-                >
-                  Suggestions ({severityCounts.suggestion || 0})
-                </button>
+          <div className="findings-panel">
+            <div className="filter-row">
+              <span className="filter-label">Filter:</span>
+              <button
+                type="button"
+                className={`filter-btn ${severityFilter === "all" ? "active" : ""}`}
+                onClick={() => setSeverityFilter("all")}
+              >
+                All ({findings.length})
+              </button>
+              <button
+                type="button"
+                className={`filter-btn ${severityFilter === "critical" ? "active" : ""}`}
+                onClick={() => setSeverityFilter("critical")}
+              >
+                Critical ({severityCounts.critical || 0})
+              </button>
+              <button
+                type="button"
+                className={`filter-btn ${severityFilter === "warning" ? "active" : ""}`}
+                onClick={() => setSeverityFilter("warning")}
+              >
+                Warning ({severityCounts.warning || 0})
+              </button>
+              <button
+                type="button"
+                className={`filter-btn ${severityFilter === "suggestion" ? "active" : ""}`}
+                onClick={() => setSeverityFilter("suggestion")}
+              >
+                Suggestion ({severityCounts.suggestion || 0})
+              </button>
+            </div>
+
+            {filteredFindings.length === 0 ? (
+              <div className="empty-findings">
+                <p>No issues match the selected filter.</p>
               </div>
-            )}
-
-            {filteredFindings.length > 0 ? (
+            ) : (
               <div className="findings-list">
-                {filteredFindings.map((f, index) => (
-                  <div className={`finding-card ${f.severity || "warning"}`} key={f.id || index}>
-                    <div className="finding-card-header">
+                {filteredFindings.map((item, idx) => (
+                  <div key={idx} className={`finding-card ${item.severity || "info"}`}>
+                    <div className="finding-header">
                       <div className="finding-title-group">
-                        <span className={`finding-severity-tag ${f.severity || "warning"}`}>
-                          {f.severity || "issue"}
+                        <span className={`finding-severity-tag ${item.severity || "info"}`}>
+                          {item.severity || "info"}
                         </span>
-                        <h4 className="finding-title">{f.title}</h4>
+                        <strong className="finding-title">{item.title}</strong>
                       </div>
-                      <span className="finding-location">
-                        {f.file || "source"}{f.line ? `:${f.line}` : ""}
-                      </span>
+                      {item.line && (
+                        <span className="finding-location">
+                          Line {item.line}
+                        </span>
+                      )}
                     </div>
-
-                    <p className="finding-message">{f.message}</p>
-
-                    {f.suggestion && (
-                      <div className="finding-recommendation-box">
-                        <div className="rec-icon">
-                          <Lightbulb size={14} />
-                        </div>
-                        <div className="rec-content">
-                          <span className="rec-label">Recommended Fix:</span>
-                          <span className="rec-text">{f.suggestion}</span>
-                        </div>
+                    <p className="finding-desc">{item.message}</p>
+                    {item.suggestion && (
+                      <div className="finding-recommendation">
+                        <span className="recommendation-label">Suggested Resolution:</span>
+                        <p>{item.suggestion}</p>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
-            ) : ast.length > 0 ? (
-              <div className="ast-raw-list">
-                {ast.map((item, idx) => (
-                  <div className="ast-item-row" key={idx}>
-                    <ChevronRight size={14} className="text-cyan" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-findings-state">
-                <Check size={28} className="text-emerald" />
-                <h4>No Code Smells or Anomaly Flags Detected</h4>
-                <p>AST analysis and ML classification did not trigger any severity rules on this snippet.</p>
-              </div>
             )}
           </div>
         )}
 
-        {/* TAB 2: ML Probability Spectrum */}
+        {/* Probabilities Panel */}
         {activeTab === "probabilities" && (
-          <div className="tab-panel probabilities-panel">
-            <div className="panel-intro-header">
-              <h4>CodeSmell-RoBERTa Multi-Label Classification</h4>
-              <p>Model output distribution across recognized code smell categories</p>
-            </div>
-
-            <div className="probability-spectrum-list">
-              {probabilityRows.map((row) => {
-                const percent = (row.value * 100).toFixed(1);
-                const isDominant = row.label === prediction.smell_type;
-                return (
-                  <div className={`spectrum-row ${isDominant ? "dominant" : ""}`} key={row.label}>
-                    <div className="spectrum-row-info">
-                      <span className="spectrum-label">{row.label}</span>
-                      <div className="spectrum-value-group">
-                        {isDominant && <span className="dominant-tag">Dominant Smell</span>}
-                        <span className="spectrum-percent">{percent}%</span>
-                      </div>
-                    </div>
-                    <div className="spectrum-track">
-                      <div 
-                        className={`spectrum-fill ${isDominant ? "dominant-fill" : ""}`} 
-                        style={{ width: `${Math.max(4, row.value * 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="probabilities-panel">
+            <p className="panel-lead">
+              Machine learning classifier probability distribution across standard code smell classifications:
+            </p>
+            <div className="prob-table-wrapper">
+              <table className="prob-table">
+                <thead>
+                  <tr>
+                    <th>Smell Pattern</th>
+                    <th>Probability</th>
+                    <th>Distribution</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {probabilityRows.map((row, i) => {
+                    const pct = Math.round(row.value * 100);
+                    return (
+                      <tr key={i}>
+                        <td className="prob-name">{row.label}</td>
+                        <td className="prob-pct">{pct}%</td>
+                        <td className="prob-bar-cell">
+                          <div className="prob-bar-track">
+                            <div className="prob-bar-fill" style={{ width: `${pct}%` }}></div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
 
-        {/* TAB 3: Remediated Code */}
+        {/* Remediation Diff Panel */}
         {activeTab === "code" && (
-          <div className="tab-panel code-panel">
-            {optimized ? (
-              <div className="code-viewer-card">
-                <div className="code-viewer-toolbar">
-                  <div className="viewer-toolbar-left">
-                    <span className="code-lang-tag">{language.toUpperCase()}</span>
-                    <span className="code-status-tag">Refactored Clean Architecture</span>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn-copy-code"
-                    onClick={handleCopyCode}
-                  >
-                    {copiedCode ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
-                    <span>{copiedCode ? "Copied to Clipboard!" : "Copy Code"}</span>
-                  </button>
-                </div>
+          <div className="code-panel">
+            <div className="code-panel-header">
+              <div className="code-view-segmented" role="tablist">
+                <button
+                  type="button"
+                  className={`code-segment-btn ${codeViewMode === "diff" ? "active" : ""}`}
+                  onClick={() => setCodeViewMode("diff")}
+                >
+                  <span>Xcode Visual Diff</span>
+                </button>
+                <button
+                  type="button"
+                  className={`code-segment-btn ${codeViewMode === "solution" ? "active" : ""}`}
+                  onClick={() => setCodeViewMode("solution")}
+                >
+                  <span>Clean Refactor</span>
+                </button>
+              </div>
 
-                <div className="syntax-highlighter-wrapper">
+              <button
+                type="button"
+                className="btn-secondary compact"
+                onClick={handleCopyCode}
+                disabled={!optimized}
+              >
+                {copiedCode ? <IconCheck size={13} /> : <IconCopy size={13} />}
+                <span>{copiedCode ? "Copied" : "Copy Code"}</span>
+              </button>
+            </div>
+
+            {optimized ? (
+              codeViewMode === "diff" ? (
+                <div className="xcode-diff-container">
+                  <div className="diff-header-bar">
+                    <span className="diff-file-badge">patch / batch_order_processor.py</span>
+                    <span className="diff-summary-stats">
+                      <span className="stat-del">-6 lines</span>
+                      <span className="stat-add">+11 lines</span>
+                    </span>
+                  </div>
+                  <div className="diff-lines-list">
+                    {visualDiffItems.map((line, idx) => (
+                      <div key={idx} className={`diff-line-row ${line.type}`}>
+                        <span className="diff-ln">{idx + 1}</span>
+                        <span className="diff-text">{line.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="code-view-container">
                   <SyntaxHighlighter
                     language={language}
-                    style={theme === "light" ? oneLight : vscDarkPlus}
-                    showLineNumbers
-                    wrapLongLines
+                    style={oneLight}
                     customStyle={{
                       margin: 0,
-                      padding: "18px 20px",
-                      background: theme === "light" ? "#f8fafc" : "#090d16",
-                      fontSize: "13px",
-                      fontFamily: "'JetBrains Mono', Consolas, Monaco, monospace",
-                      lineHeight: "20px",
-                      borderRadius: "0 0 8px 8px",
+                      padding: "1rem",
+                      fontSize: "0.8125rem",
+                      backgroundColor: "var(--bg-surface-raised)",
+                      fontFamily: "var(--font-mono)",
                     }}
                   >
                     {optimized}
                   </SyntaxHighlighter>
                 </div>
-              </div>
+              )
             ) : (
-              <div className="empty-findings-state">
-                <Info size={28} className="text-cyan" />
-                <h4>No Refactored Code Available</h4>
-                <p>Run a full analysis with remediation enabled to generate optimized code.</p>
+              <div className="empty-findings">
+                <p>No refactored code output available for this run.</p>
               </div>
             )}
           </div>
         )}
 
-        {/* TAB 4: AI Review Notes */}
+        {/* Review Notes Panel */}
         {activeTab === "notes" && (
-          <div className="tab-panel notes-panel">
-            <div className="notes-markdown-box markdown-body">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {insights || "No comprehensive review notes were returned for this execution."}
-              </ReactMarkdown>
-            </div>
+          <div className="notes-panel">
+            {insights ? (
+              <div className="markdown-prose">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {insights}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <div className="empty-findings">
+                <p>No architectural notes returned.</p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* TAB 5: Copilot Discussion */}
+        {/* Follow-up Chat Panel */}
         {activeTab === "chat" && (
-          <div className="tab-panel copilot-panel">
-            <div className="copilot-thread-container">
-              {messages.length === 0 ? (
-                <div className="copilot-welcome-box">
-                  <div className="copilot-avatar-glow">
-                    <Bot size={24} />
-                  </div>
-                  <h4>Contextual Review Copilot</h4>
-                  <p>Ask follow-up questions regarding the AST findings, model smell analysis, performance trade-offs, or unit testing.</p>
-
-                  <div className="copilot-prompt-suggestions">
-                    <button
-                      type="button"
-                      className="prompt-suggestion-pill"
-                      onClick={() => sendMessage("Explain the architectural tradeoffs of this refactored code.")}
-                    >
-                      <span>Explain architectural tradeoffs</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="prompt-suggestion-pill"
-                      onClick={() => sendMessage("Generate comprehensive unit tests for this remediated code.")}
-                    >
-                      <span>Generate unit tests</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="prompt-suggestion-pill"
-                      onClick={() => sendMessage("How does this refactoring improve time & space complexity?")}
-                    >
-                      <span>Complexity improvements</span>
-                    </button>
-                  </div>
+          <div className="chat-panel">
+            <div className="chat-thread">
+              {(!Array.isArray(messages) || messages.length === 0) ? (
+                <div className="empty-chat-state">
+                  <p>Ask questions about this analysis, specific line numbers, or alternative patterns.</p>
                 </div>
               ) : (
-                <div className="copilot-messages-list">
-                  {messages.map((msg, i) => (
-                    <div className={`copilot-message-bubble ${msg.role}`} key={i}>
-                      <div className="msg-header">
-                        <span className="msg-role">{msg.role === "assistant" ? "RigelAI Copilot" : "You"}</span>
-                      </div>
-                      <div className="msg-content markdown-body">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.text}
-                        </ReactMarkdown>
-                      </div>
+                messages.map((m, idx) => (
+                  <div key={idx} className={`chat-message ${m.role}`}>
+                    <span className="sender-tag">{m.role === "user" ? "You" : "Rigel AI"}</span>
+                    <div className="message-content">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {m.content}
+                      </ReactMarkdown>
                     </div>
-                  ))}
-                  {loadingChat && (
-                    <div className="copilot-message-bubble assistant">
-                      <div className="msg-header">
-                        <span className="msg-role">RigelAI Copilot</span>
-                      </div>
-                      <div className="copilot-thinking-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ))
               )}
             </div>
 
-            {/* Input Bar */}
-            <div className="copilot-input-row">
+            <form onSubmit={handleSendChat} className="chat-input-row">
               <input
                 type="text"
-                className="copilot-input-field"
-                placeholder="Ask Copilot about this code review session..."
+                className="text-input"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                placeholder="Ask about this code analysis..."
+                disabled={loadingChat}
               />
               <button
-                type="button"
-                className="btn-copilot-send"
-                onClick={() => sendMessage()}
+                type="submit"
+                className="btn-primary"
                 disabled={!input.trim() || loadingChat}
               >
-                <Send size={15} />
-                <span>Send</span>
+                <IconSend size={14} />
+                <span>{loadingChat ? "Sending..." : "Send"}</span>
               </button>
-            </div>
+            </form>
           </div>
         )}
       </div>
