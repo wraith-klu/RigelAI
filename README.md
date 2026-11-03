@@ -1,8 +1,6 @@
 <div align="center">
 
-# 🛡️ CodeSentinel AI
-### AI-Powered Code Analysis Platform
-#### AST &nbsp;·&nbsp; Machine Learning &nbsp;·&nbsp; LLM &nbsp;—&nbsp; Detect &nbsp;|&nbsp; Analyze &nbsp;|&nbsp; Optimize
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=200&section=header&text=CodeSentinel%20AI&fontSize=60&fontColor=fff&animation=fadeIn&fontAlignY=38&desc=AST%20%C2%B7%20Machine%20Learning%20%C2%B7%20LLM%20%E2%80%94%20Detect%20%7C%20Analyze%20%7C%20Optimize&descAlignY=60&descSize=18" width="100%"/>
 
 <br/>
 
@@ -799,8 +797,10 @@ python train_model.py
 
 ⭐ **If you found CodeSentinel AI useful, please star it on GitHub!** ⭐
 
-[![GitHub stars](https://img.shields.io/github/stars/saurabh-yadav/CodeSentinel-AI?style=social)](https://github.com/saurabh-yadav/CodeSentinel-AI)
+[![GitHub stars](https://img.shields.io/github/stars/wraith-klu/RigelAI?style=social)](https://github.com/wraith-klu/RigelAI)
 
 *Built with ❤️ by Saurabh Yadav*
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=120&section=footer" width="100%"/>
 
 </div>
