@@ -1,6 +1,8 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=30&pause=1000&color=00D9FF&center=true&vCenter=true&width=700&lines=🛡️+CodeSentinel+AI;AI-Powered+Code+Analysis+Platform;AST+%2B+ML+%2B+LLM+Powered;Detect+%7C+Analyze+%7C+Optimize" alt="Typing SVG" />
+# 🛡️ CodeSentinel AI
+### AI-Powered Code Analysis Platform
+#### AST &nbsp;·&nbsp; Machine Learning &nbsp;·&nbsp; LLM &nbsp;—&nbsp; Detect &nbsp;|&nbsp; Analyze &nbsp;|&nbsp; Optimize
 
 <br/>
 
@@ -9,11 +11,12 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-2.0-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![FastAI](https://img.shields.io/badge/FastAI-AWD--LSTM-FF6F00?style=for-the-badge&logo=pytorch&logoColor=white)](https://docs.fast.ai/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-F7DF1E?style=for-the-badge)](LICENSE)
 
 <br/>
 
-> **CodeSentinel AI** is an intelligent, multi-layered code analysis platform that fuses **AST static analysis**, **AWD-LSTM machine learning**, and **Large Language Model reasoning** to detect code smells, assess code health, and generate optimized refactors — all in real time.
+> **CodeSentinel AI** is an intelligent, multi-layered code analysis platform that fuses **AST static analysis**, **AWD-LSTM machine learning**, and **Large Language Model reasoning** to detect code smells, assess code health, and generate optimized refactors — in real time.
 
 </div>
 
@@ -24,11 +27,11 @@
 - [✨ Features](#-features)
 - [🏗️ System Architecture](#️-system-architecture)
 - [🤖 ML Pipeline — Deep Dive](#-ml-pipeline--deep-dive)
-  - [Layer 1 — AST Static Analysis](#layer-1--ast-static-analysis-engine)
-  - [Layer 2 — AWD-LSTM Classifier](#layer-2--awd-lstm-ml-classifier)
-  - [Layer 3 — LLM Reasoning Engine](#layer-3--llm-reasoning-engine)
-  - [Health Score Algorithm](#health-score-algorithm)
-- [🔬 How the Algorithm Works](#-how-the-algorithm-works-step-by-step)
+  - [Layer 1 — AST Static Analysis](#-layer-1--ast-static-analysis-engine)
+  - [Layer 2 — AWD-LSTM Classifier](#-layer-2--awd-lstm-ml-classifier)
+  - [Layer 3 — LLM Reasoning Engine](#-layer-3--llm-reasoning-engine)
+  - [Health Score Algorithm](#-health-score-algorithm)
+- [🔬 End-to-End Request Flow](#-end-to-end-request-flow)
 - [📊 Training Data & Model](#-training-data--model-details)
 - [🚀 API Endpoints](#-api-endpoints)
 - [🗂️ Project Structure](#️-project-structure)
@@ -42,60 +45,64 @@
 
 | Feature | Description |
 |---|---|
-| 🌳 **AST Analysis** | Parses code into Abstract Syntax Tree — detects deep nesting, long functions, unused vars |
-| 🧠 **ML Code Smell Classification** | AWD-LSTM model trained on labeled code snippets classifies code as **Clean** or **Smelly** |
-| 🤖 **LLM Code Review** | GPT-class LLM via OpenRouter provides executive summaries, Big-O analysis, refactor strategy |
-| 🔢 **Health Score Engine** | Deterministic weighted scoring: `100 - (critical×25 + warning×12 + suggestion×6)` |
+| 🌳 **AST Analysis** | Parses code into an Abstract Syntax Tree — detects deep nesting, long functions, unused variables |
+| 🧠 **ML Code Smell Classifier** | AWD-LSTM model trained on labeled code snippets; classifies as **Clean** or **Smelly** with confidence |
+| 🤖 **LLM Code Review** | GPT-class LLM via OpenRouter delivers executive summary, Big-O analysis, and a step-by-step refactor plan |
+| 🔢 **Health Score Engine** | Deterministic weighted formula — `100 − (critical×25 + warning×12 + suggestion×6)` |
 | 💬 **Multi-Turn Chat** | Session-based follow-up questions anchored to the same code context |
 | 📁 **File Upload** | Supports `.py .java .cpp .c .js .ts .go .rs .php .rb .jsx .tsx` |
 | 🐙 **GitHub Repo Scan** | Fetches up to 12 source files from any public repo via GitHub API |
-| 📄 **PDF Export** | Download full AI discussion as formatted PDF via ReportLab |
+| 📄 **PDF Export** | Download full AI discussion as a formatted PDF via ReportLab |
 | 🔌 **VS Code Extension** | Inline code review directly inside your editor |
 
 ---
 
 ## 🏗️ System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        USER INTERFACE LAYER                          │
-│   ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
-│   │  Code Editor │  │  File Upload │  │   GitHub Repo URL Input  │  │
-│   └──────┬───────┘  └──────┬───────┘  └───────────┬──────────────┘  │
-└──────────┼─────────────────┼──────────────────────┼─────────────────┘
-           │                 │                       │
-           ▼                 ▼                       ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                     FASTAPI BACKEND (main.py)                        │
-│  POST /analyze-editor   POST /analyze-file   POST /analyze-repository│
-│  POST /followup         POST /chat           POST /download-pdf      │
-└────────────────────────────────┬────────────────────────────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │    agent_logic.py        │
-                    │  (Orchestration Core)    │
-                    └──┬──────────┬───────────┘
-                       │          │
-           ┌───────────▼──┐  ┌────▼──────────────┐
-           │ LAYER 1       │  │ LAYER 2            │
-           │ AST Analyzer  │  │ ML Smell Classifier│
-           │ ast_analyzer  │  │ model_loader.py    │
-           │ .py           │  │ (AWD-LSTM FastAI)  │
-           └───────────────┘  └────────────────────┘
-                       │          │
-                       └────┬─────┘
-                            │
-                  ┌─────────▼─────────┐
-                  │    LAYER 3         │
-                  │  LLM via OpenRouter│
-                  │  (poolside/laguna) │
-                  └─────────┬─────────┘
-                            │
-               ┌────────────▼────────────┐
-               │  Quality Report Builder  │
-               │  Health Score: 0–100     │
-               │  Findings + Fix Hints    │
-               └─────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph UI["🖥️ User Interface (React 18 + Vite)"]
+        A["📝 Code Editor\nPaste / Type Code"]
+        B["📁 File Upload\n.py .js .java .cpp ..."]
+        C["🐙 GitHub Repo URL\nPublic Repository"]
+    end
+
+    subgraph API["⚡ FastAPI Backend (main.py)"]
+        D["/analyze-editor"]
+        E["/analyze-file"]
+        F["/analyze-repository"]
+        G["/followup · /chat · /download-pdf"]
+    end
+
+    subgraph CORE["🧠 Agent Logic — Orchestration Core (agent_logic.py)"]
+        H["🔑 Session Manager\ncreate · get · update"]
+        I["🌳 AST Analyzer\nast_analyzer.py"]
+        J["🤖 ML Classifier\nAWD-LSTM Model\nmodel_loader.py"]
+        K["💬 LLM Engine\nOpenRouter API\npoolside/laguna"]
+        L["📊 Report Builder\nbuild_quality_report()"]
+    end
+
+    subgraph OUT["📤 Structured Response"]
+        M["Health Score\n0 – 100"]
+        N["Severity Counts\ncritical · warning · suggestion"]
+        O["LLM Markdown Analysis\nSummary + Big-O + Fix Plan"]
+        P["Optimized Code\nRefactored Snippet"]
+    end
+
+    A --> D
+    B --> E
+    C --> F
+    D & E & F --> H
+    H --> I
+    H --> J
+    I & J --> K
+    K --> L
+    L --> M & N & O & P
+
+    style UI fill:#1e3a5f,color:#ffffff,stroke:#00d9ff,stroke-width:2px
+    style API fill:#1a3a2a,color:#ffffff,stroke:#00ff88,stroke-width:2px
+    style CORE fill:#3a1a3a,color:#ffffff,stroke:#ff88ff,stroke-width:2px
+    style OUT fill:#3a2a00,color:#ffffff,stroke:#ffcc00,stroke-width:2px
 ```
 
 ---
@@ -104,508 +111,505 @@
 
 CodeSentinel AI uses a **3-layer intelligent analysis pipeline**. Each layer adds progressively deeper insight.
 
-```
-╔══════════════════════════════════════════════════════════════════╗
-║              CODESENTINEL AI — ML PIPELINE                      ║
-╠══════════════════════════════════════════════════════════════════╣
-║                                                                  ║
-║   INPUT CODE                                                     ║
-║       │                                                          ║
-║       ▼                                                          ║
-║  ┌─────────────────────────────────────────────────────────┐    ║
-║  │  LAYER 1 — AST STATIC ANALYSIS          [deterministic] │    ║
-║  │  • Parse code → Abstract Syntax Tree                    │    ║
-║  │  • Walk every node detecting smells                     │    ║
-║  │  • Output: list of tagged findings                      │    ║
-║  └─────────────────────────────────────────────────────────┘    ║
-║       │                                                          ║
-║       ▼                                                          ║
-║  ┌─────────────────────────────────────────────────────────┐    ║
-║  │  LAYER 2 — AWD-LSTM ML CLASSIFIER       [probabilistic] │    ║
-║  │  • Tokenize code as natural language                    │    ║
-║  │  • Forward pass through AWD-LSTM network                │    ║
-║  │  • Output: {Clean|Smelly, confidence%, all_probs}       │    ║
-║  └─────────────────────────────────────────────────────────┘    ║
-║       │                                                          ║
-║       ▼                                                          ║
-║  ┌─────────────────────────────────────────────────────────┐    ║
-║  │  LAYER 3 — LLM REASONING ENGINE         [generative]    │    ║
-║  │  • Prompt = code + AST findings + ML prediction         │    ║
-║  │  • Executive summary + Big-O + Refactor strategy        │    ║
-║  │  • Output: structured JSON {answer, optimized_code}     │    ║
-║  └─────────────────────────────────────────────────────────┘    ║
-║       │                                                          ║
-║       ▼                                                          ║
-║  ┌─────────────────────────────────────────────────────────┐    ║
-║  │  HEALTH SCORE ALGORITHM                 [weighted]      │    ║
-║  │  score = 100 − (critical×25 + warning×12 + hint×6)      │    ║
-║  │  Output: score/100, severity_counts, fix_suggestions    │    ║
-║  └─────────────────────────────────────────────────────────┘    ║
-║                                                                  ║
-╚══════════════════════════════════════════════════════════════════╝
+```mermaid
+flowchart LR
+    INPUT["🖊️ Raw Source Code\n(any language)"]
+
+    subgraph L1["🌳 LAYER 1 — AST Static Analysis\nDeterministic · Zero latency"]
+        AST_PARSE["ast.parse(code)\n→ Syntax Tree"]
+        AST_WALK["ast.walk(tree)\n→ Node traversal"]
+        AST_OUT["Tagged Findings List\n⚠️ warnings · ℹ️ info"]
+        AST_PARSE --> AST_WALK --> AST_OUT
+    end
+
+    subgraph L2["🧠 LAYER 2 — AWD-LSTM Classifier\nProbabilistic · ~50ms"]
+        ML_TOK["Subword Tokenizer\ncode → token IDs"]
+        ML_LSTM["AWD-LSTM Network\n3 stacked LSTM layers"]
+        ML_SOFT["Softmax Head\n→ P(Clean), P(Smelly)"]
+        ML_TOK --> ML_LSTM --> ML_SOFT
+    end
+
+    subgraph L3["💬 LAYER 3 — LLM Reasoning\nGenerative · ~2–5s"]
+        LLM_PROMPT["Structured Prompt\ncode + AST + ML prediction"]
+        LLM_CALL["OpenRouter API Call\npoolside/laguna-m.1"]
+        LLM_JSON["JSON Response\n{answer, optimized_code}"]
+        LLM_PROMPT --> LLM_CALL --> LLM_JSON
+    end
+
+    subgraph SCORE["📊 Health Score Engine\nWeighted · Deterministic"]
+        SCORE_CALC["score = 100\n− critical×25\n− warning×12\n− suggestion×6"]
+        SCORE_OUT["Health Score\n0 – 100"]
+        SCORE_CALC --> SCORE_OUT
+    end
+
+    INPUT --> L1
+    INPUT --> L2
+    L1 --> L3
+    L2 --> L3
+    L1 --> SCORE
+    L3 --> FINAL["✅ Full Analysis Response"]
+    SCORE --> FINAL
+
+    style L1 fill:#0d3b66,color:#fff,stroke:#4fc3f7,stroke-width:2px
+    style L2 fill:#1b5e20,color:#fff,stroke:#69f0ae,stroke-width:2px
+    style L3 fill:#4a148c,color:#fff,stroke:#ce93d8,stroke-width:2px
+    style SCORE fill:#bf360c,color:#fff,stroke:#ffab40,stroke-width:2px
+    style FINAL fill:#1a237e,color:#fff,stroke:#82b1ff,stroke-width:3px
 ```
 
 ---
 
-### Layer 1 — AST Static Analysis Engine
+### 🌳 Layer 1 — AST Static Analysis Engine
 
 > **File:** [`backend/ast_analyzer.py`](backend/ast_analyzer.py)
 
-The AST (Abstract Syntax Tree) layer is the **fastest, most precise** detector. It parses the raw source code into a tree representation and walks every node.
+The AST layer is the **fastest, most precise** detector. It parses source code into a tree and inspects every single node.
 
-#### What It Detects
+```mermaid
+flowchart TD
+    CODE["📄 Source Code String"]
+    PARSE["ast.parse(code)\nBuilds Syntax Tree"]
+    WALK["ast.walk(tree)\nTraverse every node"]
 
-```
-SOURCE CODE
-    │
-    ▼  ast.parse()
-┌───────────────────┐
-│  ABSTRACT SYNTAX  │
-│       TREE        │
-│                   │
-│  Module           │
-│  └─ FunctionDef   │──▶ len(body) > 20?  ──▶ ⚠️ "Function too long"
-│     └─ If         │──▶ depth > 3?        ──▶ ⚠️ "Deep nesting"
-│        └─ For     │
-│     └─ Import     │──▶ always flagged    ──▶ ℹ️ "Verify imports used"
-│     └─ Assign     │──▶ track → assigned_vars
-│     └─ Name(Load) │──▶ track → used_vars
-│                   │
-└───────────────────┘
-    │
-    ▼ Post-pass
-assigned_vars − used_vars ──▶ ⚠️ "Variable assigned but never used"
-```
+    PARSE_ERR["❌ SyntaxError\nReturn error finding"]
 
-#### Nesting Depth Calculation
+    subgraph CHECKS["🔍 Node-Level Checks"]
+        C1["FunctionDef node\nlen(body) > 20 lines?\n→ ⚠️ Function too long"]
+        C2["If / For / While node\nnesting depth > 3?\n→ ⚠️ Deep nesting"]
+        C3["Import / ImportFrom node\n→ ℹ️ Verify import used"]
+        C4["Assign node\ntrack → assigned_vars set"]
+        C5["Name(Load) node\ntrack → used_vars set"]
+    end
 
-```python
-def _get_nesting_depth(node, current_depth=0):
-    # Recursively measures how deep control flow is nested
-    # Triggers warning when depth > 3
-    if not isinstance(node, (ast.If, ast.For, ast.While, ast.FunctionDef)):
-        return current_depth
-    depths = [current_depth]
-    for child in ast.iter_child_nodes(node):
-        depths.append(_get_nesting_depth(child, current_depth + 1))
-    return max(depths)
-```
+    POST["Post-processing\nassigned_vars − used_vars"]
+    UNUSED["⚠️ Variable assigned\nbut never used"]
+    INLINE["Inline pattern scan\nrange(len(  ·  **2  ·  indent≥8"]
+    RESULT["📋 Issues List\n[ findings... ]"]
 
-**Example detection:**
-```python
-# ⚠️ Depth = 4 — triggers warning
-for item in data:           # depth 1
-    if item.active:         # depth 2
-        for sub in item.children:  # depth 3
-            if sub.valid:   # depth 4  ← FLAGGED
-                process(sub)
+    CODE --> PARSE
+    PARSE -->|"Success"| WALK
+    PARSE -->|"Fail"| PARSE_ERR
+    WALK --> CHECKS
+    C4 & C5 --> POST --> UNUSED
+    WALK --> INLINE
+    C1 & C2 & C3 & UNUSED & INLINE --> RESULT
+
+    style CODE fill:#0d47a1,color:#fff,stroke:#42a5f5
+    style PARSE fill:#006064,color:#fff,stroke:#4dd0e1
+    style WALK fill:#006064,color:#fff,stroke:#4dd0e1
+    style CHECKS fill:#1b5e20,color:#fff,stroke:#a5d6a7
+    style POST fill:#4a148c,color:#fff,stroke:#ce93d8
+    style RESULT fill:#bf360c,color:#fff,stroke:#ffab40
+    style PARSE_ERR fill:#b71c1c,color:#fff,stroke:#ef9a9a
 ```
 
-#### AST Detection Rules Table
+#### Detection Rules Reference
 
-| Check | Condition | Severity | Message |
-|---|---|---|---|
-| Function length | `len(body) > 20` | ⚠️ Warning | "Function too long, consider refactoring" |
-| Deep nesting | `depth > 3` | ⚠️ Warning | "Deep nesting detected" |
-| Imports | Any `Import` node | ℹ️ Info | "Verify import is used" |
-| Unused variables | `assigned − used` | ⚠️ Warning | "Variable assigned but never used" |
-| Long lines | `len(line) > 100` | 💡 Suggestion | "Break into multiple lines" |
-| TODO markers | `"TODO" in line` | 💡 Suggestion | "Unresolved TODO present" |
-| range(len) | Pattern match | ⚠️ Warning | "Inefficient index loop" |
-| Deep `if` indent | `indent >= 8` | ⚠️ Warning | "Deep nesting at line N" |
+| # | Node Type | Condition | Severity | Output Message |
+|---|---|---|---|---|
+| 1 | `FunctionDef` | `len(body) > 20` | ⚠️ Warning | Function `'name'` is too long — consider refactoring |
+| 2 | `If / For / While` | `depth > 3` | ⚠️ Warning | Deep nesting detected (depth N) |
+| 3 | `Import` | Always | ℹ️ Info | Imported module `'x'` — ensure it's used |
+| 4 | `ImportFrom` | Always | ℹ️ Info | From-import `'module'` — verify names used |
+| 5 | `Assign` vs `Name(Load)` | assigned − used ≠ ∅ | ⚠️ Warning | Variable `'x'` assigned but never used |
+| 6 | Line length | `len(line) > 100` | 💡 Suggestion | Line longer than 100 characters |
+| 7 | Comment marker | `"TODO" in line` | 💡 Suggestion | Unresolved TODO present |
+| 8 | Pattern match | `"range(len("` in code | ⚠️ Warning | Inefficient loop using `range(len(...))` |
+| 9 | Indentation | `indent >= 8 + "if "` | ⚠️ Warning | Deep nesting at line N |
 
 ---
 
-### Layer 2 — AWD-LSTM ML Classifier
+### 🧠 Layer 2 — AWD-LSTM ML Classifier
 
 > **Files:** [`backend/model/train_model.py`](backend/model/train_model.py) · [`backend/model/model_loader.py`](backend/model/model_loader.py)
 
-The ML layer treats **source code as natural language** and uses the **AWD-LSTM** (ASGD Weight-Dropped LSTM) architecture via FastAI.
+The ML layer treats **source code as natural language text** and classifies it using the **AWD-LSTM** architecture (ASGD Weight-Dropped LSTM) via FastAI.
 
-#### What is AWD-LSTM?
+#### Network Architecture
 
+```mermaid
+flowchart TD
+    IN["🖊️ Code String Input\ne.g. 'for i in range(len(arr)):...'"]
+
+    subgraph TOKENIZE["📝 Tokenization Layer"]
+        T1["FastAI TextBlock Tokenizer\nSubword splitting"]
+        T2["Numericalize\ntoken → integer IDs"]
+        T1 --> T2
+    end
+
+    subgraph EMBED["🔷 Embedding Layer"]
+        E1["Learnable Embeddings\ntoken IDs → dense vectors"]
+        E2["Embedding Dropout\nRandomly zero entire token rows\nPrevents over-reliance on specific tokens"]
+        E1 --> E2
+    end
+
+    subgraph LSTM1["🟢 LSTM Layer 1"]
+        L1A["LSTM Cell\nCaptures local patterns\n'range(len' → smell signal"]
+        L1B["Weight Drop\nDropConnect on hidden weights\nRecurrent regularization"]
+        L1A --- L1B
+    end
+
+    subgraph LSTM2["🟡 LSTM Layer 2"]
+        L2A["LSTM Cell\nCaptures medium-range patterns\nif-nesting, variable re-use"]
+        L2B["Weight Drop\nDropConnect on hidden weights"]
+        L2A --- L2B
+    end
+
+    subgraph LSTM3["🔴 LSTM Layer 3"]
+        L3A["LSTM Cell\nCaptures global code structure\noverall function shape"]
+        L3B["Weight Drop\nDropConnect on hidden weights"]
+        L3A --- L3B
+    end
+
+    subgraph HEAD["🎯 Classifier Head"]
+        H1["Average Pool + Last Hidden\nAggregated sequence repr."]
+        H2["Linear → ReLU → Dropout"]
+        H3["Linear → Softmax\nOutput: 2 classes"]
+        H1 --> H2 --> H3
+    end
+
+    OUT["📊 Output Probabilities\n{\n  'Clean':  0.05,\n  'Smelly': 0.95\n}\nPrediction: Smelly (95% conf.)"]
+
+    IN --> TOKENIZE --> EMBED --> LSTM1 --> LSTM2 --> LSTM3 --> HEAD --> OUT
+
+    style IN fill:#0d47a1,color:#fff,stroke:#42a5f5
+    style TOKENIZE fill:#004d40,color:#fff,stroke:#4db6ac
+    style EMBED fill:#1b5e20,color:#fff,stroke:#81c784
+    style LSTM1 fill:#1a5e20,color:#fff,stroke:#66bb6a
+    style LSTM2 fill:#f57f17,color:#fff,stroke:#ffca28
+    style LSTM3 fill:#b71c1c,color:#fff,stroke:#ef9a9a
+    style HEAD fill:#4a148c,color:#fff,stroke:#ce93d8
+    style OUT fill:#1a237e,color:#fff,stroke:#82b1ff
 ```
-AWD-LSTM = Averaged SGD Weight-Dropped LSTM
 
-┌─────────────────────────────────────────────────────────────────┐
-│                  AWD-LSTM Architecture                           │
-│                                                                  │
-│  Input Tokens (code as text)                                    │
-│       │                                                          │
-│       ▼                                                          │
-│  ┌──────────────┐                                               │
-│  │  Embedding   │  Word vectors for code tokens                 │
-│  │  Layer       │  (e.g. "for", "range", "len" → vectors)       │
-│  └──────┬───────┘                                               │
-│         │                                                        │
-│         ▼                                                        │
-│  ┌──────────────┐   DropConnect on hidden-to-hidden weights     │
-│  │  LSTM Layer  │◄──────────────────────────────                │
-│  │  (with       │   Prevents co-adaptation of neurons           │
-│  │  weight drop)│   Reduces overfitting on small datasets       │
-│  └──────┬───────┘                                               │
-│         │                                                        │
-│         ▼                                                        │
-│  ┌──────────────┐   LSTM Layer 2                                │
-│  │  LSTM Layer  │   Captures longer-range code patterns         │
-│  └──────┬───────┘                                               │
-│         │                                                        │
-│         ▼                                                        │
-│  ┌──────────────┐   LSTM Layer 3                                │
-│  │  LSTM Layer  │   Final sequence representation               │
-│  └──────┬───────┘                                               │
-│         │                                                        │
-│         ▼                                                        │
-│  ┌──────────────┐                                               │
-│  │  Classifier  │   Linear layers → Softmax                     │
-│  │  Head        │   Output: P(Clean), P(Smelly)                 │
-│  └──────────────┘                                               │
-└─────────────────────────────────────────────────────────────────┘
-```
+#### AWD-LSTM Key Innovations
 
-#### Key AWD-LSTM Innovations
-
-| Technique | What it does | Why it helps |
+| Technique | What It Does | Benefit |
 |---|---|---|
-| **Weight Drop** | Drops weights on LSTM recurrent connections during training | Prevents overfitting, acts as recurrent dropout |
-| **Embedding Dropout** | Drops entire embedding rows | Forces model to handle missing tokens robustly |
-| **ASGD Optimizer** | Averaged Stochastic Gradient Descent | More stable convergence than vanilla SGD |
-| **Variable-length backprop** | BPTT with random sequence lengths | Better gradient flow through long sequences |
+| **Weight Drop** | Applies dropout to LSTM recurrent weight matrices | Prevents co-adaptation; acts as recurrent regularization |
+| **Embedding Dropout** | Zeros entire embedding rows at random | Forces robustness to unseen/rare tokens |
+| **ASGD Optimizer** | Averages model weights across recent steps | More stable convergence than plain SGD/Adam |
+| **Variable-length BPTT** | Randomizes backprop sequence length | Better gradient flow through long code sequences |
+| **Gradual Unfreezing** | Unfreezes layers one-by-one during fine_tune | Preserves pre-trained language representations |
 
 #### Training Pipeline
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│               TRAINING PIPELINE (train_model.py)                │
-│                                                                  │
-│  1. LOAD DATA                                                   │
-│     pd.read_csv("code_smells.csv")                             │
-│     Columns: [code, label]   Labels: ["Clean", "Smelly"]       │
-│                                                                  │
-│  2. BUILD DATABLOCK                                             │
-│     TextBlock.from_df('code', is_lm=False)  ← NLP tokenizer    │
-│     CategoryBlock                            ← Classification   │
-│     RandomSplitter(0.2)                     ← 80/20 train/val  │
-│                                                                  │
-│  3. CREATE DATALOADERS                                          │
-│     dls = dblock.dataloaders(df, bs=4)      ← batch size 4     │
-│                                                                  │
-│  4. INITIALIZE LEARNER                                          │
-│     text_classifier_learner(dls, AWD_LSTM, metrics=accuracy)   │
-│                                                                  │
-│  5. FINE-TUNE                                                   │
-│     learn.fine_tune(3)   ← 3 epochs of transfer learning       │
-│                                                                  │
-│  6. EXPORT                                                      │
-│     learn.export("export.pkl")  ← serialized inference model   │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph DATA["📂 Data Preparation"]
+        D1["Load code_smells.csv\npd.read_csv()"]
+        D2["Validate columns\n'code' · 'label'"]
+        D3["DataBlock\nTextBlock.from_df + CategoryBlock"]
+        D4["RandomSplitter(0.2)\n80% train · 20% validation"]
+        D5["DataLoaders\nbatch_size = 4"]
+        D1 --> D2 --> D3 --> D4 --> D5
+    end
+
+    subgraph TRAIN["🏋️ Model Training"]
+        T1["text_classifier_learner\ndls + AWD_LSTM + accuracy metric"]
+        T2["learn.fine_tune(3)\n3 epochs of transfer learning\nGradual layer unfreezing"]
+        T3["Track Accuracy\nTrain loss · Val loss"]
+        T1 --> T2 --> T3
+    end
+
+    subgraph SAVE["💾 Export"]
+        S1["learn.export('export.pkl')\nFull learner serialized\n(weights + vocab + config)"]
+    end
+
+    DATA --> TRAIN --> SAVE
+
+    style DATA fill:#0d3b66,color:#fff,stroke:#4fc3f7
+    style TRAIN fill:#1b5e20,color:#fff,stroke:#69f0ae
+    style SAVE fill:#4a148c,color:#fff,stroke:#ce93d8
 ```
 
-#### Inference Pipeline
+#### Inference Flow
 
-```
-CODE STRING (user input)
-        │
-        ▼
-learner = load_learner("export.pkl")          ← load trained model
-        │
-        ▼
-pred, pred_idx, probs = learner.predict(code) ← forward pass
-        │
-        ▼
-┌───────────────────────────────────────┐
-│  Return:                               │
-│  {                                    │
-│    "smell_type":  "Smelly" | "Clean" │  ← predicted class
-│    "confidence":  0.0 – 1.0          │  ← P(predicted class)
-│    "all_probs":  {                   │
-│      "Clean":  0.05,                 │  ← full probability dist
-│      "Smelly": 0.95                  │
-│    }                                  │
-│  }                                    │
-└───────────────────────────────────────┘
+```mermaid
+sequenceDiagram
+    participant U as 🖊️ User Code
+    participant ML as 🧠 model_loader.py
+    participant M as 📦 export.pkl
+    participant R as 📤 Result
+
+    U->>ML: predict_code_smell(code)
+    ML->>M: load_learner(model_path)
+    M-->>ML: FastAI Learner object
+    ML->>M: learner.predict(code)
+    Note over M: Tokenize → Forward Pass → Softmax
+    M-->>ML: (pred, pred_idx, probs)
+    ML->>R: Return JSON
+    Note over R: {<br/>  smell_type: "Smelly",<br/>  confidence: 0.95,<br/>  all_probs: {Clean: 0.05, Smelly: 0.95}<br/>}
 ```
 
 ---
 
-### Layer 3 — LLM Reasoning Engine
+### 💬 Layer 3 — LLM Reasoning Engine
 
 > **File:** [`backend/agent_logic.py`](backend/agent_logic.py)
 
-The LLM layer is the **generative reasoning brain**. It receives a structured prompt containing the original code, the AST findings, and the ML prediction, then returns rich markdown analysis.
+The LLM receives a **structured multi-context prompt** combining the code, AST findings, and ML prediction, then returns a rich structured JSON response.
 
-#### Prompt Architecture
+#### Prompt Construction Flow
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                    LLM PROMPT STRUCTURE                         │
-├────────────────────────────────────────────────────────────────┤
-│  SYSTEM ROLE:                                                  │
-│  "You are an elite Principal Software Engineer..."             │
-│                                                                │
-│  USER PROMPT:                                                  │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │  LANGUAGE:    {detected language}                       │  │
-│  │                                                         │  │
-│  │  SOURCE CODE:                                           │  │
-│  │  ```                                                    │  │
-│  │  {user's code}                                          │  │
-│  │  ```                                                    │  │
-│  │                                                         │  │
-│  │  AST FINDINGS:   {list of AST issues}                  │  │
-│  │  ML PREDICTION:  {smell_type, confidence, all_probs}   │  │
-│  │  USER QUERY:     {what the developer asked}            │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                                                                │
-│  EXPECTED JSON OUTPUT:                                         │
-│  {                                                             │
-│    "answer":         "## 1. Executive Summary\n...",          │
-│    "optimized_code": "<refactored code or empty string>"      │
-│  }                                                             │
-└────────────────────────────────────────────────────────────────┘
-```
+```mermaid
+flowchart TD
+    subgraph INPUTS["📥 Inputs Gathered"]
+        I1["📄 Original Source Code"]
+        I2["🌳 AST Findings List\n['⚠️ Deep nesting...','⚠️ range(len...)']"]
+        I3["🤖 ML Prediction\n{smell_type, confidence, all_probs}"]
+        I4["🗣️ Developer's Question\n'What is wrong? Refactor this.'"]
+        I5["🔤 Detected Language\n'python' | 'java' | 'cpp' ..."]
+    end
 
-#### LLM Response Sections
+    subgraph INTENT["🎯 Intent Detection"]
+        K["wants_optimized_code(query)\nKeyword scan:\noptimize · refactor · fix\nimprove · rewrite · cleaner"]
+        YES["✅ Generate optimized_code\nfill 'optimized_code' field"]
+        NO["❌ Explain only\noptimized_code = ''"]
+        K -->|match| YES
+        K -->|no match| NO
+    end
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│            STRUCTURED LLM ANALYSIS OUTPUT                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ### 1. 🔍 Executive Summary & Architecture Overview            │
-│       What the code does, overall structural quality            │
-│                                                                  │
-│  ### 2. ⚠️ Critical Code Smells & Anti-Patterns Identified     │
-│       • Specific line references                                │
-│       • Why each issue is problematic                           │
-│       • Memory overhead, redundant ops, dead code               │
-│                                                                  │
-│  ### 3. ⚡ Algorithmic Time & Space Complexity Analysis         │
-│       • Big-O for every function                                │
-│       • Overall time complexity                                 │
-│       • Auxiliary memory and allocation analysis                │
-│                                                                  │
-│  ### 4. 🛠️ Step-by-Step Remediation Strategy                  │
-│       • Concrete architectural best practices                   │
-│       • Clean-code refactoring principles                       │
-│       • Actionable steps to fix each flaw                       │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+    subgraph PROMPT["📝 Prompt Assembly"]
+        P["System Role:\n'Principal Software Engineer'\n\nUser Prompt:\nLANGUAGE: {lang}\nSOURCE CODE: ```{code}```\nAST FINDINGS: {findings}\nML PREDICTION: {prediction}\nUSER QUERY: {query}\n\nExpected Output Schema:\n{answer, optimized_code}"]
+    end
+
+    subgraph LLM_CALL["🌐 LLM API Call"]
+        L["POST openrouter.ai/api/v1/chat\nmodel: poolside/laguna-m.1:free\ntemperature: 0.15\nmax_tokens: 3000"]
+    end
+
+    subgraph PARSE["🔍 Response Parsing"]
+        PJ["extract_llm_payload(response)\nParse JSON from LLM text"]
+        PV["Validate optimized_code\nast.parse() if python"]
+        PF["Fallback:\nlocal_optimized_code()"]
+        PJ --> PV
+        PV -->|"invalid"| PF
+    end
+
+    INPUTS --> INTENT --> PROMPT --> LLM_CALL --> PARSE
+
+    style INPUTS fill:#0d3b66,color:#fff,stroke:#4fc3f7
+    style INTENT fill:#4a148c,color:#fff,stroke:#ce93d8
+    style PROMPT fill:#1b5e20,color:#fff,stroke:#69f0ae
+    style LLM_CALL fill:#bf360c,color:#fff,stroke:#ffab40
+    style PARSE fill:#1a237e,color:#fff,stroke:#82b1ff
 ```
 
-#### Language Detection Logic
+#### LLM Response Structure
 
+```mermaid
+flowchart LR
+    JSON["LLM JSON Response"]
+
+    subgraph ANSWER["📝 'answer' field — Markdown"]
+        A1["### 1. 🔍 Executive Summary\nWhat the code does · Structural quality"]
+        A2["### 2. ⚠️ Code Smells & Anti-Patterns\nLine references · Why each is problematic\nMemory overhead · Dead code · Bad naming"]
+        A3["### 3. ⚡ Complexity Analysis\nTime Complexity: O(n²) per function\nSpace Complexity: O(n) auxiliary"]
+        A4["### 4. 🛠️ Remediation Strategy\nArchitectural best practices\nClean-code refactoring steps"]
+    end
+
+    subgraph OPT["💡 'optimized_code' field"]
+        O1["Production-grade refactored code\n(only if user asked to optimize/fix/refactor)"]
+    end
+
+    JSON --> ANSWER
+    JSON --> OPT
+
+    style JSON fill:#0d47a1,color:#fff,stroke:#42a5f5
+    style ANSWER fill:#1b5e20,color:#fff,stroke:#81c784
+    style OPT fill:#4a148c,color:#fff,stroke:#ce93d8
 ```
-Code String
-    │
-    ├─ contains "import java" or "public class" ──▶ java
-    ├─ contains "#include"                       ──▶ cpp
-    ├─ contains "console.log" or "function "    ──▶ javascript
-    ├─ contains "def "                           ──▶ python
-    └─ default                                  ──▶ plaintext
-```
 
-#### Intent Detection (Optimize vs. Explain)
+#### Language Detection Algorithm
 
-```python
-keywords = ("optimize", "optimized", "improve", "improved",
-            "refactor", "refactoring", "fix", "correct",
-            "rewrite", "cleaner code")
+```mermaid
+flowchart TD
+    CODE["Source Code String"]
+    C1{"contains\n'import java'\nor 'public class'?"}
+    C2{"contains\n'#include'?"}
+    C3{"contains\n'console.log'\nor 'function '?"}
+    C4{"contains\n'def '?"}
+    R1["☕ java"]
+    R2["⚙️ cpp"]
+    R3["🌐 javascript"]
+    R4["🐍 python"]
+    R5["📄 plaintext"]
 
-wants_optimized_code(user_query)
-    │
-    ├─ True  ──▶ Prompt asks LLM to fill "optimized_code" field
-    │           ──▶ LLM code validated with ast.parse()
-    │           ──▶ Falls back to deterministic local optimizer if invalid
-    │
-    └─ False ──▶ "optimized_code" = "" in response
+    CODE --> C1
+    C1 -->|Yes| R1
+    C1 -->|No| C2
+    C2 -->|Yes| R2
+    C2 -->|No| C3
+    C3 -->|Yes| R3
+    C3 -->|No| C4
+    C4 -->|Yes| R4
+    C4 -->|No| R5
+
+    style CODE fill:#0d47a1,color:#fff,stroke:#42a5f5
+    style R1 fill:#e65100,color:#fff,stroke:#ffb74d
+    style R2 fill:#37474f,color:#fff,stroke:#90a4ae
+    style R3 fill:#f9a825,color:#000,stroke:#ffd54f
+    style R4 fill:#1565c0,color:#fff,stroke:#64b5f6
+    style R5 fill:#424242,color:#fff,stroke:#9e9e9e
 ```
 
 ---
 
-### Health Score Algorithm
+### 📊 Health Score Algorithm
 
 > **File:** [`backend/agent_logic.py → build_quality_report()`](backend/agent_logic.py)
 
-The health score is a **deterministic weighted formula** that aggregates all findings into a single 0–100 score.
+```mermaid
+flowchart TD
+    F["📋 All Findings List\n(from AST + inline pattern checks)"]
 
-```
-╔═══════════════════════════════════════════════════════════╗
-║              HEALTH SCORE FORMULA                         ║
-╠═══════════════════════════════════════════════════════════╣
-║                                                           ║
-║   health_score = max(0,                                  ║
-║     100                                                  ║
-║     − (critical_count   × 25)                           ║
-║     − (warning_count    × 12)                           ║
-║     − (suggestion_count ×  6)                           ║
-║   )                                                       ║
-║                                                           ║
-╠═══════════════════════════════════════════════════════════╣
-║  Severity    │ Weight │ Meaning                           ║
-║  ────────────┼────────┼──────────────────────────────    ║
-║  🔴 Critical  │  −25   │ Syntax errors, security issues   ║
-║  🟡 Warning   │  −12   │ Code smells, deep nesting        ║
-║  🔵 Suggestion│   −6   │ Style, long lines, TODOs         ║
-║  ⚪ Info      │    0   │ Informational only               ║
-╚═══════════════════════════════════════════════════════════╝
+    subgraph MAP["🗺️ Severity Mapping"]
+        M1["'syntax error' → 🔴 critical"]
+        M2["'deep nesting' / 'range(len' → 🟡 warning"]
+        M3["'square' / 'long line' / 'TODO' → 🔵 suggestion"]
+        M4["'no major issue' → ⚪ info"]
+    end
+
+    subgraph COUNT["🔢 Count per Severity"]
+        CC["critical_count  × 25"]
+        WC["warning_count   × 12"]
+        SC["suggestion_count × 6"]
+        IC["info_count       × 0"]
+    end
+
+    FORMULA["health_score = max(0,\n100 − critical×25 − warning×12 − suggestion×6)"]
+
+    subgraph BANDS["🎨 Score Bands"]
+        B1["🟢 90–100 · Excellent — ship it"]
+        B2["🔵 75–89  · Good — minor polish"]
+        B3["🟡 50–74  · Fair — address warnings"]
+        B4["🟠 25–49  · Poor — critical refactor needed"]
+        B5["🔴 0–24   · Critical — do not ship"]
+    end
+
+    OUT["📤 quality_report {\n  health_score,\n  severity_counts,\n  findings[],\n  fix_suggestions[]\n}"]
+
+    F --> MAP --> COUNT --> FORMULA --> BANDS --> OUT
+
+    style F fill:#0d3b66,color:#fff,stroke:#4fc3f7
+    style MAP fill:#1b5e20,color:#fff,stroke:#69f0ae
+    style COUNT fill:#4a148c,color:#fff,stroke:#ce93d8
+    style FORMULA fill:#bf360c,color:#fff,stroke:#ffab40
+    style BANDS fill:#1a237e,color:#fff,stroke:#82b1ff
+    style OUT fill:#004d40,color:#fff,stroke:#4db6ac
 ```
 
-**Score interpretation:**
+**Severity weights at a glance:**
 
-```
-  100 ████████████████████  Perfect — no issues
-   90 ████████████████████  Excellent
-   75 ███████████████░░░░░  Good — minor suggestions
-   50 ██████████░░░░░░░░░░  Fair — several warnings
-   25 █████░░░░░░░░░░░░░░░  Poor — critical issues present
-    0 ░░░░░░░░░░░░░░░░░░░░  Critical failures detected
-```
+| Severity | Weight | Meaning | Max impact |
+|---|---|---|---|
+| 🔴 **Critical** | `−25` | Syntax errors, catastrophic bugs | 4 criticals → score 0 |
+| 🟡 **Warning** | `−12` | Code smells, deep nesting, bad loops | 8 warnings → score 4 |
+| 🔵 **Suggestion** | `−6` | Long lines, TODOs, style issues | 16 suggestions → score 4 |
+| ⚪ **Info** | `0` | Informational notes only | No penalty |
 
 ---
 
-## 🔬 How the Algorithm Works: Step by Step
+## 🔬 End-to-End Request Flow
 
-Here is the **full end-to-end execution flow** for a single `/analyze-editor` request:
+```mermaid
+sequenceDiagram
+    actor User
+    participant FE as 🖥️ React Frontend
+    participant API as ⚡ FastAPI (main.py)
+    participant ORCH as 🧠 agent_logic.py
+    participant AST as 🌳 AST Analyzer
+    participant ML as 🤖 ML Model
+    participant LLM as 💬 OpenRouter LLM
+    participant SCORE as 📊 Report Builder
 
-```
-Step 1:  User pastes code + asks a question
-              │
-              ▼
-Step 2:  FastAPI receives POST /analyze-editor
-         { code: "...", user_query: "...", session_id: null }
-              │
-              ▼
-Step 3:  agent_logic.analyze_user_query() is called
-              │
-              ├──▶ Step 3a: create_session(code)
-              │            → assigns UUID session_id
-              │            → stores code in _sessions dict
-              │
-              ├──▶ Step 3b: analyze_ast(code)
-              │            → Python ast.parse(code)
-              │            → ast.walk(tree) for all nodes
-              │            → Returns: ["⚠️ Deep nesting...", "⚠️ range(len...)"]
-              │
-              ├──▶ Step 3c: predict_code_smell(code)
-              │            → load_learner("export.pkl")
-              │            → learner.predict(code)
-              │            → Returns: {smell_type, confidence, all_probs}
-              │
-              ├──▶ Step 3d: detect_language(code)
-              │            → Keyword heuristic scan
-              │            → Returns: "python" | "java" | "cpp" | ...
-              │
-              ├──▶ Step 3e: wants_optimized_code(user_query)
-              │            → Keyword intent scan
-              │            → Returns: True | False
-              │
-              ├──▶ Step 3f: call_llm(prompt)
-              │            → Build structured prompt with code + findings
-              │            → POST to OpenRouter API
-              │            → Returns: JSON { answer, optimized_code }
-              │
-              ├──▶ Step 3g: extract_llm_payload(response)
-              │            → Parse JSON from LLM response
-              │            → Extract answer text and optimized code block
-              │
-              ├──▶ Step 3h: Validate optimized_code
-              │            → ast.parse(optimized_code) if python
-              │            → Fallback to local_optimized_code() if invalid
-              │
-              └──▶ Step 3i: build_quality_report()
-                           → Map AST findings → severity levels
-                           → Compute health_score
-                           → Build fix_suggestions list
-              │
-              ▼
-Step 4:  Return JSON response to frontend
-         {
-           session_id,       ← for follow-up questions
-           ast_findings,     ← raw AST issues list
-           model_prediction, ← ML classification result
-           llm_response,     ← structured markdown analysis
-           optimized_code,   ← refactored code (if requested)
-           language,         ← detected language
-           quality_report    ← { health_score, severity_counts,
-                                  findings, fix_suggestions }
-         }
-              │
-              ▼
-Step 5:  Frontend renders Results panel
-         • Health score gauge (0–100)
-         • Severity breakdown
-         • ML confidence badge
-         • Markdown-rendered LLM analysis
-         • Optimized code diff panel (if present)
-         • Follow-up chat interface
+    User->>FE: Paste code + ask question
+    FE->>API: POST /analyze-editor {code, user_query}
+
+    API->>ORCH: analyze_user_query(code, query)
+
+    ORCH->>ORCH: create_session(code) → UUID
+
+    par AST Analysis
+        ORCH->>AST: analyze_ast(code)
+        AST-->>ORCH: ["⚠️ Deep nesting", "⚠️ range(len...)"]
+    and ML Classification
+        ORCH->>ML: predict_code_smell(code)
+        ML-->>ORCH: {smell_type: "Smelly", confidence: 0.95}
+    end
+
+    ORCH->>ORCH: detect_language(code) → "python"
+    ORCH->>ORCH: wants_optimized_code(query) → True/False
+
+    ORCH->>LLM: call_llm(structured prompt)
+    Note over LLM: code + AST findings + ML result<br/>temperature=0.15, max_tokens=3000
+    LLM-->>ORCH: {answer: "### 1. Executive...", optimized_code: "..."}
+
+    ORCH->>ORCH: extract_llm_payload() + validate code
+    ORCH->>SCORE: build_quality_report(code, findings, optimized)
+    SCORE-->>ORCH: {health_score: 76, severity_counts, findings, fix_suggestions}
+
+    ORCH-->>API: Full analysis dict
+    API-->>FE: JSON Response
+    FE-->>User: Health Score · ML Badge · Markdown Review · Code Diff
 ```
 
 ---
 
 ## 📊 Training Data & Model Details
 
-### Dataset: `code_smells.csv`
+### Dataset: [`backend/model/code_smells.csv`](backend/model/code_smells.csv)
 
-> **File:** [`backend/model/code_smells.csv`](backend/model/code_smells.csv)
+The AWD-LSTM is trained on labeled Python code snippet pairs — one **Smelly** version and one **Clean** version of the same pattern:
 
-The dataset contains labeled Python code snippets with two columns:
-
-| Column | Type | Description |
+| Smelly Code | Clean Code | Smell Type |
 |---|---|---|
-| `code` | string | Raw Python code snippet |
-| `label` | string | `"Clean"` or `"Smelly"` |
+| `for i in range(len(arr)): print(arr[i])` | `for x in arr: print(x)` | Inefficient index loop |
+| `if x == True: print('ok')` | `if x: print('ok')` | Redundant bool comparison |
+| `try: x=1/0\nexcept: pass` | `try:\n  x=1/0\nexcept ZeroDivisionError:\n  print('error')` | Bare except clause |
+| `print('debug')` | `logging.info('Task completed')` | Debug print in production |
+| `for i in range(0, len(data)): process(data[i])` | `for item in data: process(item)` | Index-based iteration |
+| `if flag == False: return` | `if not flag: return` | Explicit False comparison |
+| `x = 10\nx = 20` | `x = 10\ny = 20` | Immediate variable overwrite |
+| `def calc(): return None` | `def calc(a,b): return a+b` | Meaningless function |
 
-**Examples from the training set:**
-
-| Code | Label | Reason |
-|---|---|---|
-| `for i in range(len(arr)): print(arr[i])` | 🔴 Smelly | Inefficient index loop |
-| `for x in arr: print(x)` | 🟢 Clean | Pythonic direct iteration |
-| `if x == True: print('ok')` | 🔴 Smelly | Redundant boolean comparison |
-| `if x: print('ok')` | 🟢 Clean | Idiomatic truthiness check |
-| `try: x=1/0\nexcept: pass` | 🔴 Smelly | Bare except — swallows all errors |
-| `try:\n    x=1/0\nexcept ZeroDivisionError:\n    print('error')` | 🟢 Clean | Specific exception handling |
-| `print('debug')` | 🔴 Smelly | Debug print in production code |
-| `logging.info('Task completed')` | 🟢 Clean | Proper logging practice |
-
-### Model Specifications
+### Model Specification
 
 | Property | Value |
 |---|---|
-| Architecture | AWD-LSTM (3 LSTM layers) |
+| Architecture | AWD-LSTM (3 stacked LSTM layers with Weight Drop) |
 | Framework | FastAI `text_classifier_learner` |
-| Tokenizer | FastAI `TextBlock` (subword tokenization) |
-| Train/Val split | 80% / 20% (RandomSplitter) |
+| Backend | PyTorch |
+| Tokenizer | FastAI `TextBlock` subword tokenizer |
+| Train / Validation split | 80% / 20% — `RandomSplitter(valid_pct=0.2)` |
 | Batch size | 4 |
-| Epochs | 3 (fine_tune) |
-| Optimizer | ASGD (Averaged SGD) |
+| Fine-tune epochs | 3 (`learn.fine_tune(3)`) |
+| Optimizer | ASGD (Averaged Stochastic Gradient Descent) |
 | Metric | Accuracy |
 | Output classes | `["Clean", "Smelly"]` |
-| Export format | `export.pkl` (FastAI serialized learner) |
+| Export format | `export.pkl` — full FastAI serialized learner |
 
 ---
 
 ## 🚀 API Endpoints
 
-Base URL: `https://rigelai.onrender.com`
+**Base URL:** `https://rigelai.onrender.com`
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/` | Health ping |
-| `GET` | `/health` | Status check |
-| `POST` | `/analyze-editor` | Analyze code pasted in editor |
-| `POST` | `/analyze-file` | Analyze uploaded source file |
-| `POST` | `/analyze-repository` | Scan a public GitHub repository |
-| `POST` | `/followup` | Ask follow-up question in session |
-| `POST` | `/chat` | General programming Q&A (no code) |
-| `POST` | `/download-pdf` | Export AI discussion as PDF |
+| Method | Endpoint | Payload | Description |
+|---|---|---|---|
+| `GET` | `/` | — | Root health ping |
+| `GET` | `/health` | — | Status check |
+| `POST` | `/analyze-editor` | `{code, user_query, session_id?}` | Analyze code from editor input |
+| `POST` | `/analyze-file` | `multipart: file + user_query` | Analyze uploaded source file |
+| `POST` | `/analyze-repository` | `{repository_url, user_query}` | Scan a public GitHub repository |
+| `POST` | `/followup` | `{user_query, session_id}` | Follow-up question in same session |
+| `POST` | `/chat` | `{user_query}` | General programming Q&A (no code) |
+| `POST` | `/download-pdf` | `{text}` | Export AI discussion as PDF |
 
-**Request/Response example — `/analyze-editor`:**
+**Example — `/analyze-editor`:**
 
-```json
+```jsonc
 // REQUEST
-POST /analyze-editor
 {
   "code": "for i in range(len(arr)): print(arr[i])",
   "user_query": "What is wrong with this code?",
@@ -628,8 +632,8 @@ POST /analyze-editor
     "quality_report": {
       "health_score": 88,
       "severity_counts": { "critical": 0, "warning": 1, "suggestion": 0, "info": 0 },
-      "findings": [...],
-      "fix_suggestions": [...]
+      "findings": [ /* ... */ ],
+      "fix_suggestions": [ /* ... */ ]
     }
   }
 }
@@ -642,144 +646,139 @@ POST /analyze-editor
 ```
 CodeSentinel-AI/
 │
-├── backend/                          # FastAPI Python backend
-│   ├── main.py                       # API server & route handlers
-│   ├── agent_logic.py                # Core orchestration: AST + ML + LLM
-│   ├── ast_analyzer.py               # Deep AST-based static analysis
-│   ├── session_store.py              # Multi-turn chat session management
-│   ├── requirements.txt              # Python dependencies
-│   ├── runtime.txt                   # Python version for deployment
-│   ├── .env                          # API keys (not committed)
+├── 📁 backend/                          FastAPI Python backend
+│   ├── 🐍 main.py                       API server + all route handlers
+│   ├── 🧠 agent_logic.py                Core: AST + ML + LLM orchestration
+│   ├── 🌳 ast_analyzer.py               Deep AST static analysis
+│   ├── 💬 session_store.py              Multi-turn chat session management
+│   ├── 📋 requirements.txt              Python dependencies
+│   ├── 🔑 .env                          API keys (not committed to git)
 │   │
-│   ├── model/                        # ML model directory
-│   │   ├── code_smells.csv           # Labeled training dataset
-│   │   ├── train_model.py            # AWD-LSTM training script
-│   │   └── model_loader.py           # FastAI inference loader
+│   ├── 📁 model/                        ML model artefacts
+│   │   ├── 📊 code_smells.csv           Labeled training dataset
+│   │   ├── 🏋️ train_model.py            AWD-LSTM training script
+│   │   └── 🔮 model_loader.py           FastAI inference loader
 │   │
-│   └── pdfs/                         # Temporarily generated PDF exports
+│   └── 📁 pdfs/                         Temp-generated PDF exports
 │
-├── frontend/                         # React + Vite frontend
-│   ├── src/
-│   │   ├── components/               # UI components
-│   │   │   ├── CodeInputPanel.jsx    # Code editor with Monaco-style input
-│   │   │   ├── Chatbot.jsx           # Multi-turn AI chat interface
-│   │   │   ├── FileUpload.jsx        # Drag-and-drop file uploader
-│   │   │   ├── Navbar.jsx            # Top navigation bar
-│   │   │   ├── Results.jsx           # Analysis results panel
-│   │   │   └── IdeIntegrationModal.jsx # VS Code extension setup guide
-│   │   ├── pages/
-│   │   │   └── Home.jsx              # Main application page
-│   │   ├── services/
-│   │   │   └── api.js                # Axios API call wrappers
-│   │   ├── App.jsx                   # Root React component
-│   │   └── main.jsx                  # React entry point
-│   ├── index.html
-│   ├── vite.config.js
-│   └── package.json
+├── 📁 frontend/                         React + Vite SPA
+│   └── 📁 src/
+│       ├── 📁 components/
+│       │   ├── ⌨️ CodeInputPanel.jsx    Code editor with syntax highlighting
+│       │   ├── 💬 Chatbot.jsx           Multi-turn AI chat interface
+│       │   ├── 📁 FileUpload.jsx        Drag-and-drop file uploader
+│       │   ├── 📊 Results.jsx           Analysis results + health score panel
+│       │   └── 🔌 IdeIntegrationModal  VS Code extension setup guide
+│       ├── 📁 pages/Home.jsx            Main application page
+│       └── 📁 services/api.js           Axios API call wrappers
 │
-├── vscode-extension/                 # VS Code extension
-│   ├── src/
-│   │   └── extension.js              # Extension activation & commands
-│   ├── package.json
-│   └── README.md
+├── 📁 vscode-extension/                 VS Code Extension (VSIX)
+│   └── 📁 src/extension.js             Extension activation + commands
 │
-├── CodeXGLUE/                        # CodeXGLUE benchmark reference data
-├── .gitignore
-└── README.md                         # This file
+└── 📄 README.md                         This file
 ```
 
 ---
 
 ## ⚙️ Tech Stack
 
-### Frontend
-| Technology | Purpose |
-|---|---|
-| **React 18** | Component-based UI |
-| **Vite** | Fast dev server & bundler |
-| **Axios / Fetch API** | API communication |
-| **CSS Modules** | Scoped styling |
+```mermaid
+flowchart LR
+    subgraph FE["🖥️ Frontend"]
+        R["React 18"]
+        V["Vite"]
+        AX["Axios"]
+        CSS["CSS Modules"]
+    end
 
-### Backend
-| Technology | Purpose |
-|---|---|
-| **FastAPI** | Async Python web framework |
-| **Uvicorn** | ASGI server |
-| **Pydantic** | Request validation & schemas |
-| **ReportLab** | PDF generation |
-| **python-multipart** | File upload support |
+    subgraph BE["⚡ Backend"]
+        FA["FastAPI"]
+        UV["Uvicorn (ASGI)"]
+        PY["Pydantic"]
+        RL["ReportLab (PDF)"]
+    end
 
-### AI & ML
-| Technology | Purpose |
-|---|---|
-| **FastAI** | AWD-LSTM text classifier framework |
-| **PyTorch** | Tensor computation backend for FastAI |
-| **OpenAI SDK** | HTTP client to OpenRouter API |
-| **OpenRouter** | Unified LLM gateway (poolside/laguna) |
-| **Python `ast`** | Built-in AST parser for static analysis |
+    subgraph ML_STACK["🤖 AI / ML"]
+        FAI["FastAI"]
+        PT["PyTorch"]
+        OAI["OpenAI SDK"]
+        OR["OpenRouter API"]
+        AST_P["Python ast"]
+    end
 
-### Deployment
-| Service | Layer |
-|---|---|
-| **Vercel** | Frontend hosting + CDN |
-| **Render** | Backend API hosting |
+    subgraph DEPLOY["🚀 Deployment"]
+        VER["Vercel\n(Frontend CDN)"]
+        REN["Render\n(Backend API)"]
+    end
+
+    FE <-->|"HTTP / JSON"| BE
+    BE <-->|"model inference"| ML_STACK
+    FE --> VER
+    BE --> REN
+
+    style FE fill:#0d3b66,color:#fff,stroke:#4fc3f7
+    style BE fill:#1b5e20,color:#fff,stroke:#69f0ae
+    style ML_STACK fill:#4a148c,color:#fff,stroke:#ce93d8
+    style DEPLOY fill:#bf360c,color:#fff,stroke:#ffab40
+```
 
 ---
 
 ## 🛠️ Local Setup
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- An [OpenRouter](https://openrouter.ai) API key
+- Python **3.11+**
+- Node.js **18+**
+- [OpenRouter](https://openrouter.ai) API key (free tier available)
 
-### 1. Clone the repo
+### 1 · Clone
 
 ```bash
 git clone https://github.com/saurabh-yadav/CodeSentinel-AI.git
 cd CodeSentinel-AI
 ```
 
-### 2. Backend setup
+### 2 · Backend
 
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate          # Windows
-# source venv/bin/activate     # macOS/Linux
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS / Linux
 
 pip install -r requirements.txt
 ```
 
-Create `.env` file:
+Create `backend/.env`:
+
 ```env
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 OPENROUTER_MODEL=poolside/laguna-m.1:free
-GITHUB_TOKEN=your_github_token_here   # optional, for repo scanning
+GITHUB_TOKEN=your_github_token_here   # optional — enables repo scanning
 ```
 
-Run backend:
+Start backend:
+
 ```bash
 uvicorn main:app --reload --port 8000
 ```
 
-### 3. Frontend setup
+### 3 · Frontend
 
 ```bash
 cd frontend
 npm install
 npm run dev
+# App → http://localhost:5173
+# API → http://localhost:8000
 ```
 
-App runs at: `http://localhost:5173`
-API runs at: `http://localhost:8000`
-
-### 4. Train ML Model (optional)
+### 4 · Train ML Model *(optional)*
 
 ```bash
 cd backend/model
 python train_model.py
-# Outputs: export.pkl
+# Produces: export.pkl
 ```
 
 ---
@@ -798,7 +797,7 @@ python train_model.py
 
 <div align="center">
 
-⭐ **If you found CodeSentinel AI useful, please give it a star on GitHub!** ⭐
+⭐ **If you found CodeSentinel AI useful, please star it on GitHub!** ⭐
 
 [![GitHub stars](https://img.shields.io/github/stars/saurabh-yadav/CodeSentinel-AI?style=social)](https://github.com/saurabh-yadav/CodeSentinel-AI)
 
