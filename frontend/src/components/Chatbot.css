@@ -1,12 +1,12 @@
-/* Chatbot.css — Clean Apple-inspired Assistant Studio */
+/* Chatbot.css — Minimal */
 
 .copilot-container {
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-rule);
   border-radius: var(--radius-md);
-  min-height: 580px;
+  min-height: 560px;
   overflow: hidden;
 }
 
@@ -14,50 +14,53 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  background-color: var(--bg-surface-raised);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 20px;
+  background-color: var(--app-surface-raised);
+  border-bottom: 1px solid var(--app-rule);
   gap: 1rem;
 }
 
 .copilot-title-group {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 8px;
 }
 
 .copilot-title-group h3 {
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--app-ink);
+  letter-spacing: -0.015em;
 }
 
 .copilot-status-badge {
-  font-size: 0.6875rem;
+  font-size: 0.6rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   background-color: var(--status-success-bg);
   color: var(--status-success);
   border: 1px solid var(--status-success-border);
-  padding: 0.1rem 0.4rem;
+  padding: 1px 6px;
   border-radius: var(--radius-xs);
 }
 
 .copilot-subtitle {
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--app-ink-subtle);
+  margin-top: 1px;
 }
 
 .copilot-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
-/* Messages area */
+/* Messages */
 .copilot-messages-area {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -74,62 +77,65 @@
 }
 
 .empty-copilot-text h4 {
-  font-size: 1.125rem;
-  color: var(--text-primary);
-  margin-bottom: 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--app-ink);
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.015em;
 }
 
 .empty-copilot-text p {
   font-size: 0.875rem;
-  color: var(--text-secondary);
-  max-width: 480px;
+  color: var(--app-ink-muted);
+  max-width: 440px;
   margin: 0 auto 1.5rem auto;
+  line-height: 1.6;
 }
 
 .starter-prompts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  max-width: 720px;
+  gap: 6px;
+  max-width: 640px;
   width: 100%;
 }
 
 .starter-prompt-card {
-  padding: 0.85rem 1rem;
+  padding: 10px 14px;
   text-align: left;
-  background-color: var(--bg-surface-raised);
-  border: 1px solid var(--border-subtle);
+  background-color: var(--app-surface-raised);
+  border: 1px solid var(--app-rule);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all var(--transition-quick);
+  transition: border-color var(--transition-quick), background-color var(--transition-quick);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 3px;
+  font-family: var(--font-sans);
 }
 
 .starter-prompt-card:hover {
-  background-color: var(--bg-surface);
-  border-color: var(--border-default);
-  box-shadow: var(--shadow-sm);
+  background-color: var(--app-surface-hover);
+  border-color: var(--app-rule-hover);
 }
 
 .starter-title {
   font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 500;
+  color: var(--app-ink);
 }
 
 .starter-desc {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: var(--app-ink-muted);
   line-height: 1.4;
 }
 
-/* Message Stream */
+/* Message stream */
 .message-stream {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .copilot-bubble-row {
@@ -139,23 +145,22 @@
 }
 
 .bubble-wrapper {
-  max-width: 85%;
+  max-width: 82%;
   border-radius: var(--radius-sm);
-  padding: 0.85rem 1.1rem;
+  padding: 10px 14px;
 }
 
 .copilot-bubble-row.user .bubble-wrapper {
   margin-left: auto;
-  background-color: #0071e3;
+  background-color: var(--app-accent);
   color: #ffffff;
-  border-radius: 18px 18px 4px 18px;
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
-  border: 1px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 3px var(--radius-sm);
+  border: none;
 }
 
 .copilot-bubble-row.user .bubble-sender,
 .copilot-bubble-row.user .bubble-time {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255,255,255,0.65);
 }
 
 .copilot-bubble-row.user .bubble-content,
@@ -165,76 +170,66 @@
 
 .copilot-bubble-row.assistant .bubble-wrapper {
   margin-right: auto;
-  background-color: var(--bg-surface);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 18px 18px 18px 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  background-color: var(--app-surface-raised);
+  border: 1px solid var(--app-rule);
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) 3px;
 }
 
 .bubble-meta {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.35rem;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
 .bubble-sender {
-  font-size: 0.6875rem;
+  font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--text-tertiary);
-  letter-spacing: 0.04em;
+  color: var(--app-ink-subtle);
+  letter-spacing: 0.06em;
 }
 
 .bubble-time {
-  font-size: 0.6875rem;
-  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  color: var(--app-ink-subtle);
 }
 
 .btn-copy-bubble {
   background: transparent;
   border: none;
-  color: var(--text-tertiary);
+  color: var(--app-ink-subtle);
   cursor: pointer;
-  padding: 0.15rem;
+  padding: 2px;
   margin-left: auto;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   transition: color var(--transition-quick);
+  display: flex;
+  align-items: center;
 }
 
-.btn-copy-bubble:hover {
-  color: var(--text-primary);
-}
-
-.copilot-bubble-row.user .btn-copy-bubble {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.copilot-bubble-row.user .btn-copy-bubble:hover {
-  color: #ffffff;
-}
+.btn-copy-bubble:hover { color: var(--app-ink); }
+.copilot-bubble-row.user .btn-copy-bubble { color: rgba(255,255,255,0.6); }
+.copilot-bubble-row.user .btn-copy-bubble:hover { color: #ffffff; }
 
 .bubble-content {
   font-size: 0.875rem;
-  color: var(--text-primary);
-  line-height: 1.6;
+  color: var(--app-ink);
+  line-height: 1.65;
 }
 
-/* Apple Intelligence Shimmer */
-@keyframes appleShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+/* Loading */
+@keyframes shimmer {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.4; }
 }
 
 .loading-dots {
-  background: linear-gradient(90deg, #0071e3 0%, #7c3aed 50%, #0071e3 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 600;
+  color: var(--app-ink-subtle);
+  font-weight: 500;
   font-size: 0.875rem;
-  animation: appleShimmer 2.2s linear infinite;
+  animation: shimmer 1.4s ease-in-out infinite;
   display: inline-block;
 }
 
@@ -242,37 +237,36 @@
 .copilot-error-banner {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: 6px;
+  padding: 10px 20px;
   background-color: var(--status-critical-bg);
   border-top: 1px solid var(--status-critical-border);
   color: var(--status-critical);
   font-size: 0.8125rem;
 }
 
-/* Input Bar */
+/* Input bar */
 .copilot-input-bar {
   display: flex;
-  gap: 0.65rem;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-subtle);
-  background-color: var(--bg-surface-raised);
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--app-rule);
+  background-color: var(--app-surface-raised);
 }
 
 .copilot-input-bar .text-input {
-  border-radius: 980px;
-  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
   font-size: 0.875rem;
-  border-color: rgba(0, 0, 0, 0.12);
-  background: #ffffff;
+  background: var(--app-surface);
+  border-color: var(--app-rule);
 }
 
 .copilot-input-bar .btn-primary {
-  padding: 0.65rem 1.35rem;
+  padding: 8px 16px;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
-  .starter-prompts-grid {
-    grid-template-columns: 1fr;
-  }
+  .starter-prompts-grid { grid-template-columns: 1fr; }
 }
