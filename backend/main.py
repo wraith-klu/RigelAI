@@ -57,6 +57,19 @@ app.add_middleware(
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 @app.middleware("http")
+async def vercel_path_rewrite(request, call_next):
+    scope_path = request.scope.get("path", "")
+    # When Vercel rewrites /api/:path* -> /api/index.py, scope_path is /api/index.py
+    # and Vercel places the captured path in query_params['path']
+    if "index.py" in scope_path or scope_path in ("/api", "/api/"):
+        subpath = request.query_params.get("path")
+        if subpath:
+            clean_subpath = "/" + subpath.lstrip("/")
+            request.scope["path"] = clean_subpath
+            request.scope["raw_path"] = clean_subpath.encode("latin1")
+    return await call_next(request)
+
+@app.middleware("http")
 async def log_request_middleware(request, call_next):
     path = request.scope.get("path")
     print(f"DEBUG REQ: {request.method} path={path} root_path={request.scope.get('root_path')} url={request.url}")
