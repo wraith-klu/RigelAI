@@ -10,7 +10,10 @@ and refactoring opportunities across repository files.
 import os
 import logging
 from typing import List, Dict, Any, Tuple
-import torch
+try:
+    import torch
+except ImportError:
+    torch = None
 
 logger = logging.getLogger("CodeSentinel.CloneDetector")
 

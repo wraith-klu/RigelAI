@@ -57,6 +57,8 @@ htmlcov/
 node_modules/
 dist/
 dist-ssr/
+!frontend/dist/
+!frontend/dist/**
 .vite/
 *.local
 

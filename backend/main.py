@@ -50,9 +50,13 @@ app.add_middleware(
 )
 
 
+import tempfile
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PDF_DIR = os.path.join(BASE_DIR, "pdfs")
-os.makedirs(PDF_DIR, exist_ok=True)
+PDF_DIR = os.path.join(tempfile.gettempdir(), "codesentinel_pdfs")
+try:
+    os.makedirs(PDF_DIR, exist_ok=True)
+except Exception:
+    PDF_DIR = tempfile.gettempdir()
 
 
   
@@ -393,9 +397,18 @@ def health():
     }
 
 
+FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend", "dist"))
+
 @app.get("/")
 def root():
+    index_file = os.path.join(FRONTEND_DIST, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
     return {"status": "CodeSentinel AI API running", "version": "3.0-MoS"}
+
+if os.path.exists(os.path.join(FRONTEND_DIST, "assets")):
+    from fastapi.staticfiles import StaticFiles
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="assets")
 
 
 # ⭐ PRE-FLIGHT DEVSECOPS SECRET SCANNER

@@ -8,7 +8,10 @@ distributions. Falls back safely to baseline rules if offline.
 
 import os
 import logging
-import torch
+try:
+    import torch
+except ImportError:
+    torch = None
 
 logger = logging.getLogger("CodeSentinel.ModelLoader")
 
