@@ -202,6 +202,55 @@ export default function CodeInputPanel({ onAnalyze }) {
     return { lines, chars };
   }, [code]);
 
+  // 5.5 Real-Time Interactive "Live Fix" Score Playground
+  const liveAudit = useMemo(() => {
+    if (!code || !code.trim()) {
+      return { score: 100, complexity: 1, nesting: 0, smells: 0, grade: "A" };
+    }
+
+    const decisionKeywords = [
+      /\bif\b/g, /\belif\b/g, /\belse\s+if\b/g, /\bfor\b/g, /\bwhile\b/g,
+      /\bcatch\b/g, /\bexcept\b/g, /\bcase\b/g, /&&/g, /\|\|/g, /\?/g
+    ];
+    let complexity = 1;
+    decisionKeywords.forEach(kw => {
+      const matches = code.match(kw);
+      if (matches) complexity += matches.length;
+    });
+
+    let maxNesting = 0;
+    if (lang === "python") {
+      code.split("\n").forEach(line => {
+        if (!line.trim() || line.trim().startsWith("#")) return;
+        const indent = line.length - line.trimStart().length;
+        maxNesting = Math.max(maxNesting, Math.floor(indent / 4));
+      });
+    } else {
+      let cur = 0;
+      for (let ch of code) {
+        if (ch === "{" || ch === "[" || ch === "(") { cur++; maxNesting = Math.max(maxNesting, cur); }
+        else if (ch === "}" || ch === "]" || ch === ")") { cur = Math.max(0, cur - 1); }
+      }
+    }
+
+    let smells = 0;
+    if (/range\s*\(\s*len\s*\(/i.test(code)) smells++;
+    if (/\*\*2|\*\*\s*2/i.test(code)) smells++;
+    if (/var\s+[a-zA-Z0-9_]+/i.test(code) && (lang === "javascript" || lang === "typescript")) smells++;
+    if (code.includes("TODO")) smells++;
+    if (maxNesting >= 4) smells++;
+    if (complexity > 12) smells += 2;
+
+    let score = Math.max(25, 100 - (smells * 12) - Math.max(0, complexity - 8) * 3 - Math.max(0, maxNesting - 3) * 8);
+    let grade = "A";
+    if (score < 60) grade = "F";
+    else if (score < 75) grade = "D";
+    else if (score < 85) grade = "C";
+    else if (score < 93) grade = "B";
+
+    return { score, complexity, nesting: maxNesting, smells, grade };
+  }, [code, lang]);
+
   const handleOpenFileInEditor = (fileText, fileName) => {
     setCode(fileText);
     const ext = fileName.split(".").pop().toLowerCase();
@@ -308,6 +357,26 @@ export default function CodeInputPanel({ onAnalyze }) {
         </div>
 
         <div className="studio-header-right">
+          {/* 5.6 Dual Review Persona Selector */}
+          <div className="persona-toggle-container" role="radiogroup" aria-label="Review Persona">
+            <button
+              type="button"
+              className={`persona-chip-btn ${persona === "architect" ? "active" : ""}`}
+              onClick={() => setPersona("architect")}
+              title="Staff Systems Architect (Rigorous Big-O, concurrency, memory layout, clean architecture)"
+            >
+              <span>🏛️ Staff Architect</span>
+            </button>
+            <button
+              type="button"
+              className={`persona-chip-btn ${persona === "student" ? "active" : ""}`}
+              onClick={() => setPersona("student")}
+              title="ELI5 Student (Friendly, intuitive real-world analogies, conceptual breakdown)"
+            >
+              <span>🎓 ELI5 Student</span>
+            </button>
+          </div>
+
           <span className="engine-badge active-engine">
             <span className="engine-status-dot" aria-hidden="true"></span>
             <span>AST Engine Active · Deterministic</span>
@@ -411,6 +480,28 @@ export default function CodeInputPanel({ onAnalyze }) {
             </div>
           </div>
 
+          {/* 5.5 Real-Time Interactive "Live Fix" Score Playground */}
+          <div className="live-score-hud">
+            <div className="live-score-pill">
+              <span className="live-pulse-dot" />
+              <span className="live-score-label">Live Fix Score:</span>
+              <strong className={`live-score-val grade-${liveAudit.grade.toLowerCase()}`}>
+                {liveAudit.score}/100 (Grade {liveAudit.grade})
+              </strong>
+            </div>
+            <div className="live-metrics-group">
+              <span className="live-metric-tag" title="McCabe Cyclomatic Complexity">
+                Complexity: <strong>M={liveAudit.complexity}</strong>
+              </span>
+              <span className="live-metric-tag" title="Maximum Block Nesting Depth">
+                Nesting: <strong>{liveAudit.nesting} lvls</strong>
+              </span>
+              <span className={`live-metric-tag ${liveAudit.smells > 0 ? "warning" : "clean"}`}>
+                {liveAudit.smells > 0 ? `${liveAudit.smells} Smells` : "Clean Syntax"}
+              </span>
+            </div>
+          </div>
+
           {/* Monaco Editor Pane */}
           <div className="monaco-pane-frame">
             <Editor
@@ -469,6 +560,7 @@ export default function CodeInputPanel({ onAnalyze }) {
             onRunStateChange={(run) => setActiveRun(run)}
             onSwitchToEditor={() => setInputMode("editor")}
             onOpenFileInEditor={handleOpenFileInEditor}
+            persona={persona}
           />
         </div>
       )}

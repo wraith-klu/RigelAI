@@ -26,6 +26,7 @@ from agent_logic import (
 )
 from security_scanner import scan_for_secrets
 from debt_calculator import calculate_technical_debt
+from cve_scanner import audit_dependencies
 
 try:
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer # pyright: ignore[reportMissingModuleSource]
@@ -419,6 +420,11 @@ class CloneDetectionRequest(BaseModel):
     similarity_threshold: float = 0.85
 
 
+class CveAuditRequest(BaseModel):
+    content: str
+    filename: str = "requirements.txt"
+
+
 # HEALTH & NEURAL ROSTER
   
 @app.get("/health")
@@ -435,11 +441,31 @@ def health():
         },
         "features": {
             "secret_scanner": True,
+            "cve_audit_osv": True,
+            "multi_language_ast": True,
             "sqale_technical_debt": True,
             "dual_persona_review": True,
             "live_fix_score": True,
+            "github_action_pr_bot": True,
         }
     }
+
+
+# OSV.DEV CVE DEPENDENCY AUDIT
+  
+@app.post("/audit-cve")
+@app.post("/api/audit-cve")
+async def audit_cve_endpoint(req: CveAuditRequest):
+    try:
+        vulns = await asyncio.to_thread(audit_dependencies, req.content, req.filename)
+        return JSONResponse(content={
+            "status": "success",
+            "filename": req.filename,
+            "total_vulns": len(vulns),
+            "findings": vulns,
+        })
+    except Exception as e:
+        raise HTTPException(500, f"CVE audit failed: {e}")
 
 
 FRONTEND_DIST = os.path.join(BASE_DIR, "dist")
@@ -540,6 +566,29 @@ async def analyze_file(
             code=code,
             persona=persona,
         )
+
+        # 5.1 DevSecOps: Free CVE audit for dependency manifests
+        fname_lower = file.filename.lower()
+        if fname_lower.endswith(("requirements.txt", "package.json", "go.mod")):
+            try:
+                cve_vulns = await asyncio.to_thread(audit_dependencies, code, file.filename)
+                if cve_vulns and "quality_report" in result.get("llm_analysis", {}):
+                    qr = result["llm_analysis"]["quality_report"]
+                    for v in cve_vulns[:8]:
+                        qr["findings"].insert(0, {
+                            "id": f"{file.filename}:{v.get('cve_id')}",
+                            "file": file.filename,
+                            "line": 1,
+                            "severity": "critical",
+                            "title": f"Vulnerability: {v.get('cve_id')} in {v.get('package')} ({v.get('version')})",
+                            "message": v.get("summary", ""),
+                            "suggestion": f"Upgrade {v.get('package')} to version {v.get('fixed_in', 'latest')}.",
+                        })
+                    # Recalculate health score with CVE penalty
+                    qr["health_score"] = max(10, qr["health_score"] - len(cve_vulns) * 15)
+                    qr["summary"]["critical_issues"] = sum(1 for f in qr["findings"] if f.get("severity") == "critical")
+            except Exception as e:
+                print("CVE audit error:", e)
 
         # attach language info
         result["llm_analysis"]["language"] = language

@@ -16,7 +16,7 @@ const PRESET_QUERIES = [
   "Performance bottlenecks and edge-case vulnerabilities"
 ];
 
-export default function FileUpload({ onResult, onRunStateChange, onSwitchToEditor, onOpenFileInEditor }) {
+export default function FileUpload({ onResult, onRunStateChange, onSwitchToEditor, onOpenFileInEditor, persona = "architect" }) {
   const [file, setFile] = useState(null);
   const [query, setQuery] = useState(
     "Analyze this code for code smells, anti-patterns, complexity, and refactoring opportunities."
@@ -31,11 +31,11 @@ export default function FileUpload({ onResult, onRunStateChange, onSwitchToEdito
   const validateFile = (selectedFile) => {
     if (!selectedFile) return "No file selected.";
 
-    const allowed = [".py", ".java", ".cpp", ".c", ".js", ".ts", ".jsx", ".tsx", ".go", ".rs"];
+    const allowed = [".py", ".java", ".cpp", ".c", ".js", ".ts", ".jsx", ".tsx", ".go", ".rs", ".txt", ".json", ".mod"];
     const ext = "." + selectedFile.name.split(".").pop().toLowerCase();
 
     if (!allowed.includes(ext)) {
-      return "Unsupported format. Rigel AI supports Python, Java, C/C++, JS, TS, Go, and Rust.";
+      return "Unsupported format. CodeSentinel supports Python, Java, C/C++, JS, TS, Go, Rust, and dependency manifests.";
     }
 
     if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
@@ -93,7 +93,7 @@ export default function FileUpload({ onResult, onRunStateChange, onSwitchToEdito
     });
 
     try {
-      const data = await analyzeFile(file, query);
+      const data = await analyzeFile(file, query, null, persona);
       onResult?.(data);
     } catch (e) {
       setError(e.message || "File analysis failed. Check backend connection.");
@@ -118,7 +118,7 @@ export default function FileUpload({ onResult, onRunStateChange, onSwitchToEdito
     });
 
     try {
-      const data = await analyzeRepository(repoUrl, query);
+      const data = await analyzeRepository(repoUrl, query, persona);
       onResult?.(data);
     } catch (e) {
       setError(e.message || "Repository analysis failed. Verify the repository is public and accessible.");

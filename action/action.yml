@@ -1,0 +1,49 @@
+name: 'CodeSentinel AI Automated Code Reviewer'
+description: 'Enterprise AI code review, DevSecOps secret scanning, and automated refactoring bot for Pull Requests'
+author: 'wraith-klu'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  api_endpoint:
+    description: 'CodeSentinel AI backend API endpoint URL'
+    required: false
+    default: 'https://rigel-ai-agent.vercel.app/api/analyze-file'
+  github_token:
+    description: 'GitHub token for posting PR comments (secrets.GITHUB_TOKEN)'
+    required: true
+  health_threshold:
+    description: 'Minimum required Code Health Score (0-100) to pass CI check'
+    required: false
+    default: '75'
+  persona:
+    description: 'Review persona mode: architect or student'
+    required: false
+    default: 'architect'
+
+outputs:
+  health_score:
+    description: 'Calculated code health score (0-100)'
+  sqale_debt_hours:
+    description: 'Estimated technical debt hours'
+  review_status:
+    description: 'PASSED or FAILED'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Run CodeSentinel PR Review Bot
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_API_ENDPOINT: ${{ inputs.api_endpoint }}
+        INPUT_HEALTH_THRESHOLD: ${{ inputs.health_threshold }}
+        INPUT_PERSONA: ${{ inputs.persona }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPO_NAME: ${{ github.repository }}
+      run: python ${{ github.action_path }}/review_bot.py
