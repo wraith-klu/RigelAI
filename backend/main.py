@@ -402,11 +402,28 @@ def health():
     }
 
 
+@app.middleware("http")
+async def vercel_path_rewrite_middleware(request, call_next):
+    # Restore original client path from Vercel headers if present
+    original_path = request.headers.get("x-matched-path") or request.headers.get("x-invoke-path")
+    if original_path:
+        request.scope["path"] = original_path.split("?")[0]
+    return await call_next(request)
+
+
+@app.get("/debug-info")
+def debug_info(request: Request):
+    return {
+        "scope_path": request.scope.get("path"),
+        "raw_headers": dict(request.headers),
+    }
+
 FRONTEND_DIST = os.path.join(BASE_DIR, "dist")
 if not os.path.exists(os.path.join(FRONTEND_DIST, "index.html")):
     FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend", "dist"))
 
 @app.get("/")
+@app.get("/index.html")
 def root():
     index_file = os.path.join(FRONTEND_DIST, "index.html")
     if os.path.exists(index_file):
