@@ -27,8 +27,13 @@ from agent_logic import (
 from security_scanner import scan_for_secrets
 from debt_calculator import calculate_technical_debt
 
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer # pyright: ignore[reportMissingModuleSource]
-from reportlab.lib.styles import getSampleStyleSheet # pyright: ignore[reportMissingModuleSource]
+try:
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer # pyright: ignore[reportMissingModuleSource]
+    from reportlab.lib.styles import getSampleStyleSheet # pyright: ignore[reportMissingModuleSource]
+    HAS_REPORTLAB = True
+except Exception:
+    SimpleDocTemplate, Paragraph, Spacer, getSampleStyleSheet = None, None, None, None
+    HAS_REPORTLAB = False
 
 
 

@@ -1,8 +1,8 @@
 fastapi
-uvicorn[standard]
+uvicorn
 openai
 python-dotenv
 pydantic
-reportlab
 python-multipart
 requests
+reportlab

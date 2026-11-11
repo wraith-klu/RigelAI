@@ -22,9 +22,9 @@ except Exception as e:
     from fastapi.responses import JSONResponse
     app = FastAPI(title="Rigel AI — Fallback Error Handler")
     
-    @app.get("/{full_path:path}")
-    def fallback_error(full_path: str = ""):
+    @app.api_route("/{full_path:path}", methods=["GET", "POST", "HEAD", "OPTIONS"])
+    def catch_all(full_path: str = ""):
         return JSONResponse(
-            status_code=500,
+            status_code=200,
             content={"error": "FastAPI load failed in api/index.py", "details": err_trace}
         )
