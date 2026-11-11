@@ -2,8 +2,8 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/favicon.(svg|ico)", "destination": "/api/index.py" },
-    { "source": "/((?!api/|assets/|favicon\\..*|.*\\..*).*)", "destination": "/index.html" }
+    { "source": "/api/:path*", "destination": "/api/index.py" },
+    { "source": "/favicon.:ext", "destination": "/api/index.py" },
+    { "source": "/((?!assets/|favicon\\.).*)", "destination": "/index.html" }
   ]
 }

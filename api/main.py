@@ -399,7 +399,7 @@ def health():
             "defect_sentinel": os.getenv("DEFECT_MODEL_ID", "wraithklu/codesentinel-defect-sentinel"),
             "clone_detector": os.getenv("CLONE_MODEL_ID", "wraithklu/codesentinel-clone-detector"),
             "refactor_engine": os.getenv("REFACTOR_MODEL_ID", "wraithklu/codesentinel-codet5-refiner"),
-            "llm_orchestrator": os.getenv("OPENROUTER_MODEL", "poolside/laguna-s-2.1:free"),
+            "llm_orchestrator": os.getenv("OPENROUTER_MODEL", "cohere/north-mini-code:free"),
         },
         "features": {
             "secret_scanner": True,

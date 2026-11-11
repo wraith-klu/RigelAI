@@ -46,8 +46,6 @@ if OpenAI and OPENROUTER_API_KEY:
                 "X-Title": "Rigel AI",
             },
         )
-        client.models.list()
-        print("OpenRouter authenticated")
     except Exception as e:
         print("OpenRouter auth failed:", e)
         client = None
