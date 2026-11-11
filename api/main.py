@@ -415,6 +415,15 @@ def root():
         return FileResponse(index_file)
     return {"status": "CodeSentinel AI API running", "version": "3.0-MoS"}
 
+@app.get("/favicon.svg")
+@app.get("/favicon.ico")
+def favicon():
+    fav_file = os.path.join(FRONTEND_DIST, "favicon.svg")
+    if os.path.exists(fav_file):
+        return FileResponse(fav_file, media_type="image/svg+xml")
+    from fastapi import Response
+    return Response(status_code=204)
+
 assets_dir = os.path.join(FRONTEND_DIST, "assets")
 if os.path.exists(assets_dir):
     try:
