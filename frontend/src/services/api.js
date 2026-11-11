@@ -112,7 +112,7 @@ export async function analyzeRepository(
 
 
 // POST /followup (JSON)
-export async function sendFollowUp(query, sessionId) {
+export async function sendFollowUp(query, sessionId, code = "") {
   const res = await fetch(`${API_URL}/followup`, {
     method: "POST",
     headers: {
@@ -121,6 +121,7 @@ export async function sendFollowUp(query, sessionId) {
     body: JSON.stringify({
       user_query: query,
       session_id: sessionId,
+      code: code,
     }),
   });
 

@@ -571,6 +571,46 @@
   font-size: 0.8125rem;
 }
 
+.finding-suggestion-prose {
+  margin-top: 0.35rem;
+  line-height: 1.5;
+}
+
+.finding-suggestion-prose p {
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+}
+
+.finding-suggestion-prose pre {
+  background: var(--bg-surface-sunken, #1e1e1e);
+  color: #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-xs, 4px);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  overflow-x: auto;
+  margin: 0.4rem 0;
+}
+
+.finding-suggestion-prose code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+
+.finding-suggestion-prose ul {
+  padding-left: 1.25rem;
+  margin: 0.3rem 0;
+}
+
+.finding-suggestion-prose li {
+  margin-bottom: 0.2rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
 /* Probabilities Panel */
 .panel-lead {
   font-size: 0.875rem;

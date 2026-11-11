@@ -393,7 +393,8 @@ class EditorRequest(BaseModel):
 
 class FollowupRequest(BaseModel):
     user_query: str
-    session_id: str
+    session_id: str | None = None
+    code: str | None = None
     persona: str = "architect"
 
 
@@ -598,9 +599,14 @@ async def followup(req: FollowupRequest):
         result = await asyncio.to_thread(
             analyze_user_query,
             user_query=req.user_query,
+            code=req.code or "",
             session_id=req.session_id,
             persona=req.persona,
         )
+        llm_analysis = result.get("llm_analysis", {})
+        resp_text = result.get("reply") or result.get("llm_response") or llm_analysis.get("llm_response") or ""
+        result["reply"] = resp_text
+        result["llm_response"] = resp_text
         return JSONResponse(content=result)
 
     except Exception:

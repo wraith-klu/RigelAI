@@ -123,8 +123,15 @@ export default function Results({ data, onLoadSample }) {
     setLoadingChat(true);
 
     try {
-      const res = await sendFollowUp(currentInput, sessionId);
-      const botMsg = { role: "assistant", content: res.reply || res.llm_response || "No response." };
+      const codePayload = optimized || data?.code || "";
+      const res = await sendFollowUp(currentInput, sessionId, codePayload);
+      const answer =
+        res?.reply ||
+        res?.llm_response ||
+        res?.llm_analysis?.llm_response ||
+        res?.llm_analysis?.error ||
+        "No response.";
+      const botMsg = { role: "assistant", content: answer };
       setMessages((prev) => [...prev, botMsg]);
     } catch {
       setMessages((prev) => [
@@ -463,7 +470,11 @@ export default function Results({ data, onLoadSample }) {
                     {item.suggestion && (
                       <div className="finding-recommendation">
                         <span className="recommendation-label">Suggested Resolution:</span>
-                        <p>{item.suggestion}</p>
+                        <div className="markdown-prose finding-suggestion-prose">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {item.suggestion}
+                          </ReactMarkdown>
+                        </div>
                       </div>
                     )}
                   </div>
