@@ -59,6 +59,8 @@ dist/
 dist-ssr/
 !frontend/dist/
 !frontend/dist/**
+!api/dist/
+!api/dist/**
 .vite/
 *.local
 

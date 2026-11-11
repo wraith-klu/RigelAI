@@ -397,7 +397,9 @@ def health():
     }
 
 
-FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend", "dist"))
+FRONTEND_DIST = os.path.join(BASE_DIR, "dist")
+if not os.path.exists(os.path.join(FRONTEND_DIST, "index.html")):
+    FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend", "dist"))
 
 @app.get("/")
 def root():
@@ -406,9 +408,13 @@ def root():
         return FileResponse(index_file)
     return {"status": "CodeSentinel AI API running", "version": "3.0-MoS"}
 
-if os.path.exists(os.path.join(FRONTEND_DIST, "assets")):
-    from fastapi.staticfiles import StaticFiles
-    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="assets")
+assets_dir = os.path.join(FRONTEND_DIST, "assets")
+if os.path.exists(assets_dir):
+    try:
+        from fastapi.staticfiles import StaticFiles
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+    except Exception:
+        pass
 
 
 # ⭐ PRE-FLIGHT DEVSECOPS SECRET SCANNER

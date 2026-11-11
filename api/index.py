@@ -7,11 +7,24 @@ Exposes the complete FastAPI application on Vercel's global edge network.
 
 import sys
 import os
+import traceback
 
-# Point Python path to the backend directory
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-backend_dir = os.path.join(root_dir, "backend")
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
+# Ensure current directory is in Python path for local imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
-from main import app
+try:
+    from main import app
+except Exception as e:
+    err_trace = traceback.format_exc()
+    from fastapi import FastAPI
+    from fastapi.responses import JSONResponse
+    app = FastAPI(title="Rigel AI — Fallback Error Handler")
+    
+    @app.get("/{full_path:path}")
+    def fallback_error(full_path: str = ""):
+        return JSONResponse(
+            status_code=500,
+            content={"error": "FastAPI load failed in api/index.py", "details": err_trace}
+        )
