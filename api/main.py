@@ -54,12 +54,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.middleware("http")
-async def vercel_url_fix(request, call_next):
-    matched = request.headers.get("x-matched-path")
-    if matched:
-        request.scope["path"] = matched.split("?")[0]
-    return await call_next(request)
+# NOTE: vercel_url_fix middleware removed — x-matched-path is the DESTINATION
+# (e.g. /api/index.py), not the original path, which broke route matching.
 
 
 import tempfile

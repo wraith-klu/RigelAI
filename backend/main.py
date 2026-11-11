@@ -54,13 +54,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.middleware("http")
-async def vercel_url_fix(request, call_next):
-    matched = request.headers.get("x-matched-path")
-    if matched:
-        request.scope["path"] = matched.split("?")[0]
-    return await call_next(request)
-
+# NOTE: vercel_url_fix middleware removed - x-matched-path is DESTINATION not original path`n
 
 import tempfile
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
