@@ -16,8 +16,7 @@ import {
   IconPlay
 } from "./Icons";
 import { downloadPDF, sendFollowUp } from "../services/api";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import oneLight from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
+import CodeBlock from "./CodeBlock";
 import "./Results.css";
 
 export default function Results({ data, onLoadSample }) {
@@ -99,6 +98,30 @@ export default function Results({ data, onLoadSample }) {
       { type: "add", text: "+     return {'order_id': order['id'], 'total': round(apply_tier_discount(subtotal, tier) * 1.0825, 2)}" },
     ];
   }, [optimized]);
+
+  const markdownComponents = useMemo(
+    () => ({
+      code({ node, inline, className, children, ...props }) {
+        const match = /language-(\w+)/.exec(className || "");
+        const codeString = String(children).replace(/\n$/, "");
+        if (!inline && (match || codeString.includes("\n"))) {
+          return (
+            <CodeBlock
+              code={codeString}
+              language={match ? match[1] : language || "python"}
+              showLineNumbers={true}
+            />
+          );
+        }
+        return (
+          <code className="inline-code-badge" {...props}>
+            {children}
+          </code>
+        );
+      },
+    }),
+    [language]
+  );
 
   useEffect(() => {
     setMessages([]);
@@ -471,7 +494,7 @@ export default function Results({ data, onLoadSample }) {
                       <div className="finding-recommendation">
                         <span className="recommendation-label">Suggested Resolution:</span>
                         <div className="markdown-prose finding-suggestion-prose">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                             {item.suggestion}
                           </ReactMarkdown>
                         </div>
@@ -573,19 +596,12 @@ export default function Results({ data, onLoadSample }) {
                 </div>
               ) : (
                 <div className="code-view-container">
-                  <SyntaxHighlighter
+                  <CodeBlock
+                    code={optimized}
                     language={language}
-                    style={oneLight}
-                    customStyle={{
-                      margin: 0,
-                      padding: "1rem",
-                      fontSize: "0.8125rem",
-                      backgroundColor: "var(--bg-surface-raised)",
-                      fontFamily: "var(--font-mono)",
-                    }}
-                  >
-                    {optimized}
-                  </SyntaxHighlighter>
+                    filename={`${projectName || "refactored_module"}.${language === "python" ? "py" : language}`}
+                    showLineNumbers={true}
+                  />
                 </div>
               )
             ) : (
@@ -601,7 +617,7 @@ export default function Results({ data, onLoadSample }) {
           <div className="notes-panel">
             {insights ? (
               <div className="markdown-prose">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                   {insights}
                 </ReactMarkdown>
               </div>
@@ -626,7 +642,7 @@ export default function Results({ data, onLoadSample }) {
                   <div key={idx} className={`chat-message ${m.role}`}>
                     <span className="sender-tag">{m.role === "user" ? "You" : "Rigel AI"}</span>
                     <div className="message-content">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                         {m.content}
                       </ReactMarkdown>
                     </div>

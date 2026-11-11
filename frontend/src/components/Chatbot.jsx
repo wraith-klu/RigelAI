@@ -11,6 +11,7 @@ import {
   IconDownload
 } from "./Icons";
 import { sendChatMessage, downloadPDF } from "../services/api";
+import CodeBlock from "./CodeBlock";
 import "./Chatbot.css";
 
 const STORAGE_KEY = "rigelai_chat_history";
@@ -54,6 +55,27 @@ export default function Chatbot({ initialInput = null }) {
 
   // Safe array reference
   const safeMessages = Array.isArray(messages) ? messages : [];
+
+  const markdownComponents = {
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || "");
+      const codeString = String(children).replace(/\n$/, "");
+      if (!inline && (match || codeString.includes("\n"))) {
+        return (
+          <CodeBlock
+            code={codeString}
+            language={match ? match[1] : "python"}
+            showLineNumbers={true}
+          />
+        );
+      }
+      return (
+        <code className="inline-code-badge" {...props}>
+          {children}
+        </code>
+      );
+    },
+  };
 
   useEffect(() => {
     try {
@@ -211,7 +233,7 @@ export default function Chatbot({ initialInput = null }) {
                     </button>
                   </div>
                   <div className="bubble-content">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                       {m.content}
                     </ReactMarkdown>
                   </div>

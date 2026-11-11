@@ -1,0 +1,110 @@
+/* VSCode Authentic Editor Card */
+.vscode-editor-card {
+  margin: 0.75rem 0;
+  border-radius: 8px;
+  background-color: #1e1e1e;
+  border: 1px solid #333338;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-mono, Consolas, "Fira Code", Monaco, monospace);
+}
+
+.vscode-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #252526;
+  padding: 0.45rem 0.85rem;
+  border-bottom: 1px solid #333338;
+  user-select: none;
+}
+
+.vscode-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.vscode-window-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vscode-window-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.vscode-window-dots .dot.red {
+  background-color: #ff5f56;
+}
+
+.vscode-window-dots .dot.yellow {
+  background-color: #ffbd2e;
+}
+
+.vscode-window-dots .dot.green {
+  background-color: #27c93f;
+}
+
+.vscode-filename {
+  font-size: 0.75rem;
+  color: #cccccc;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.vscode-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: #333338;
+  color: #e0e0e0;
+  border: 1px solid #44444a;
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.vscode-copy-btn:hover {
+  background-color: #46464f;
+  color: #ffffff;
+  border-color: #585862;
+}
+
+.vscode-copy-btn.copied {
+  background-color: #107c41;
+  color: #ffffff;
+  border-color: #169e54;
+}
+
+.vscode-code-body {
+  position: relative;
+  background-color: #1e1e1e;
+  overflow-x: auto;
+}
+
+.vscode-code-body pre {
+  margin: 0 !important;
+  background: transparent !important;
+  padding: 0.85rem 1rem !important;
+  font-size: 0.825rem !important;
+  line-height: 1.55 !important;
+}
+
+/* Inline code tag fallback */
+.inline-code-badge {
+  background: rgba(125, 125, 125, 0.15);
+  color: var(--accent-primary, #b45309);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85em;
+  font-weight: 500;
+}
