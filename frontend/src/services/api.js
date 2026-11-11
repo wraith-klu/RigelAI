@@ -2,7 +2,7 @@
 // v0.4.0 — AbortSignal support for stop-analysis, improved error handling
 
 const API_URL =
-  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8000" : "");
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8000" : "/api");
 
 /** Thrown when a request is cancelled via AbortSignal */
 export class CancelledError extends Error {
