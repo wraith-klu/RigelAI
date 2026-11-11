@@ -883,15 +883,143 @@
   letter-spacing: 0.02em;
 }
 
+.macos-window-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.macos-jump-code-btn {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #34c759 0%, #28a745 100%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 0.22rem 0.65rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(40, 167, 69, 0.25);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+.macos-jump-code-btn:hover {
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(40, 167, 69, 0.35);
+}
+
 .macos-prose {
   padding: 1.5rem 1.75rem;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   color: #1d1d1f;
-  font-size: 0.8875rem;
+  font-size: 0.9rem;
   line-height: 1.68;
 }
 
-/* macOS Styled Section Headings */
+/* macOS Styled Section Headings - Apple System Colors */
+.macos-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  margin-top: 1.85rem;
+  margin-bottom: 0.95rem;
+  border-radius: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.macos-heading-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.macos-heading-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* Section 1: Executive Summary - Apple Blue */
+.macos-heading.sec-1 {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.11), rgba(0, 122, 255, 0.03));
+  border-left: 5px solid #007aff;
+  color: #0056b3;
+}
+.macos-heading.sec-1 .macos-heading-badge {
+  background: #007aff;
+  color: #ffffff;
+}
+
+/* Section 2: Critical Code Smells - Apple Amber / Orange */
+.macos-heading.sec-2 {
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.13), rgba(255, 149, 0, 0.03));
+  border-left: 5px solid #ff9500;
+  color: #b35900;
+}
+.macos-heading.sec-2 .macos-heading-badge {
+  background: #ff9500;
+  color: #ffffff;
+}
+
+/* Section 3: Algorithmic Complexity - Apple Indigo / Purple */
+.macos-heading.sec-3 {
+  background: linear-gradient(135deg, rgba(88, 86, 214, 0.11), rgba(88, 86, 214, 0.03));
+  border-left: 5px solid #5856d6;
+  color: #403eb0;
+}
+.macos-heading.sec-3 .macos-heading-badge {
+  background: #5856d6;
+  color: #ffffff;
+}
+
+/* Section 4: Step-by-Step Remediation - Apple Mint / Emerald */
+.macos-heading.sec-4 {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.13), rgba(52, 199, 89, 0.03));
+  border-left: 5px solid #34c759;
+  color: #207a39;
+}
+.macos-heading.sec-4 .macos-heading-badge {
+  background: #34c759;
+  color: #ffffff;
+}
+
+/* Section 5: Verified Production-Grade Clean Code - Apple Electric Cyan / Teal */
+.macos-heading.sec-5 {
+  background: linear-gradient(135deg, rgba(48, 176, 199, 0.14), rgba(48, 176, 199, 0.04));
+  border-left: 5px solid #30b0c7;
+  color: #006b82;
+}
+.macos-heading.sec-5 .macos-heading-badge {
+  background: #30b0c7;
+  color: #ffffff;
+}
+
+/* Fallback for other headings */
+.macos-heading.sec-other {
+  background: rgba(0, 0, 0, 0.04);
+  border-left: 5px solid #8e8e93;
+  color: #1d1d1f;
+}
+.macos-heading.sec-other .macos-heading-badge {
+  background: #8e8e93;
+  color: #ffffff;
+}
+
+/* Fallback standard h1/h2/h3 styling if not custom component */
 .macos-prose h1,
 .macos-prose h2,
 .macos-prose h3 {
@@ -907,72 +1035,59 @@
   color: #1d1d1f;
 }
 
-/* Distinct Apple Color Accents by Section Heading Keywords */
-.macos-prose h3:nth-of-type(1) {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.08), rgba(0, 122, 255, 0.02));
-  border-left-color: #007aff; /* Apple Blue */
-}
-
-.macos-prose h3:nth-of-type(2) {
-  background: linear-gradient(135deg, rgba(255, 149, 0, 0.09), rgba(255, 149, 0, 0.02));
-  border-left-color: #ff9500; /* Apple Amber / Orange */
-}
-
-.macos-prose h3:nth-of-type(3) {
-  background: linear-gradient(135deg, rgba(88, 86, 214, 0.09), rgba(88, 86, 214, 0.02));
-  border-left-color: #5856d6; /* Apple Indigo */
-}
-
-.macos-prose h3:nth-of-type(4) {
-  background: linear-gradient(135deg, rgba(52, 199, 89, 0.09), rgba(52, 199, 89, 0.02));
-  border-left-color: #34c759; /* Apple Emerald */
-}
-
-.macos-prose h3:nth-of-type(5) {
-  background: linear-gradient(135deg, rgba(175, 82, 222, 0.1), rgba(175, 82, 222, 0.02));
-  border-left-color: #af52de; /* Apple Purple */
-}
-
 /* macOS Clean Tables */
+.macos-table-container {
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+}
+
+.macos-table,
 .macos-prose table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  margin: 1.25rem 0;
-  border-radius: 9px;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 0;
   background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  font-size: 0.835rem;
+  font-size: 0.85rem;
 }
 
+.macos-table th,
 .macos-prose th {
   background: #f5f5f7;
   color: #1d1d1f;
   font-weight: 600;
   text-align: left;
-  padding: 0.75rem 1rem;
+  padding: 0.8rem 1.1rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.09);
   letter-spacing: -0.01em;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
 }
 
+.macos-table td,
 .macos-prose td {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.1rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   color: #333336;
   line-height: 1.55;
   vertical-align: top;
 }
 
+.macos-table tr:last-child td,
 .macos-prose tr:last-child td {
   border-bottom: none;
 }
 
+.macos-table tr:nth-child(even) td,
 .macos-prose tr:nth-child(even) td {
   background: rgba(0, 0, 0, 0.018);
 }
 
+.macos-table tr:hover td,
 .macos-prose tr:hover td {
   background: rgba(0, 122, 255, 0.04);
 }

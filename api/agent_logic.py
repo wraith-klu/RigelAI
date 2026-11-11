@@ -850,8 +850,32 @@ def analyze_user_query(
     else:
         refactor_source = "Hybrid Neural Orchestrator"
 
+    # Normalize numbered sections so they consistently render as Markdown ### headings
+    for num, icon, title in [
+        ("1", "🔍", "Executive Summary & Architecture Overview"),
+        ("2", "⚠️", "Critical Code Smells & Anti-Patterns Identified"),
+        ("3", "⚡", "Algorithmic Time & Space Complexity Analysis"),
+        ("4", "🛠️", "Step-by-Step Remediation Strategy"),
+        ("5", "💻", "Verified Production-Grade Clean Code"),
+    ]:
+        answer = re.sub(
+            rf'(?m)^(?:#{1,4}\s*)?{num}\.?\s*(?:[^\w\s]+\s*)?(?:{re.escape(title[:10])}[^\n]*)',
+            f'### {num}. {icon} {title}',
+            answer,
+            flags=re.IGNORECASE,
+        )
+
     # Always ensure Section 5 Clean Code is present after Section 4 in Review Notes
-    if "### 5." not in answer and "Clean Code" not in answer and optimized_code:
+    has_section_5_header = bool(re.search(r'(?:^|\n)\s*(?:#{1,4}\s*)?5[\.\:\)]\s*.*(?:Clean Code|Refactor|Production|Verified)', answer, re.IGNORECASE))
+    has_section_5_code = bool(re.search(r'```(?:[a-zA-Z0-9_+#.-]+)?\s*[\s\S]+?```', answer[answer.rfind("5."):] if "5." in answer else ""))
+
+    if (not has_section_5_header or not has_section_5_code) and optimized_code:
+        # If there was a trailing incomplete section 5 header without code, strip it first
+        if "### 5." in answer:
+            answer = re.sub(r'\n*###\s*5[\.\:\s][\s\S]*$', '', answer)
+        elif re.search(r'\n+(?:#{1,4}\s*)?5\.\s+', answer):
+            answer = re.sub(r'\n+(?:#{1,4}\s*)?5\.\s+[\s\S]*$', '', answer)
+
         clean_section = (
             f"\n\n### 5. 💻 Verified Production-Grade Clean Code\n"
             f"Below is the complete, production-ready refactored implementation incorporating all architectural recommendations:\n"

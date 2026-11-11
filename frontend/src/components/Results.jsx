@@ -99,8 +99,63 @@ export default function Results({ data, onLoadSample }) {
     ];
   }, [optimized]);
 
+  const renderMacSectionHeading = (level, children, props) => {
+    const rawText = Array.isArray(children) ? children.map(c => (typeof c === "string" ? c : "")).join(" ") : String(children || "");
+    const lower = rawText.toLowerCase();
+    let secClass = "sec-other";
+    let badgeText = "macOS Note";
+    let anchorId = undefined;
+
+    if (lower.includes("1.") || lower.includes("executive summary") || lower.includes("architecture overview")) {
+      secClass = "sec-1";
+      badgeText = "Apple Blue • Overview";
+    } else if (lower.includes("2.") || lower.includes("smell") || lower.includes("anti-pattern")) {
+      secClass = "sec-2";
+      badgeText = "Apple Amber • Defects";
+    } else if (lower.includes("3.") || lower.includes("complexity") || lower.includes("algorithmic")) {
+      secClass = "sec-3";
+      badgeText = "Apple Indigo • Big-O";
+    } else if (lower.includes("4.") || lower.includes("remediation") || lower.includes("strategy")) {
+      secClass = "sec-4";
+      badgeText = "Apple Mint • Action Plan";
+    } else if (lower.includes("5.") || lower.includes("clean code") || lower.includes("verified") || lower.includes("production-grade")) {
+      secClass = "sec-5";
+      badgeText = "Apple Cyan • Clean Code";
+      anchorId = "clean-code-section";
+    }
+
+    const Tag = `h${level}`;
+    return (
+      <Tag id={anchorId} className={`macos-heading ${secClass}`} {...props}>
+        <span className="macos-heading-title">{children}</span>
+        <span className="macos-heading-badge">{badgeText}</span>
+      </Tag>
+    );
+  };
+
   const markdownComponents = useMemo(
     () => ({
+      h1({ children, ...props }) {
+        return renderMacSectionHeading(1, children, props);
+      },
+      h2({ children, ...props }) {
+        return renderMacSectionHeading(2, children, props);
+      },
+      h3({ children, ...props }) {
+        return renderMacSectionHeading(3, children, props);
+      },
+      h4({ children, ...props }) {
+        return renderMacSectionHeading(4, children, props);
+      },
+      table({ children, ...props }) {
+        return (
+          <div className="macos-table-container">
+            <table className="macos-table" {...props}>
+              {children}
+            </table>
+          </div>
+        );
+      },
       code({ node, inline, className, children, ...props }) {
         const match = /language-(\w+)/.exec(className || "");
         const codeString = String(children).replace(/\n$/, "");
@@ -122,6 +177,48 @@ export default function Results({ data, onLoadSample }) {
     }),
     [language]
   );
+
+  const formattedInsights = useMemo(() => {
+    if (!insights) return "";
+    let text = insights;
+
+    // 1. Normalize numbered sections so they consistently render as Markdown ### headings
+    text = text.replace(
+      /(?:^|\n)(?:#{1,4}\s*)?1[\.\:\)]\s*(?:[^\w\s]+\s*)?(?:Executive Summary[^\n]*)/gi,
+      "\n\n### 1. 🔍 Executive Summary & Architecture Overview\n"
+    );
+    text = text.replace(
+      /(?:^|\n)(?:#{1,4}\s*)?2[\.\:\)]\s*(?:[^\w\s]+\s*)?(?:Critical Code Smells[^\n]*)/gi,
+      "\n\n### 2. ⚠️ Critical Code Smells & Anti-Patterns Identified\n"
+    );
+    text = text.replace(
+      /(?:^|\n)(?:#{1,4}\s*)?3[\.\:\)]\s*(?:[^\w\s]+\s*)?(?:Algorithmic Time[^\n]*)/gi,
+      "\n\n### 3. ⚡ Algorithmic Time & Space Complexity Analysis\n"
+    );
+    text = text.replace(
+      /(?:^|\n)(?:#{1,4}\s*)?4[\.\:\)]\s*(?:[^\w\s]+\s*)?(?:Step[^\n]*Remediation[^\n]*)/gi,
+      "\n\n### 4. 🛠️ Step-by-Step Remediation Strategy\n"
+    );
+    text = text.replace(
+      /(?:^|\n)(?:#{1,4}\s*)?5[\.\:\)]\s*(?:[^\w\s]+\s*)?(?:Verified[^\n]*Clean Code[^\n]*)/gi,
+      "\n\n### 5. 💻 Verified Production-Grade Clean Code\n"
+    );
+
+    // 2. Guarantee Section 5 is present if clean code exists
+    const hasSec5 = /(?:^|\n)\s*###\s*5[\.\:\)]/i.test(text);
+    const hasCodeBlockAfterSec5 = hasSec5 && /```[\s\S]+?```/i.test(text.slice(text.lastIndexOf("### 5.")));
+
+    if ((!hasSec5 || !hasCodeBlockAfterSec5) && optimized) {
+      if (hasSec5) {
+        // Strip trailing incomplete header without code block
+        text = text.slice(0, text.lastIndexOf("### 5.")).trim();
+      }
+      const cleanSection = `\n\n### 5. 💻 Verified Production-Grade Clean Code\nBelow is the complete, production-ready refactored implementation incorporating all architectural recommendations:\n\`\`\`${language || "python"}\n${optimized}\n\`\`\`\n`;
+      text = text.trim() + cleanSection;
+    }
+
+    return text;
+  }, [insights, optimized, language]);
 
   useEffect(() => {
     setMessages([]);
@@ -617,20 +714,34 @@ export default function Results({ data, onLoadSample }) {
           <div className="notes-panel macos-window-card">
             <div className="macos-window-titlebar">
               <div className="macos-window-dots">
-                <span className="dot red" />
-                <span className="dot yellow" />
-                <span className="dot green" />
+                <span className="dot red" title="Close" />
+                <span className="dot yellow" title="Minimize" />
+                <span className="dot green" title="Maximize" />
               </div>
               <div className="macos-window-title">
-                <IconFileText size={14} />
+                <IconFileText size={15} />
                 <span>Architecture Audit & Quality Review Notes</span>
               </div>
-              <div className="macos-window-badge">macOS SF Pro Reviewer</div>
+              <div className="macos-window-actions">
+                <span className="macos-window-badge">macOS SF Pro</span>
+                {optimized && (
+                  <button
+                    type="button"
+                    className="macos-jump-code-btn"
+                    onClick={() => {
+                      const el = document.getElementById("clean-code-section");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    <span>Point 5: Clean Code ↓</span>
+                  </button>
+                )}
+              </div>
             </div>
-            {insights ? (
+            {formattedInsights ? (
               <div className="markdown-prose macos-prose">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                  {insights}
+                  {formattedInsights}
                 </ReactMarkdown>
               </div>
             ) : (
