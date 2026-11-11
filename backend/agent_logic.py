@@ -32,7 +32,7 @@ if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "poolside/laguna-m.1:free")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "cohere/north-mini-code:free")
 
 # INIT OPENROUTER CLIENT
 client = None
