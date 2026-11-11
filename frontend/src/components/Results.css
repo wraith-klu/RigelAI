@@ -811,7 +811,209 @@
   flex: 1;
 }
 
-/* Notes Panel */
+/* Notes Panel - macOS Style */
+.macos-window-card {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.08), 0 2px 8px -1px rgba(0, 0, 0, 0.04);
+}
+
+.macos-window-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(180deg, #fbfbfd 0%, #f2f2f6 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  user-select: none;
+}
+
+.macos-window-dots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.macos-window-dots .dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.macos-window-dots .dot.red {
+  background-color: #ff5f56;
+  border: 1px solid #e0443e;
+}
+
+.macos-window-dots .dot.yellow {
+  background-color: #ffbd2e;
+  border: 1px solid #dea123;
+}
+
+.macos-window-dots .dot.green {
+  background-color: #27c93f;
+  border: 1px solid #1aab29;
+}
+
+.macos-window-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.macos-window-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #007aff;
+  background: rgba(0, 122, 255, 0.1);
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 122, 255, 0.2);
+  letter-spacing: 0.02em;
+}
+
+.macos-prose {
+  padding: 1.5rem 1.75rem;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  color: #1d1d1f;
+  font-size: 0.8875rem;
+  line-height: 1.68;
+}
+
+/* macOS Styled Section Headings */
+.macos-prose h1,
+.macos-prose h2,
+.macos-prose h3 {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  padding: 0.55rem 0.85rem;
+  margin-top: 1.85rem;
+  margin-bottom: 0.85rem;
+  border-radius: 8px;
+  background: rgba(0, 122, 255, 0.05);
+  border-left: 4px solid #007aff;
+  color: #1d1d1f;
+}
+
+/* Distinct Apple Color Accents by Section Heading Keywords */
+.macos-prose h3:nth-of-type(1) {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.08), rgba(0, 122, 255, 0.02));
+  border-left-color: #007aff; /* Apple Blue */
+}
+
+.macos-prose h3:nth-of-type(2) {
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.09), rgba(255, 149, 0, 0.02));
+  border-left-color: #ff9500; /* Apple Amber / Orange */
+}
+
+.macos-prose h3:nth-of-type(3) {
+  background: linear-gradient(135deg, rgba(88, 86, 214, 0.09), rgba(88, 86, 214, 0.02));
+  border-left-color: #5856d6; /* Apple Indigo */
+}
+
+.macos-prose h3:nth-of-type(4) {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.09), rgba(52, 199, 89, 0.02));
+  border-left-color: #34c759; /* Apple Emerald */
+}
+
+.macos-prose h3:nth-of-type(5) {
+  background: linear-gradient(135deg, rgba(175, 82, 222, 0.1), rgba(175, 82, 222, 0.02));
+  border-left-color: #af52de; /* Apple Purple */
+}
+
+/* macOS Clean Tables */
+.macos-prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.25rem 0;
+  border-radius: 9px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  font-size: 0.835rem;
+}
+
+.macos-prose th {
+  background: #f5f5f7;
+  color: #1d1d1f;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+  letter-spacing: -0.01em;
+}
+
+.macos-prose td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  color: #333336;
+  line-height: 1.55;
+  vertical-align: top;
+}
+
+.macos-prose tr:last-child td {
+  border-bottom: none;
+}
+
+.macos-prose tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.018);
+}
+
+.macos-prose tr:hover td {
+  background: rgba(0, 122, 255, 0.04);
+}
+
+/* macOS Inline Badges */
+.macos-prose code:not(pre code) {
+  font-family: var(--font-mono, "SF Mono", Consolas, monospace);
+  background: rgba(0, 122, 255, 0.08);
+  color: #0066cc;
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  font-size: 0.85em;
+  font-weight: 500;
+  border: 1px solid rgba(0, 122, 255, 0.18);
+}
+
+.macos-prose blockquote {
+  margin: 1.15rem 0;
+  padding: 0.85rem 1.25rem;
+  background: rgba(0, 122, 255, 0.04);
+  border-left: 4px solid #007aff;
+  border-radius: 0 10px 10px 0;
+  color: #2c2c2e;
+}
+
+.macos-prose ul {
+  padding-left: 1.4rem;
+  margin: 0.75rem 0;
+}
+
+.macos-prose li {
+  margin-bottom: 0.45rem;
+  color: #333336;
+  line-height: 1.58;
+}
+
+.macos-prose li::marker {
+  color: #007aff;
+}
+
+/* Markdown Prose standard fallback */
 .markdown-prose {
   font-size: 0.875rem;
   line-height: 1.6;

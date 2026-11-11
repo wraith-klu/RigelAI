@@ -614,9 +614,21 @@ export default function Results({ data, onLoadSample }) {
 
         {/* Review Notes Panel */}
         {activeTab === "notes" && (
-          <div className="notes-panel">
+          <div className="notes-panel macos-window-card">
+            <div className="macos-window-titlebar">
+              <div className="macos-window-dots">
+                <span className="dot red" />
+                <span className="dot yellow" />
+                <span className="dot green" />
+              </div>
+              <div className="macos-window-title">
+                <IconFileText size={14} />
+                <span>Architecture Audit & Quality Review Notes</span>
+              </div>
+              <div className="macos-window-badge">macOS SF Pro Reviewer</div>
+            </div>
             {insights ? (
-              <div className="markdown-prose">
+              <div className="markdown-prose macos-prose">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                   {insights}
                 </ReactMarkdown>

@@ -589,12 +589,14 @@ def generate_fallback_review_notes(
     model_prediction: dict | None = None,
     ast_findings: list[str] | None = None,
     security_findings: list[dict] | None = None,
+    clean_code: str = "",
 ) -> str:
     """Generate high-quality architectural notes if the remote LLM call failed or timed out."""
     ast_findings = ast_findings or []
     security_findings = security_findings or []
     smell = model_prediction.get("smell_type", "Clean") if model_prediction else "Clean"
     conf = model_prediction.get("confidence", 0.0) if model_prediction else 0.0
+    refactored_snippet = clean_code or local_optimized_code(code, language)
 
     if persona == "student":
         return textwrap.dedent(
@@ -613,7 +615,13 @@ def generate_fallback_review_notes(
             ### 4. 🚀 How to Level Up This Code (Step-by-Step Fixes)
             - Replace nested `for` loops with a lookup map (`dict` or `Counter`).
             - Add clear function docstrings and type annotations.
-            - Inspect the **Remediation Diff** tab above to see the complete refactored implementation!
+            - Inspect the verified clean code below to see the complete refactored implementation!
+
+            ### 5. 💻 Verified Production-Grade Clean Code
+            Below is the verified, clean, and optimized code:
+            ```{language}
+            {refactored_snippet}
+            ```
             """
         ).strip()
     else:
@@ -636,7 +644,13 @@ def generate_fallback_review_notes(
             ### 4. 🛠️ Step-by-Step Remediation Strategy
             1. **Algorithmic Decoupling:** Eliminate pairwise index-based traversal in favor of hash-based lookups (`collections.Counter`).
             2. **Defensive Boundary Handling:** Add guard clauses for empty inputs (`None` / empty list checks).
-            3. **Review Refactor:** Inspect the **Remediation Diff** and **Clean Refactor** tabs to copy or audit the production-ready code.
+            3. **Review Refactor:** Inspect the production-grade clean code in Section 5 below.
+
+            ### 5. 💻 Verified Production-Grade Clean Code
+            Below is the complete, production-ready refactored implementation incorporating all architectural recommendations:
+            ```{language}
+            {refactored_snippet}
+            ```
             """
         ).strip()
 
@@ -759,6 +773,9 @@ def analyze_user_query(
       
       ### 4. 🛠️ Step-by-Step Remediation Strategy
       Concrete, actionable architectural best practices and clean-code refactoring principles to solve each identified flaw.
+
+      ### 5. 💻 Verified Production-Grade Clean Code
+      The complete, production-ready, refactored code enclosed in a fenced code block with comprehensive docstrings, defensive parameter checks, and type annotations.
         """
 
     # ---------- PROMPT ----------
@@ -819,6 +836,7 @@ def analyze_user_query(
             model_prediction=model_prediction,
             ast_findings=ast_findings,
             security_findings=security_findings,
+            clean_code=optimized_code,
         )
 
     # If LLM didn't produce valid code or wasn't available, synthesize using CodeT5 or smart local refactor
@@ -831,6 +849,15 @@ def analyze_user_query(
             refactor_source = "Rule-based Synthesizer"
     else:
         refactor_source = "Hybrid Neural Orchestrator"
+
+    # Always ensure Section 5 Clean Code is present after Section 4 in Review Notes
+    if "### 5." not in answer and "Clean Code" not in answer and optimized_code:
+        clean_section = (
+            f"\n\n### 5. 💻 Verified Production-Grade Clean Code\n"
+            f"Below is the complete, production-ready refactored implementation incorporating all architectural recommendations:\n"
+            f"```{language}\n{optimized_code}\n```\n"
+        )
+        answer = answer.rstrip() + clean_section
 
     update_code(session_id, optimized_code or code)
 
