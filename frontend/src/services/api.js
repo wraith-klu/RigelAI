@@ -2,7 +2,7 @@
 // v0.4.0 — AbortSignal support for stop-analysis, improved error handling
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8000" : "");
 
 /** Thrown when a request is cancelled via AbortSignal */
 export class CancelledError extends Error {
@@ -34,10 +34,11 @@ export async function sendChatMessage(query) {
 
 
 // POST /analyze-file (FormData)
-export async function analyzeFile(file, query = "Analyze and optimize this code", signal = null) {
+export async function analyzeFile(file, query = "Analyze and optimize this code", signal = null, persona = "architect") {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("user_query", query);
+  formData.append("persona", persona);
 
   let res;
   try {
@@ -61,13 +62,13 @@ export async function analyzeFile(file, query = "Analyze and optimize this code"
 
 
 // POST /analyze-editor (JSON)
-export async function analyzeEditor(code, query = "Analyze this code", sessionId = null, signal = null) {
+export async function analyzeEditor(code, query = "Analyze this code", sessionId = null, signal = null, persona = "architect") {
   let res;
   try {
     res = await fetch(`${API_URL}/analyze-editor`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, user_query: query, session_id: sessionId }),
+      body: JSON.stringify({ code, user_query: query, session_id: sessionId, persona }),
       signal,
     });
   } catch (err) {
@@ -87,7 +88,8 @@ export async function analyzeEditor(code, query = "Analyze this code", sessionId
 // POST /analyze-repository (JSON)
 export async function analyzeRepository(
   repositoryUrl,
-  query = "Analyze this repository for bugs, smells, complexity, and refactoring opportunities."
+  query = "Analyze this repository for bugs, smells, complexity, and refactoring opportunities.",
+  persona = "architect"
 ) {
   const res = await fetch(`${API_URL}/analyze-repository`, {
     method: "POST",
@@ -97,6 +99,7 @@ export async function analyzeRepository(
     body: JSON.stringify({
       repository_url: repositoryUrl,
       user_query: query,
+      persona: persona,
     }),
   });
 

@@ -5,3 +5,8 @@ python-dotenv
 pydantic
 reportlab
 python-multipart
+torch
+transformers
+sentence-transformers
+tokenizers
+requests

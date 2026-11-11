@@ -289,23 +289,51 @@ export default function Results({ data, onLoadSample }) {
             <div className="health-grade-row">
               <span className={`grade-chip ${healthBadge.color}`}>{healthBadge.grade}</span>
               <strong className="metric-highlight">{healthBadge.label}</strong>
+              {report.projected_health_score && report.projected_health_score > (healthScore || 0) && (
+                <span className="live-fix-tag" title="Projected score after neural refactor">
+                  ⚡ Fix: {report.projected_health_score}%
+                </span>
+              )}
             </div>
             <span className="metric-sub">AST Complexity &amp; Vector Index</span>
           </div>
         </div>
 
         <div className="metric-box">
-          <span className="metric-label">ML Smell Classification</span>
+          <span className="metric-label">Neural Defect Sentinel</span>
           <div className="metric-value-row">
-            <strong className="metric-highlight">{prediction.smell_type || "None"}</strong>
+            <strong className="metric-highlight">{prediction.smell_type || "Clean"}</strong>
           </div>
           <span className="metric-sub">
             {prediction.confidence ? `${(prediction.confidence * 100).toFixed(1)}% model confidence` : "Vector score calculated"}
           </span>
         </div>
 
+        {/* SQALE Technical Debt Card */}
+        {report.technical_debt ? (
+          <div className="metric-box">
+            <span className="metric-label">SQALE Technical Debt</span>
+            <div className="metric-value-row">
+              <strong className="metric-highlight">{report.technical_debt.debt_hours}h</strong>
+              <span className={`grade-chip ${report.technical_debt.sqale_rating === 'A' ? 'emerald' : report.technical_debt.sqale_rating === 'B' ? 'blue' : 'amber'}`}>
+                Grade {report.technical_debt.sqale_rating}
+              </span>
+            </div>
+            <span className="metric-sub">~${report.technical_debt.remediation_cost_usd} remediation cost</span>
+          </div>
+        ) : (
+          <div className="metric-box">
+            <span className="metric-label">Findings by Severity</span>
+            <div className="severity-pill-row">
+              <span className="severity-badge critical">{severityCounts.critical || 0} Critical</span>
+              <span className="severity-badge warning">{severityCounts.warning || 0} Warnings</span>
+            </div>
+            <span className="metric-sub">{findings.length} total anomalies</span>
+          </div>
+        )}
+
         <div className="metric-box">
-          <span className="metric-label">Findings by Severity</span>
+          <span className="metric-label">Findings &amp; Security</span>
           <div className="severity-pill-row">
             <span className="severity-badge critical">{severityCounts.critical || 0} Critical</span>
             <span className="severity-badge warning">{severityCounts.warning || 0} Warnings</span>

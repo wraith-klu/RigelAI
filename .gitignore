@@ -116,3 +116,9 @@ venv/
 backend/venv/
 node_modules/
 .env
+
+# CodeXGLUE Dataset & Model Weights Cache
+CodeXGLUE/
+.ipynb_checkpoints/
+refactor_results/
+codesentinel-clone-model/

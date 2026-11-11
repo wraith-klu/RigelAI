@@ -118,10 +118,10 @@ function calculateCartBreakdown(cart, customer, promoCode, callback) {
 };
 
 const AGENT_STAGES = [
-  { id: "ast", title: "AST Syntax Parsing", desc: "Extracting symbol tokens and cyclomatic branches" },
-  { id: "ml", title: "Smell Classifier Inference", desc: "Evaluating pattern vectors and code smell probabilities" },
-  { id: "llm", title: "Refactoring Remediation", desc: "Generating modular structure and architectural diffs" },
-  { id: "report", title: "Compiling Quality Matrix", desc: "Synthesizing health scorecard and findings" },
+  { id: "sec", title: "DevSecOps & Secret Scan", desc: "Checking entropy, credentials, and AST syntax trees" },
+  { id: "ml", title: "Dual Neural Triage", desc: "Running GraphCodeBERT Defect Sentinel & CodeBERT Similarity" },
+  { id: "llm", title: "CodeT5 Refactor Synthesis", desc: "Generating modular structure and architectural clean code" },
+  { id: "report", title: "Compiling Quality Matrix", desc: "Synthesizing SQALE debt hours and health scorecard" },
 ];
 
 function PipelineExecutionHUD({ run }) {
@@ -191,6 +191,7 @@ export default function CodeInputPanel({ onAnalyze }) {
   const [inputMode, setInputMode] = useState("upload"); // Default to upload so File & Repo Audit is visible always
   const [lang, setLang] = useState("python");
   const [code, setCode] = useState(CODE_PRESETS.python.long_method);
+  const [persona, setPersona] = useState("architect"); // "architect" | "student"
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeRun, setActiveRun] = useState(null);
@@ -221,14 +222,14 @@ export default function CodeInputPanel({ onAnalyze }) {
     setLoading(true);
     setError("");
     setActiveRun({
-      label: `AST + ML Scan (${lang.toUpperCase()})`,
+      label: `Neural MoS Review (${lang.toUpperCase()} · ${persona.toUpperCase()})`,
       estimateSeconds: 12,
       startedAt: Date.now(),
     });
 
     try {
       const query = `Analyze this ${lang} code for code smells, anti-patterns, AST anomalies, bugs, cyclomatic complexity, and refactoring solutions.`;
-      const data = await analyzeEditor(code, query);
+      const data = await analyzeEditor(code, query, null, null, persona);
       onAnalyze?.(data);
     } catch (e) {
       setError(e.message || "Analysis error. Verify the backend service is running or inspect browser console.");
@@ -236,7 +237,7 @@ export default function CodeInputPanel({ onAnalyze }) {
       setLoading(false);
       setActiveRun(null);
     }
-  }, [code, lang, onAnalyze]);
+  }, [code, lang, persona, onAnalyze]);
 
   const handleClear = () => {
     setCode("");
@@ -350,6 +351,26 @@ export default function CodeInputPanel({ onAnalyze }) {
                   ))}
                 </div>
               )}
+
+              {/* Persona Mode Toggle */}
+              <div className="persona-pill-group" title="Select Code Review Persona">
+                <button
+                  type="button"
+                  className={`persona-pill-btn ${persona === "architect" ? "active" : ""}`}
+                  onClick={() => setPersona("architect")}
+                  title="Staff Systems Architect (Rigorous, Big-O, concurrency, memory layout)"
+                >
+                  🏛️ Architect
+                </button>
+                <button
+                  type="button"
+                  className={`persona-pill-btn ${persona === "student" ? "active" : ""}`}
+                  onClick={() => setPersona("student")}
+                  title="ELI5 Student (Friendly, intuitive real-world analogies)"
+                >
+                  🎓 Student
+                </button>
+              </div>
             </div>
 
             <div className="control-bar-right">

@@ -859,3 +859,24 @@
   color: var(--text-tertiary);
   font-size: 0.875rem;
 }
+
+/* Live Fix Score Tag */
+.live-fix-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 980px;
+  margin-left: 0.35rem;
+  animation: pulse-live-fix 2s infinite ease-in-out;
+}
+
+@keyframes pulse-live-fix {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.03); }
+}

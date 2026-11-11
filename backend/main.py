@@ -24,6 +24,8 @@ from agent_logic import (
     create_session,
     detect_language as detect_code_language,
 )
+from security_scanner import scan_for_secrets
+from debt_calculator import calculate_technical_debt
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer # pyright: ignore[reportMissingModuleSource]
 from reportlab.lib.styles import getSampleStyleSheet # pyright: ignore[reportMissingModuleSource]
@@ -178,7 +180,48 @@ def fetch_repository_files(repository_url: str, max_files: int = 12, max_bytes: 
     return owner, repo, default_branch, files
 
 
-def summarize_repository(repository_url: str, user_query: str) -> dict:
+def extract_functions_from_code(code: str, filepath: str) -> list[dict]:
+    """Extracts function snippets from code files for semantic clone detection."""
+    funcs = []
+    lines = code.splitlines()
+
+    if filepath.endswith(".py"):
+        try:
+            import ast
+            tree = ast.parse(code)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    start = node.lineno
+                    end = getattr(node, "end_lineno", min(start + len(node.body) + 1, len(lines)))
+                    func_code = "\n".join(lines[start - 1:end])
+                    if len(func_code.strip()) > 30:
+                        funcs.append({
+                            "name": node.name,
+                            "file": filepath,
+                            "code": func_code,
+                            "start_line": start
+                        })
+        except Exception:
+            pass
+
+    if not funcs:
+        pattern = r"(?:(?:public|private|protected|static|async|function|def)\s+)+[\w<>\[\]]+\s+(\w+)\s*\([^)]*\)\s*[\{:]"
+        for idx, line in enumerate(lines, start=1):
+            match = re.search(pattern, line)
+            if match:
+                snippet = "\n".join(lines[idx - 1:min(idx + 25, len(lines))])
+                if len(snippet.strip()) > 30:
+                    funcs.append({
+                        "name": match.group(1),
+                        "file": filepath,
+                        "code": snippet,
+                        "start_line": idx
+                    })
+
+    return funcs
+
+
+def summarize_repository(repository_url: str, user_query: str, persona: str = "architect") -> dict:
     owner, repo, branch, files = fetch_repository_files(repository_url)
     if not files:
         raise HTTPException(400, "No supported source files were found in this repository.")
@@ -188,19 +231,25 @@ def summarize_repository(repository_url: str, user_query: str) -> dict:
     scores = []
     combined_code = []
     languages = set()
+    all_functions = []
+    total_loc = 0
 
     for source_file in files:
         code = source_file["code"]
+        total_loc += len(code.splitlines())
         language = detect_language(source_file["path"])
         if language == "plaintext":
             language = detect_code_language(code)
 
         languages.add(language)
         ast_findings = analyze_ast(code)
+        sec_findings = scan_for_secrets(code, filename=source_file["path"])
+
         report = build_quality_report(
             code=code,
             language=language,
             ast_findings=ast_findings,
+            security_findings=sec_findings,
             filename=source_file["path"],
         )
         all_findings.extend(report["findings"])
@@ -208,31 +257,61 @@ def summarize_repository(repository_url: str, user_query: str) -> dict:
         scores.append(report["health_score"])
         combined_code.append(f"# {source_file['path']}\n{code[:4000]}")
 
+        # Extract function blocks for cross-file clone detection
+        all_functions.extend(extract_functions_from_code(code, source_file["path"]))
+
+    # Model 2: Semantic Clone Detection across files
+    detected_clones = []
+    if len(all_functions) >= 2:
+        try:
+            from model.clone_detector import detect_code_clones
+            detected_clones = detect_code_clones(all_functions, similarity_threshold=0.85)
+            for clone in detected_clones[:6]:
+                f_a = clone["function_a"]
+                f_b = clone["function_b"]
+                all_findings.append({
+                    "id": f"{f_a['file']}:clone:{f_a['start_line']}",
+                    "file": f_a["file"],
+                    "line": f_a["start_line"],
+                    "severity": "warning",
+                    "title": f"Semantic Clone ({clone['similarity_score']}% match)",
+                    "message": f"Code matches `{f_b['name']}` in `{f_b['file']}` ({clone['clone_type']}).",
+                    "suggestion": clone["recommendation"],
+                })
+        except Exception as e:
+            print("Semantic clone detection skipped:", e)
+
     severity_counts = {"critical": 0, "warning": 0, "suggestion": 0, "info": 0}
     for finding in all_findings:
         severity_counts[finding["severity"]] = severity_counts.get(finding["severity"], 0) + 1
 
     health_score = round(sum(scores) / len(scores)) if scores else 0
+    technical_debt = calculate_technical_debt(all_findings, loc=max(total_loc, 10))
+
     session_id = create_session("\n\n".join(combined_code))
     project_name = f"{owner}/{repo}"
     llm_response = (
         f"Repository scan completed for **{project_name}** on branch `{branch}`.\n\n"
-        f"- Files analyzed: {len(files)}\n"
-        f"- Health score: {health_score}/100\n"
-        f"- Critical: {severity_counts['critical']}, warnings: {severity_counts['warning']}, "
-        f"suggestions: {severity_counts['suggestion']}\n\n"
-        f"Focus requested: {user_query}"
+        f"- Files analyzed: {len(files)} ({total_loc:,} lines of code)\n"
+        f"- Code health score: **{health_score}/100**\n"
+        f"- SQALE Maintainability Rating: **Grade {technical_debt['sqale_rating']}** ({technical_debt['maintainability_label']})\n"
+        f"- Estimated Technical Debt: **{technical_debt['debt_hours']} hours** (~${technical_debt['remediation_cost_usd']:,.2f} remediation effort)\n"
+        f"- Semantic Clones Detected: **{len(detected_clones)} pairs**\n"
+        f"- Issues: Critical: {severity_counts['critical']}, Warnings: {severity_counts['warning']}, Suggestions: {severity_counts['suggestion']}\n\n"
+        f"Review mode: **{persona.title()}** | Query: {user_query}"
     )
 
     return {
         "llm_analysis": {
             "session_id": session_id,
+            "persona": persona,
             "language": ", ".join(sorted(languages)),
             "repository_url": repository_url,
             "project_name": project_name,
             "files_analyzed": len(files),
             "branch": branch,
             "ast_findings": [finding["message"] for finding in all_findings],
+            "detected_clones": detected_clones,
             "model_prediction": {
                 "smell_type": "Smelly" if severity_counts["critical"] or severity_counts["warning"] else "Clean",
                 "confidence": 0.9 if severity_counts["critical"] or severity_counts["warning"] else 0.82,
@@ -246,6 +325,8 @@ def summarize_repository(repository_url: str, user_query: str) -> dict:
             "quality_report": {
                 "health_score": health_score,
                 "severity_counts": severity_counts,
+                "technical_debt": technical_debt,
+                "clones_detected": len(detected_clones),
                 "findings": all_findings,
                 "fix_suggestions": all_fixes,
             },
@@ -260,33 +341,85 @@ class EditorRequest(BaseModel):
     code: str
     user_query: str = "Analyze and optimize this code"
     session_id: str | None = None
+    persona: str = "architect"  # "architect" or "student"
 
 
 class FollowupRequest(BaseModel):
     user_query: str
     session_id: str
+    persona: str = "architect"
 
 
 class ChatRequest(BaseModel):
     user_query: str
+    persona: str = "architect"
 
 
 class RepositoryRequest(BaseModel):
     repository_url: str
     user_query: str = "Analyze this repository for bugs, smells, complexity, and refactoring opportunities."
+    persona: str = "architect"
 
 
-  
-# HEALTH
+class SecretScanRequest(BaseModel):
+    code: str
+    filename: str = "input"
+
+
+class CloneDetectionRequest(BaseModel):
+    functions: list[dict]
+    similarity_threshold: float = 0.85
+
+
+# HEALTH & NEURAL ROSTER
   
 @app.get("/health")
 def health():
-    return {"status": "alive"}
+    return {
+        "status": "healthy",
+        "system": "CodeSentinel AI — Neural MoS Engine",
+        "models": {
+            "defect_sentinel": os.getenv("DEFECT_MODEL_ID", "wraithklu/codesentinel-defect-sentinel"),
+            "clone_detector": os.getenv("CLONE_MODEL_ID", "wraithklu/codesentinel-clone-detector"),
+            "refactor_engine": os.getenv("REFACTOR_MODEL_ID", "wraithklu/codesentinel-codet5-refiner"),
+            "llm_orchestrator": os.getenv("OPENROUTER_MODEL", "poolside/laguna-s-2.1:free"),
+        },
+        "features": {
+            "secret_scanner": True,
+            "sqale_technical_debt": True,
+            "dual_persona_review": True,
+            "live_fix_score": True,
+        }
+    }
 
 
 @app.get("/")
 def root():
-    return {"status": "CodeSentinel AI API running"}
+    return {"status": "CodeSentinel AI API running", "version": "3.0-MoS"}
+
+
+# ⭐ PRE-FLIGHT DEVSECOPS SECRET SCANNER
+@app.post("/scan-secrets")
+def scan_secrets_endpoint(req: SecretScanRequest):
+    findings = scan_for_secrets(req.code, filename=req.filename)
+    return {
+        "secrets_found": len(findings),
+        "findings": findings
+    }
+
+
+# ⭐ PAIRWISE CODE CLONE DETECTOR (Model 2)
+@app.post("/detect-clones")
+def detect_clones_endpoint(req: CloneDetectionRequest):
+    try:
+        from model.clone_detector import detect_code_clones
+        clones = detect_code_clones(req.functions, similarity_threshold=req.similarity_threshold)
+        return {
+            "clones_detected": len(clones),
+            "clones": clones
+        }
+    except Exception as e:
+        return {"error": str(e), "clones": []}
 
 
 # ⭐ CHAT — NO CODE REQUIRED
@@ -295,7 +428,8 @@ async def chat(req: ChatRequest):
     try:
         result = await asyncio.to_thread(
             analyze_user_query,
-            user_query=req.user_query
+            user_query=req.user_query,
+            persona=req.persona,
         )
         return JSONResponse(content=result)
 
@@ -304,12 +438,12 @@ async def chat(req: ChatRequest):
         raise HTTPException(500, "Chat failed")
 
 
-  
 # ANALYZE — FILE UPLOAD
   
 @app.post("/analyze-file")
 async def analyze_file(
     user_query: str = Form(...),
+    persona: str = Form("architect"),
     file: UploadFile = File(...)
 ):
     try:
@@ -325,7 +459,8 @@ async def analyze_file(
         result = await asyncio.to_thread(
             analyze_user_query,
             user_query=user_query,
-            code=code
+            code=code,
+            persona=persona,
         )
 
         # attach language info
@@ -338,7 +473,6 @@ async def analyze_file(
         raise HTTPException(500, "File analysis failed")
 
 
-  
 # ANALYZE — CODE EDITOR INPUT (JSON)
   
 @app.post("/analyze-editor")
@@ -348,7 +482,8 @@ async def analyze_editor(req: EditorRequest):
             analyze_user_query,
             user_query=req.user_query,
             code=req.code,
-            session_id=req.session_id
+            session_id=req.session_id,
+            persona=req.persona,
         )
         return JSONResponse(content=result)
 
@@ -357,8 +492,7 @@ async def analyze_editor(req: EditorRequest):
         raise HTTPException(500, "Editor analysis failed")
 
 
-  
-# FOLLOW-UP — SESSION CONTINUATION
+# REPOSITORY ANALYSIS
   
 @app.post("/analyze-repository")
 async def analyze_repository(req: RepositoryRequest):
@@ -367,6 +501,7 @@ async def analyze_repository(req: RepositoryRequest):
             summarize_repository,
             repository_url=req.repository_url,
             user_query=req.user_query,
+            persona=req.persona,
         )
         return JSONResponse(content=result)
 
@@ -383,7 +518,8 @@ async def followup(req: FollowupRequest):
         result = await asyncio.to_thread(
             analyze_user_query,
             user_query=req.user_query,
-            session_id=req.session_id
+            session_id=req.session_id,
+            persona=req.persona,
         )
         return JSONResponse(content=result)
 
