@@ -408,10 +408,7 @@ if not os.path.exists(os.path.join(FRONTEND_DIST, "index.html")):
     FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend", "dist"))
 
 @app.get("/")
-@app.get("/api")
 @app.get("/index.html")
-@app.get("/api/index")
-@app.get("/api/index.py")
 def root():
     index_file = os.path.join(FRONTEND_DIST, "index.html")
     if os.path.exists(index_file):
