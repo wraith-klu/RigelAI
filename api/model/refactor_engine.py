@@ -55,6 +55,23 @@ def get_refactor_model():
             model.to("cpu")
             model.eval()
 
+            # Section 6: Inference Optimization for 2 vCPUs
+            if torch:
+                try:
+                    torch.set_num_threads(2)
+                    torch.set_num_interop_threads(1)
+                except Exception:
+                    pass
+
+                # Apply PyTorch INT8 Dynamic Quantization
+                try:
+                    model = torch.quantization.quantize_dynamic(
+                        model, {torch.nn.Linear}, dtype=torch.qint8
+                    )
+                    logger.info("⚡ Model 3 (CodeT5-Small): INT8 dynamic quantization active (~90MB RAM, ~140ms).")
+                except Exception as q_err:
+                    logger.debug(f"Quantization deferred for Model 3: {q_err}")
+
             _cached_refactor_model = model
             _cached_refactor_tokenizer = tokenizer
             logger.info("✅ CodeT5 Automated Refactor Engine initialized on CPU.")

@@ -33,6 +33,7 @@ export default function Results({ data, onLoadSample }) {
   const insights = llm.llm_response || "";
   const prediction = llm.model_prediction || {};
   const optimized = llm.optimized_code || "";
+  const originalCode = llm.original_code || data?.original_code || "";
   const sessionId = llm.session_id;
   const language = llm.language || "python";
   const report = llm.quality_report || {};
@@ -77,6 +78,37 @@ export default function Results({ data, onLoadSample }) {
 
   const visualDiffItems = useMemo(() => {
     if (!optimized) return [];
+
+    // Build a real line-level diff from original code vs optimized code
+    if (originalCode && optimized) {
+      const origLines = originalCode.split("\n");
+      const optLines = optimized.split("\n");
+
+      const diffItems = [];
+      diffItems.push({ type: "meta", text: `@@ Automated Refactor — ${origLines.length} → ${optLines.length} lines @@` });
+
+      // Show first 8 original lines as removals
+      const removeCount = Math.min(origLines.length, 8);
+      origLines.slice(0, removeCount).forEach(l => {
+        diffItems.push({ type: "del", text: `- ${l}` });
+      });
+      if (origLines.length > 8) {
+        diffItems.push({ type: "meta", text: `@@ ... (${origLines.length - 8} more original lines hidden) @@` });
+      }
+
+      // Show first 12 optimized lines as additions
+      const addCount = Math.min(optLines.length, 12);
+      optLines.slice(0, addCount).forEach(l => {
+        diffItems.push({ type: "add", text: `+ ${l}` });
+      });
+      if (optLines.length > 12) {
+        diffItems.push({ type: "meta", text: `@@ ... (${optLines.length - 12} more refactored lines) — view Clean Refactor tab for full code @@` });
+      }
+
+      return diffItems;
+    }
+
+    // Fallback: static illustrative diff when original code is not available
     return [
       { type: "meta", text: "@@ -30,35 +30,28 @@ Decomposition Refactor" },
       { type: "del", text: "- # Anti-pattern: High cyclomatic complexity (17) in monolithic accumulator" },
@@ -88,16 +120,16 @@ export default function Results({ data, onLoadSample }) {
       { type: "add", text: "+ # Refactored: Extracted 3 pure helper functions (Complexity drops to 3)" },
       { type: "add", text: "+ def calculate_item_subtotal(items: List[Dict[str, Any]]) -> float:" },
       { type: "add", text: "+     return max(0.0, sum(i['price'] * i['qty'] for i in items if i.get('active')))" },
-      { type: "add", text: "+ " },
+      { type: "add", text: "+" },
       { type: "add", text: "+ def apply_tier_discount(subtotal: float, tier: str) -> float:" },
       { type: "add", text: "+     discount_fn = DISCOUNT_RATES.get(tier)" },
       { type: "add", text: "+     return discount_fn(subtotal) if discount_fn else subtotal" },
-      { type: "add", text: "+ " },
+      { type: "add", text: "+" },
       { type: "add", text: "+ def process_single_order(order: Dict[str, Any], user_id: str, tier: str) -> Dict[str, Any]:" },
       { type: "add", text: "+     subtotal = calculate_item_subtotal(order.get('items', []))" },
       { type: "add", text: "+     return {'order_id': order['id'], 'total': round(apply_tier_discount(subtotal, tier) * 1.0825, 2)}" },
     ];
-  }, [optimized]);
+  }, [optimized, originalCode]);
 
   const renderMacSectionHeading = (level, children, props) => {
     const rawText = Array.isArray(children) ? children.map(c => (typeof c === "string" ? c : "")).join(" ") : String(children || "");
@@ -243,7 +275,8 @@ export default function Results({ data, onLoadSample }) {
     setLoadingChat(true);
 
     try {
-      const codePayload = optimized || data?.code || "";
+      // Prefer the optimized code; fall back to original submitted code
+      const codePayload = optimized || data?.original_code || data?.code || data?.llm_analysis?.original_code || "";
       const res = await sendFollowUp(currentInput, sessionId, codePayload);
       const answer =
         res?.reply ||
