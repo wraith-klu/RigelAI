@@ -383,6 +383,7 @@ class CloneDetectionRequest(BaseModel):
 # HEALTH & NEURAL ROSTER
   
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {
         "status": "healthy",
@@ -402,28 +403,15 @@ def health():
     }
 
 
-@app.middleware("http")
-async def vercel_path_rewrite_middleware(request, call_next):
-    # Restore original client path from Vercel headers if present
-    original_path = request.headers.get("x-matched-path") or request.headers.get("x-invoke-path")
-    if original_path:
-        request.scope["path"] = original_path.split("?")[0]
-    return await call_next(request)
-
-
-@app.get("/debug-info")
-def debug_info(request: Request):
-    return {
-        "scope_path": request.scope.get("path"),
-        "raw_headers": dict(request.headers),
-    }
-
 FRONTEND_DIST = os.path.join(BASE_DIR, "dist")
 if not os.path.exists(os.path.join(FRONTEND_DIST, "index.html")):
     FRONTEND_DIST = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend", "dist"))
 
 @app.get("/")
+@app.get("/api")
 @app.get("/index.html")
+@app.get("/api/index")
+@app.get("/api/index.py")
 def root():
     index_file = os.path.join(FRONTEND_DIST, "index.html")
     if os.path.exists(index_file):
@@ -441,6 +429,7 @@ if os.path.exists(assets_dir):
 
 # ⭐ PRE-FLIGHT DEVSECOPS SECRET SCANNER
 @app.post("/scan-secrets")
+@app.post("/api/scan-secrets")
 def scan_secrets_endpoint(req: SecretScanRequest):
     findings = scan_for_secrets(req.code, filename=req.filename)
     return {
@@ -451,6 +440,7 @@ def scan_secrets_endpoint(req: SecretScanRequest):
 
 # ⭐ PAIRWISE CODE CLONE DETECTOR (Model 2)
 @app.post("/detect-clones")
+@app.post("/api/detect-clones")
 def detect_clones_endpoint(req: CloneDetectionRequest):
     try:
         from model.clone_detector import detect_code_clones
@@ -465,6 +455,7 @@ def detect_clones_endpoint(req: CloneDetectionRequest):
 
 # ⭐ CHAT — NO CODE REQUIRED
 @app.post("/chat")
+@app.post("/api/chat")
 async def chat(req: ChatRequest):
     try:
         result = await asyncio.to_thread(
@@ -482,6 +473,7 @@ async def chat(req: ChatRequest):
 # ANALYZE — FILE UPLOAD
   
 @app.post("/analyze-file")
+@app.post("/api/analyze-file")
 async def analyze_file(
     user_query: str = Form(...),
     persona: str = Form("architect"),
@@ -517,6 +509,7 @@ async def analyze_file(
 # ANALYZE — CODE EDITOR INPUT (JSON)
   
 @app.post("/analyze-editor")
+@app.post("/api/analyze-editor")
 async def analyze_editor(req: EditorRequest):
     try:
         result = await asyncio.to_thread(
@@ -536,6 +529,7 @@ async def analyze_editor(req: EditorRequest):
 # REPOSITORY ANALYSIS
   
 @app.post("/analyze-repository")
+@app.post("/api/analyze-repository")
 async def analyze_repository(req: RepositoryRequest):
     try:
         result = await asyncio.to_thread(
@@ -554,6 +548,7 @@ async def analyze_repository(req: RepositoryRequest):
 
 
 @app.post("/followup")
+@app.post("/api/followup")
 async def followup(req: FollowupRequest):
     try:
         result = await asyncio.to_thread(
@@ -583,6 +578,7 @@ def cleanup_file(path: str):
 # DOWNLOAD DISCUSSION AS PDF
   
 @app.post("/download-pdf")
+@app.post("/api/download-pdf")
 async def download_pdf(
     payload: dict = Body(...),
     background_tasks: BackgroundTasks = None

@@ -1,17 +1,5 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
   "rewrites": [
-    { "source": "/health", "destination": "/api/index.py" },
-    { "source": "/scan-secrets", "destination": "/api/index.py" },
-    { "source": "/detect-clones", "destination": "/api/index.py" },
-    { "source": "/chat", "destination": "/api/index.py" },
-    { "source": "/analyze-file", "destination": "/api/index.py" },
-    { "source": "/analyze-editor", "destination": "/api/index.py" },
-    { "source": "/analyze-repository", "destination": "/api/index.py" },
-    { "source": "/followup", "destination": "/api/index.py" },
-    { "source": "/download-pdf", "destination": "/api/index.py" },
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/api/index.py" }
   ]
 }
