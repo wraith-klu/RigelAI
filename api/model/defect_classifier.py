@@ -10,9 +10,12 @@ import logging
 from typing import Dict, Any, Optional
 
 try:
-    from model.model_loader import predict_code_smell, get_model_and_tokenizer
-except ImportError:
-    from model_loader import predict_code_smell, get_model_and_tokenizer
+    from .model_loader import predict_code_smell, get_model_and_tokenizer
+except (ImportError, ValueError):
+    try:
+        from model.model_loader import predict_code_smell, get_model_and_tokenizer
+    except ImportError:
+        from model_loader import predict_code_smell, get_model_and_tokenizer
 
 logger = logging.getLogger("CodeSentinel.DefectClassifier")
 
