@@ -10,6 +10,7 @@ import {
   IconTerminal
 } from "./Icons";
 import FileUpload from "./FileUpload";
+import PersonaSelector from "./PersonaSelector";
 import { analyzeEditor } from "../services/api";
 import "./CodeInputPanel.css";
 
@@ -358,24 +359,7 @@ export default function CodeInputPanel({ onAnalyze }) {
 
         <div className="studio-header-right">
           {/* 5.6 Dual Review Persona Selector */}
-          <div className="persona-toggle-container" role="radiogroup" aria-label="Review Persona">
-            <button
-              type="button"
-              className={`persona-chip-btn ${persona === "architect" ? "active" : ""}`}
-              onClick={() => setPersona("architect")}
-              title="Staff Systems Architect (Rigorous Big-O, concurrency, memory layout, clean architecture)"
-            >
-              <span>🏛️ Staff Architect</span>
-            </button>
-            <button
-              type="button"
-              className={`persona-chip-btn ${persona === "student" ? "active" : ""}`}
-              onClick={() => setPersona("student")}
-              title="ELI5 Student (Friendly, intuitive real-world analogies, conceptual breakdown)"
-            >
-              <span>🎓 ELI5 Student</span>
-            </button>
-          </div>
+          <PersonaSelector persona={persona} onSelectPersona={setPersona} />
 
           <span className="engine-badge active-engine">
             <span className="engine-status-dot" aria-hidden="true"></span>

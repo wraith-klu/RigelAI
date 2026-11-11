@@ -17,6 +17,8 @@ import {
 } from "./Icons";
 import { downloadPDF, sendFollowUp } from "../services/api";
 import CodeBlock from "./CodeBlock";
+import SecretAlertBanner from "./SecretAlertBanner";
+import LiveFixEditor from "./LiveFixEditor";
 import "./Results.css";
 
 export default function Results({ data, onLoadSample }) {
@@ -566,6 +568,9 @@ export default function Results({ data, onLoadSample }) {
         {/* Findings Panel */}
         {activeTab === "findings" && (
           <div className="findings-panel">
+            {/* 7. DevSecOps Secret Alert Banner */}
+            <SecretAlertBanner findings={findings} />
+
             <div className="filter-row">
               <span className="filter-label">Filter:</span>
               <button
@@ -692,6 +697,13 @@ export default function Results({ data, onLoadSample }) {
                 >
                   <span>Clean Refactor</span>
                 </button>
+                <button
+                  type="button"
+                  className={`code-segment-btn ${codeViewMode === "livefix" ? "active" : ""}`}
+                  onClick={() => setCodeViewMode("livefix")}
+                >
+                  <span>⚡ Live Fix Playground</span>
+                </button>
               </div>
 
               <button
@@ -724,6 +736,14 @@ export default function Results({ data, onLoadSample }) {
                     ))}
                   </div>
                 </div>
+              ) : codeViewMode === "livefix" ? (
+                <LiveFixEditor
+                  originalCode={originalCode || data?.code || ""}
+                  refactoredCode={optimized}
+                  language={language}
+                  baselineScore={healthScore !== null ? healthScore : 50}
+                  projectedScore={report.projected_health_score || 96}
+                />
               ) : (
                 <div className="code-view-container">
                   <CodeBlock

@@ -1,0 +1,35 @@
+name: "Sync to Hugging Face Spaces"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'Dockerfile'
+      - '.github/workflows/hf_sync.yml'
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    name: Sync Backend to Hugging Face Space
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO || 'wraithklu/RigelAI-MoS' }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::notice::HF_TOKEN secret not configured. Skipping automatic push to Hugging Face Spaces."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add space "https://user:$HF_TOKEN@huggingface.co/spaces/$HF_SPACE_REPO" || true
+          git push --force space main:main

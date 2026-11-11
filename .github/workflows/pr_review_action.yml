@@ -1,0 +1,34 @@
+name: "CodeSentinel AI PR Review Bot"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.jsx'
+      - '**.tsx'
+      - '**.go'
+      - '**.java'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  pr-review:
+    name: CodeSentinel AI Automated PR Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run CodeSentinel PR Review Action
+        uses: ./action
+        with:
+          api_endpoint: "https://rigel-ai-agent.vercel.app/api/analyze-file"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          health_threshold: "75"
+          persona: "architect"
