@@ -54,7 +54,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# NOTE: vercel_url_fix middleware removed - x-matched-path is DESTINATION not original path`n
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+@app.middleware("http")
+async def log_request_middleware(request, call_next):
+    path = request.scope.get("path")
+    print(f"DEBUG REQ: {request.method} path={path} root_path={request.scope.get('root_path')} url={request.url}")
+    response = await call_next(request)
+    print(f"DEBUG RES: {response.status_code} for path={path}")
+    return response
+
+@app.exception_handler(StarletteHTTPException)
+async def debug_http_exception(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "detail": exc.detail,
+            "debug_method": request.method,
+            "debug_scope_path": request.scope.get("path"),
+            "debug_root_path": request.scope.get("root_path"),
+            "debug_url": str(request.url),
+            "debug_headers": {k: v for k, v in request.headers.items() if k in ["x-matched-path", "host", "x-real-ip"]},
+            "debug_routes": [r.path for r in app.routes if hasattr(r, "path")]
+        }
+    )
 
 import tempfile
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
