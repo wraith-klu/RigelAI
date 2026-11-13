@@ -369,13 +369,6 @@ export default function Chatbot({ initialInput = null }) {
 
       {/* ── Input bar ── */}
       <div className="copilot-input-wrap">
-        {/* Slot-fill hint when input is short */}
-        {input.length > 0 && input.length < 15 && (
-          <div className="slot-fill-hint">
-            💡 Tip: Be specific — mention language, error, or code pattern for a better answer
-          </div>
-        )}
-
         <form
           className="copilot-input-bar"
           onSubmit={e => { e.preventDefault(); handleSend(); }}
@@ -387,7 +380,7 @@ export default function Chatbot({ initialInput = null }) {
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about code smells, refactoring, architecture, security… (Shift+Enter for newline)"
+              placeholder="Ask anything — coding, architecture, sports, science, or general questions… (Shift+Enter for newline)"
               disabled={loading}
               rows={1}
               maxLength={4000}
