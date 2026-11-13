@@ -53,46 +53,62 @@ Rather than delegating all analysis to a single general-purpose LLM (which intro
 
 ```mermaid
 flowchart TD
-    INPUT["🖊️ Source Code Input\n(Editor / File / GitHub Repo / PR)"]
+    INPUT["🖊️ Source Code Input<br/>(Editor / File / GitHub Repo / PR)"]
 
-    subgraph PREFLIGHT["1. Symbolic & DevSecOps Pre-Flight (<5ms)"]
-        direction TB
-        AST["🌳 Multi-Language AST\n(McCabe M=E-N+2P, Nesting Depth)"]
-        SEC["🔑 Shannon Entropy Scanner\n(API Keys, Passwords, Tokens)"]
-        CVE["🛡️ Google OSV.dev CVE Auditor\n(Requirements.txt / Package.json)"]
+    subgraph S_PREFLIGHT["1. Symbolic & DevSecOps Pre-Flight (under 5ms)"]
+        AST["🌳 Multi-Language AST<br/>(McCabe Complexity, Nesting Depth)"]
+        SEC["🔑 Shannon Entropy Scanner<br/>(API Keys, Passwords, Tokens)"]
+        CVE["🛡️ Google OSV.dev CVE Auditor<br/>(requirements.txt / package.json)"]
     end
 
-    subgraph TRIAGE["2. Parallel Neural Triage (~25-40ms)"]
-        direction LR
-        M1["🧠 Model 1: GraphCodeBERT\nDefect & Anti-Pattern Sentinel\nCodeXGLUE Devign (27k samples)\nHF: wraithklu/codesentinel-defect-sentinel"]
-        M2["👯 Model 2: CodeBERT Bi-Encoder\nSemantic Clone & Redundancy Detector\nCodeXGLUE BigCloneBench\nHF: wraithklu/codesentinel-clone-detector"]
+    subgraph S_TRIAGE["2. Parallel Neural Triage (25-40ms)"]
+        M1["🧠 Model 1: GraphCodeBERT<br/>Defect & Anti-Pattern Sentinel<br/>(Devign: 66.0% Acc, F1 0.60)"]
+        M2["👯 Model 2: CodeBERT Bi-Encoder<br/>Semantic Clone Detector<br/>(BigCloneBench: 90.5% Cosine)"]
     end
 
-    subgraph GENERATION["3. Neural Refactoring Engine (~140ms)"]
-        M3["✨ Model 3: CodeT5+ Seq2Seq\nAutomated Syntax Repair & Clean Code\nCodeXGLUE code-refinement (65k pairs)\nHF: wraithklu/codesentinel-codet5-refiner"]
+    subgraph S_GENERATION["3. Neural Refactoring Engine (140ms)"]
+        M3["✨ Model 3: CodeT5+ Seq2Seq<br/>Automated Syntax Repair & Clean Refactor<br/>(65k Bug-Fix Pairs, Val Loss 0.079)"]
     end
 
-    subgraph METRICS["4. Quality & Technical Debt Engine (<2ms)"]
-        SQALE["⏱️ SQALE Debt Calculation\nRemediation Time = 45C + 20W + 5S + 30D\nHealth Score: 100 - (25C + 12W + 6S)"]
+    subgraph S_METRICS["4. Quality & Technical Debt Engine (under 2ms)"]
+        SQALE["⏱️ SQALE Debt Calculation<br/>Remediation Time = 45C + 20W + 5S + 30D<br/>Maintainability Rating A-F"]
     end
 
-    subgraph ORCHESTRATION["5. Dual-Persona LLM Synthesis (~2s Cloud)"]
-        M4["💬 Model 4: LLM Orchestrator\nMode: 'Staff Architect' vs 'ELI5 Student'\nExecutive Review · Big-O Breakdown · Clean Diff"]
+    subgraph S_ORCHESTRATION["5. Dual-Persona LLM Synthesis (Cloud)"]
+        M4["💬 Model 4: LLM Orchestrator<br/>Staff Architect vs ELI5 Student<br/>Executive Review · Big-O Breakdown"]
     end
 
-    INPUT --> PREFLIGHT
-    PREFLIGHT --> TRIAGE
-    TRIAGE --> GENERATION
-    GENERATION --> METRICS
-    PREFLIGHT & TRIAGE & GENERATION & METRICS --> ORCHESTRATION
-    ORCHESTRATION --> RESPONSE["📤 Full Unified Quality Report & Xcode Visual Diff"]
+    RESPONSE["📤 Full Unified Quality Report & Remediation Diff"]
 
-    style PREFLIGHT fill:#0d3b66,color:#fff,stroke:#4fc3f7,stroke-width:2px
-    style TRIAGE fill:#1b5e20,color:#fff,stroke:#69f0ae,stroke-width:2px
-    style GENERATION fill:#4a148c,color:#fff,stroke:#ce93d8,stroke-width:2px
-    style METRICS fill:#bf360c,color:#fff,stroke:#ffab40,stroke-width:2px
-    style ORCHESTRATION fill:#1a237e,color:#fff,stroke:#82b1ff,stroke-width:2px
-    style RESPONSE fill:#004d40,color:#fff,stroke:#00e676,stroke-width:3px
+    INPUT --> AST
+    INPUT --> SEC
+    INPUT --> CVE
+
+    AST --> M1
+    SEC --> M1
+    CVE --> M2
+
+    M1 --> M3
+    M2 --> M3
+
+    M3 --> SQALE
+    AST --> SQALE
+
+    SQALE --> M4
+    M3 --> M4
+
+    M4 --> RESPONSE
+
+    style INPUT fill:#1e293b,color:#f8fafc,stroke:#38bdf8,stroke-width:2px
+    style AST fill:#0f172a,color:#e2e8f0,stroke:#38bdf8
+    style SEC fill:#0f172a,color:#e2e8f0,stroke:#38bdf8
+    style CVE fill:#0f172a,color:#e2e8f0,stroke:#38bdf8
+    style M1 fill:#064e3b,color:#ecfdf5,stroke:#34d399,stroke-width:2px
+    style M2 fill:#064e3b,color:#ecfdf5,stroke:#34d399,stroke-width:2px
+    style M3 fill:#4c1d95,color:#faf5ff,stroke:#c084fc,stroke-width:2px
+    style SQALE fill:#7c2d12,color:#fff7ed,stroke:#fb923c,stroke-width:2px
+    style M4 fill:#1e1b4b,color:#e0e7ff,stroke:#818cf8,stroke-width:2px
+    style RESPONSE fill:#065f46,color:#ecfdf5,stroke:#10b981,stroke-width:3px
 ```
 
 ---
@@ -214,16 +230,18 @@ When the static AST flags deep nesting AND GraphCodeBERT flags a 70%+ defect pro
 
 ```mermaid
 flowchart LR
-    FUNC_A["📄 Function A\n(e.g., bubble_sort)"] --> CODEBERT_A["🔷 CodeBERT Encoder\nShared Weights"]
-    FUNC_B["📄 Function B\n(e.g., sort_ascending)"] --> CODEBERT_B["🔷 CodeBERT Encoder\nShared Weights"]
+    FUNC_A["📄 Function A<br/>(e.g., bubble_sort)"] --> CODEBERT_A["🔷 CodeBERT Encoder<br/>Shared Weights"]
+    FUNC_B["📄 Function B<br/>(e.g., sort_ascending)"] --> CODEBERT_B["🔷 CodeBERT Encoder<br/>Shared Weights"]
 
-    CODEBERT_A --> VEC_A["Dense Vector u ∈ ℝ⁷⁶⁸"]
-    CODEBERT_B --> VEC_B["Dense Vector v ∈ ℝ⁷⁶⁸"]
+    CODEBERT_A --> VEC_A["Dense Vector u in R^768"]
+    CODEBERT_B --> VEC_B["Dense Vector v in R^768"]
 
-    VEC_A & VEC_B --> COS["📐 Cosine Similarity Metric\nsim(u, v) = (u · v) / (||u|| ||v||)"]
-    COS --> DECISION{"Cosine Similarity\nThreshold: ≥ 0.85?"}
+    VEC_A --> COS["📐 Cosine Similarity Metric<br/>sim(u, v) = dot(u, v) / norm(u)*norm(v)"]
+    VEC_B --> COS
 
-    DECISION -->|Yes| CLONE["⚠️ Semantic Clone Detected!\nRecommend extracting shared utility"]
+    COS --> DECISION{"Cosine Similarity<br/>Score >= 0.85?"}
+
+    DECISION -->|Yes| CLONE["⚠️ Semantic Clone Detected!<br/>Recommend extracting shared utility"]
     DECISION -->|No| UNIQUE["✅ Unique Function Logic"]
 
     style CODEBERT_A fill:#1b5e20,color:#fff,stroke:#69f0ae
@@ -258,28 +276,32 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    BUGGY["⚠️ Smelly Source Code\n• Monolithic loop\n• Deep nesting\n• Missing type hints"]
+    BUGGY["⚠️ Smelly Source Code<br/>• Monolithic loop<br/>• Deep nesting<br/>• Missing type hints"]
 
-    subgraph ENCODER["CodeT5 Encoder"]
+    subgraph S_ENCODER["CodeT5 Encoder"]
         E_TOK["BPE Tokenizer + Identifier Tagging"]
-        E_ATTN["Bidirectional Self-Attention Layers\nCaptures token syntax & data flow"]
+        E_ATTN["Bidirectional Self-Attention Layers<br/>Captures token syntax & data flow"]
         E_TOK --> E_ATTN
     end
 
-    subgraph DECODER["CodeT5 Decoder (KV Cache + Beam Search)"]
+    subgraph S_DECODER["CodeT5 Decoder (KV Cache + Beam Search)"]
         D_CROSS["Cross-Attention over Encoder representations"]
-        D_AUTOREG["Autoregressive Generation\nBeam width = 2, early stopping"]
+        D_AUTOREG["Autoregressive Generation<br/>Beam width = 2, early stopping"]
         D_CROSS --> D_AUTOREG
     end
 
-    REFACTORED["✨ Clean, Production-Grade Refactor\n• Decomposed pure helpers\n• Linear complexity\n• Type annotations & docstrings"]
+    REFACTORED["✨ Clean, Production-Grade Refactor<br/>• Decomposed pure helpers<br/>• Linear complexity<br/>• Type annotations & docstrings"]
 
-    BUGGY --> ENCODER --> DECODER --> REFACTORED
+    BUGGY --> E_TOK
+    E_ATTN --> D_CROSS
+    D_AUTOREG --> REFACTORED
 
-    style ENCODER fill:#4a148c,color:#fff,stroke:#ce93d8
-    style DECODER fill:#1a237e,color:#fff,stroke:#82b1ff
-    style BUGGY fill:#b71c1c,color:#fff,stroke:#ef9a9a
-    style REFACTORED fill:#004d40,color:#fff,stroke:#00e676
+    style BUGGY fill:#7f1d1d,color:#fff,stroke:#ef9a9a
+    style E_TOK fill:#2e1065,color:#fff,stroke:#ce93d8
+    style E_ATTN fill:#2e1065,color:#fff,stroke:#ce93d8
+    style D_CROSS fill:#1e1b4b,color:#fff,stroke:#82b1ff
+    style D_AUTOREG fill:#1e1b4b,color:#fff,stroke:#82b1ff
+    style REFACTORED fill:#064e3b,color:#fff,stroke:#00e676
 ```
 
 ---
@@ -410,7 +432,7 @@ sequenceDiagram
     actor Dev as 👨‍💻 Developer
     participant FE as 🖥️ React Frontend
     participant API as ⚡ FastAPI Backend
-    participant SEC as 🛡️ Secret & CVE Engine
+    participant SEC as 🛡️ Secret and CVE Engine
     participant AST as 🌳 Universal AST
     participant M1 as 🧠 Model 1: GraphCodeBERT
     participant M2 as 👯 Model 2: CodeBERT Clone
@@ -421,9 +443,9 @@ sequenceDiagram
     Dev->>FE: Submit source code in Live Studio
     FE->>API: POST /api/analyze-editor {code, persona}
 
-    par Pre-Flight Security & Structure (<5ms)
+    par Pre-Flight Security and Structure (under 5ms)
         API->>SEC: scan_for_secrets() + audit_dependencies()
-        SEC-->>API: Leaked credentials & CVE findings
+        SEC-->>API: Leaked credentials and CVE findings
         API->>AST: parse_ast_multi_language()
         AST-->>API: Cyclomatic complexity & nesting depth
     end
@@ -432,10 +454,10 @@ sequenceDiagram
         API->>M1: classify_defect(code) [INT8]
         M1-->>API: P(Clean)=0.12, P(Smelly)=0.88
         API->>M2: detect_code_clones() [INT8]
-        M2-->>API: Semantic clone pairs (>85% similarity)
+        M2-->>API: Semantic clone pairs (85%+ similarity)
     end
 
-    API->>M3: generate_refactor(code) [INT8] (~140ms)
+    API->>M3: generate_refactor(code) [INT8] (approx 140ms)
     M3-->>API: Production-grade clean refactored candidate
 
     API->>SQALE: calculate_technical_debt(all_findings)
