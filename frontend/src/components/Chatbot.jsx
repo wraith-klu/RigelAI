@@ -30,55 +30,110 @@ const PERSONA_OPTIONS = [
 /* ── Smart Markdown Preprocessor ───────────────── */
 function normalizeMarkdown(text) {
   if (!text) return "";
-  let s = String(text);
+  let s = String(text).replace(/\\n/g, "\n");
 
-  // 1. Normalize escaped newlines
-  s = s.replace(/\\n/g, "\n");
+  // Step 1: Pre-clean leading separator dashes from data chunks e.g. '|---|---| | Lionel Messi' -> '| | Lionel Messi'
+  s = s.replace(/^[\|\s\-:]*\|\s*\|\s*/gm, "| ");
+  s = s.replace(/\n[\|\s\-:]*\|\s*\|\s*/g, "\n| ");
 
-  // 2. Clean weird trailing pipes in headers: '| | |---' -> '|\n|---'
-  s = s.replace(/\|\s*\|\s*\|-+/g, "|\n|---");
-  s = s.replace(/\|\s*\|-+/g, "|\n|---");
-
-  // 3. Split multiple table rows joined on a single line: '||' or '| |'
-  s = s.replace(/\|\s*\|\s*/g, "|\n| ");
-
-  // 4. Ensure table headers have clean blank line before table
-  s = s.replace(/([^\n])\n*(\|[\s\S]*?\|)/g, (match, prefix, tablePart) => {
-    if (tablePart.includes("|---") || tablePart.includes("|:---") || tablePart.includes("| ---")) {
-      return `${prefix}\n\n${tablePart}`;
+  // Step 2: Handle multi-line pseudo tables (header on line 1, then separators, then joined data rows)
+  const lns = s.split("\n");
+  const res = [];
+  let i = 0;
+  while (i < lns.length) {
+    let cur = lns[i].trim();
+    if (cur.startsWith("|") && cur.endsWith("|") && cur.split("|").length >= 4 && !/^[\|\s\-:]+$/.test(cur) && !cur.includes("| |")) {
+      const headerCols = cur.replace(/^\|+/, "").replace(/\|+$/, "").split("|").map(c => c.trim()).filter(c => c && !/^[-: ]+$/.test(c));
+      const numCols = headerCols.length;
+      let j = i + 1;
+      let dataBlob = "";
+      while (j < lns.length) {
+        let nxt = lns[j].trim();
+        if (!nxt || nxt === "---" || /^[\|\s\-:]+$/.test(nxt)) {
+          j++;
+        } else {
+          dataBlob = nxt;
+          break;
+        }
+      }
+      if (dataBlob && (dataBlob.includes("| |") || dataBlob.includes("||"))) {
+        dataBlob = dataBlob.replace(/^[\|\s\-:]*\|\s*\|\s*/, "");
+        const rawRows = dataBlob.split(/\|\s*\|/).map(r => r.trim()).filter(r => r && !/^[\|\s\-:]+$/.test(r));
+        if (rawRows.length > 0) {
+          res.push("\n| " + headerCols.join(" | ") + " |");
+          res.push("| " + headerCols.map(() => "---").join(" | ") + " |");
+          for (const rawR of rawRows) {
+            const cells = rawR.replace(/^\|+/, "").replace(/\|+$/, "").split("|").map(c => c.trim()).filter(c => c && !/^[-: ]+$/.test(c));
+            if (cells.length) {
+              while (cells.length < numCols) cells.push("-");
+              res.push("| " + cells.slice(0, numCols).join(" | ") + " |");
+            }
+          }
+          res.push("");
+          i = j + 1;
+          continue;
+        }
+      }
     }
-    return match;
-  });
+    res.push(lns[i]);
+    i++;
+  }
+  s = res.join("\n");
 
-  // 5. Ensure table separator row has proper newlines
-  s = s.replace(/\n\s*\|[-| :]{3,}\|\s*/g, (match) => {
-    return "\n" + match.trim() + "\n";
-  });
-
-  // 6. Ensure lines with multiple pipes are proper rows with leading and trailing pipes
+  // Step 3: Handle single-line collapsed tables (where header + data are on one line)
   const lines = s.split("\n");
-  const processed = lines.map((line) => {
-    const trimmed = line.trim();
-    if (trimmed && trimmed.includes("|") && !trimmed.startsWith("```")) {
-      let l = trimmed;
-      if (!l.startsWith("|")) l = "| " + l;
-      if (!l.endsWith("|")) l = l + " |";
-      return l;
+  const outLines = [];
+
+  for (let idx = 0; idx < lines.length; idx++) {
+    let line = lines[idx].trim();
+    if (line.includes("|") && line.split("|").length > 5 && (line.includes("| |") || line.includes("||"))) {
+      const chunks = line.split(/\|\s*\|/).map(c => c.trim()).filter(c => c && !/^[\|\s\-:]+$/.test(c));
+      if (chunks.length >= 2) {
+        const headerRaw = chunks[0].replace(/^\|+/, "").replace(/\|+$/, "");
+        const headerCols = headerRaw.split("|").map(c => c.trim()).filter(c => c && !/^[-: ]+$/.test(c));
+        const numCols = headerCols.length;
+        if (numCols >= 2) {
+          outLines.push("\n| " + headerCols.join(" | ") + " |");
+          outLines.push("| " + headerCols.map(() => "---").join(" | ") + " |");
+          for (let k = 1; k < chunks.length; k++) {
+            const rowRaw = chunks[k].replace(/^\|+/, "").replace(/\|+$/, "");
+            const cells = rowRaw.split("|").map(c => c.trim()).filter(c => c && !/^[-: ]+$/.test(c));
+            if (cells.length) {
+              while (cells.length < numCols) cells.push("-");
+              outLines.push("| " + cells.slice(0, numCols).join(" | ") + " |");
+            }
+          }
+          outLines.push("");
+          continue;
+        }
+      }
     }
-    return line;
-  });
-  s = processed.join("\n");
+    outLines.push(lines[idx]);
+  }
+  s = outLines.join("\n");
 
-  // 7. Fix headers stuck directly to preceding text
-  s = s.replace(/([^\n])\n(#{1,4}\s+[^\n]+)/g, "$1\n\n$2");
+  // Step 4: Ensure numbered section headings and titles are converted to colorful Markdown headings (h3)
+  s = s.replace(/(^|\n)\s*([0-9]+[️⃣\.\)]?\s+[A-Za-z][^\n]+)/g, "$1\n### $2\n");
+  s = s.replace(/(^|\n)\s*\*\*([0-9\.\s]*[A-Za-z][^\n\*]+)\*\*\s*(?=\n|$)/g, "$1\n### $2\n");
 
-  // 8. Fix lists stuck directly to preceding text
+  // Step 5: Fix headers stuck directly to preceding text
+  s = s.replace(/([^\n])\n(#{1,6}\s+[^\n]+)/g, "$1\n\n$2");
+
+  // Step 6: Fix lists stuck directly to preceding text or collapsed
   s = s.replace(/([^\n])\n([*-]\s+[^\n]+)/g, "$1\n\n$2");
 
   return s;
 }
 
-/* ── Markdown renderer ──────────────────────────── */
+function extractText(children) {
+  if (children === null || children === undefined) return "";
+  if (typeof children === "string" || typeof children === "number") return String(children);
+  if (Array.isArray(children)) return children.map(extractText).join("");
+  if (children && children.props && children.props.children) return extractText(children.props.children);
+  return "";
+}
+
+/* ── Markdown renderer with Interactive Widgets ── */
 function MarkdownMessage({ content }) {
   const normalized = useMemo(() => normalizeMarkdown(content), [content]);
 
@@ -94,6 +149,12 @@ function MarkdownMessage({ content }) {
     },
     h4({ children }) {
       return <h5 className="chat-msg-h4">{children}</h5>;
+    },
+    h5({ children }) {
+      return <h6 className="chat-msg-h5">{children}</h6>;
+    },
+    h6({ children }) {
+      return <h6 className="chat-msg-h6">{children}</h6>;
     },
     p({ children }) {
       return <p className="chat-msg-p">{children}</p>;
@@ -129,6 +190,66 @@ function MarkdownMessage({ content }) {
       return <th className="chat-th">{children}</th>;
     },
     td({ children }) {
+      const rawText = extractText(children).trim();
+      const clean = rawText.replace(/^\*+|\*+$/g, "").trim();
+
+      // Interactive Widget: Rank Badge (1, 2, 3...)
+      if (/^[1-9]$|^10$/.test(clean)) {
+        const cls =
+          clean === "1" ? "rank-gold" :
+          clean === "2" ? "rank-silver" :
+          clean === "3" ? "rank-bronze" : "rank-num";
+        const prefix =
+          clean === "1" ? "🥇 " :
+          clean === "2" ? "🥈 " :
+          clean === "3" ? "🥉 " : "#";
+        return (
+          <td className="chat-td">
+            <span className={`chat-rank-pill ${cls}`} title={`Rank ${prefix}${clean}`}>
+              {prefix}{clean}
+            </span>
+          </td>
+        );
+      }
+
+      // Interactive Widget: High score pill (90+)
+      if (/^(9\d(\.\d+)?|100(\.0+)?)$/.test(clean)) {
+        return (
+          <td className="chat-td">
+            <span className="chat-score-pill score-emerald" title="Top Tier Score">{clean}</span>
+          </td>
+        );
+      }
+
+      // Interactive Widget: Medium score pill (80+)
+      if (/^8\d(\.\d+)?$/.test(clean)) {
+        return (
+          <td className="chat-td">
+            <span className="chat-score-pill score-cyan" title="High Tier Score">{clean}</span>
+          </td>
+        );
+      }
+
+      // Interactive Widget: Normal score pill (70+)
+      if (/^7\d(\.\d+)?$/.test(clean)) {
+        return (
+          <td className="chat-td">
+            <span className="chat-score-pill score-amber" title="Good Tier Score">{clean}</span>
+          </td>
+        );
+      }
+
+      // Status badges
+      if (/^(PASS|SUCCESS|SECURE|RESOLVED)$/i.test(clean)) {
+        return <td className="chat-td"><span className="chat-score-pill score-emerald">{clean}</span></td>;
+      }
+      if (/^(FAIL|CRITICAL|HIGH|VULNERABLE)$/i.test(clean)) {
+        return <td className="chat-td"><span className="chat-score-pill score-rose">{clean}</span></td>;
+      }
+      if (/^(WARN|WARNING|MEDIUM)$/i.test(clean)) {
+        return <td className="chat-td"><span className="chat-score-pill score-amber">{clean}</span></td>;
+      }
+
       return <td className="chat-td">{children}</td>;
     },
     strong({ children }) {
