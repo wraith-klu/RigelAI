@@ -27,9 +27,9 @@
 - [🌟 Architectural Overview: Mixture of Specialists (MoS)](#-architectural-overview-mixture-of-specialists-mos)
 - [🤖 Neural Specialist Models & CodeXGLUE Training](#-neural-specialist-models--codexglue-training)
   - [Model 1: GraphCodeBERT Defect Sentinel (Classification)](#1-model-1--graphcodebert-defect-sentinel)
-    - [CodeXGLUE Leaderboard & SOTA Comparison](#-the-official-codexglue-leaderboard-and-why-66-accuracy-matches-sota)
+    - [CodeXGLUE Leaderboard & SOTA Comparison](#-the-official-codexglue-leaderboard-and-why-65-accuracy-matches-sota)
     - [Why Defect Detection Accuracy is ~65% instead of 95%](#-why-is-defect-detection-accuracy-65-instead-of-95)
-    - [How 66% Translates to >90% System Confidence](#-how-66-translates-to-over-90-composite-confidence)
+    - [How 65% Translates to >90% System Confidence](#-how-65-translates-to-over-90-composite-confidence)
   - [Model 2: CodeBERT Bi-Encoder Clone Detector (Semantic Similarity)](#2-model-2--codebert-bi-encoder-clone-detector)
   - [Model 3: CodeT5+ Sequence-to-Sequence Refactor Engine (Generation)](#3-model-3--codet5-sequence-to-sequence-refactor-engine)
   - [Model 4: Persona-Guided LLM Orchestrator](#4-model-4--persona-guided-llm-orchestrator)
@@ -53,32 +53,37 @@ Rather than delegating all analysis to a single general-purpose LLM (which intro
 
 ```mermaid
 flowchart TD
-    INPUT["🖊️ Source Code Input<br/>(Editor / File / GitHub Repo / PR)"]
+    INPUT["Source Code Input\nEditor / File / GitHub Repo / PR"]
 
-    subgraph S_PREFLIGHT["1. Symbolic & DevSecOps Pre-Flight (under 5ms)"]
-        AST["🌳 Multi-Language AST<br/>(McCabe Complexity, Nesting Depth)"]
-        SEC["🔑 Shannon Entropy Scanner<br/>(API Keys, Passwords, Tokens)"]
-        CVE["🛡️ Google OSV.dev CVE Auditor<br/>(requirements.txt / package.json)"]
+    subgraph PREFLIGHT["1. Symbolic and DevSecOps Pre-Flight (under 5ms)"]
+        direction TB
+        AST["Multi-Language AST\nMcCabe Complexity, Nesting Depth"]
+        SEC["Shannon Entropy Scanner\nAPI Keys, Passwords, Tokens"]
+        CVE["Google OSV.dev CVE Auditor\nrequirements.txt / package.json"]
     end
 
-    subgraph S_TRIAGE["2. Parallel Neural Triage (25-40ms)"]
-        M1["🧠 Model 1: GraphCodeBERT<br/>Defect & Anti-Pattern Sentinel<br/>(Devign: 66.0% Acc, F1 0.60)"]
-        M2["👯 Model 2: CodeBERT Bi-Encoder<br/>Semantic Clone Detector<br/>(BigCloneBench: 90.5% Cosine)"]
+    subgraph TRIAGE["2. Parallel Neural Triage (25-40ms)"]
+        direction TB
+        M1["Model 1: GraphCodeBERT\nDefect and Anti-Pattern Sentinel\nDevign: 64.93% Acc, F1 0.60"]
+        M2["Model 2: CodeBERT Bi-Encoder\nSemantic Clone Detector\nBigCloneBench: 90.5% Cosine"]
     end
 
-    subgraph S_GENERATION["3. Neural Refactoring Engine (140ms)"]
-        M3["✨ Model 3: CodeT5+ Seq2Seq<br/>Automated Syntax Repair & Clean Refactor<br/>(65k Bug-Fix Pairs, Val Loss 0.079)"]
+    subgraph GENERATION["3. Neural Refactoring Engine (140ms)"]
+        direction TB
+        M3["Model 3: CodeT5 Seq2Seq\nAutomated Syntax Repair and Clean Refactor\n65k Bug-Fix Pairs, Val Loss 0.079"]
     end
 
-    subgraph S_METRICS["4. Quality & Technical Debt Engine (under 2ms)"]
-        SQALE["⏱️ SQALE Debt Calculation<br/>Remediation Time = 45C + 20W + 5S + 30D<br/>Maintainability Rating A-F"]
+    subgraph METRICS["4. Quality and Technical Debt Engine (under 2ms)"]
+        direction TB
+        SQALE["SQALE Debt Calculation\nRemediation Time = 45C + 20W + 5S + 30D\nMaintainability Rating A-F"]
     end
 
-    subgraph S_ORCHESTRATION["5. Dual-Persona LLM Synthesis (Cloud)"]
-        M4["💬 Model 4: LLM Orchestrator<br/>Staff Architect vs ELI5 Student<br/>Executive Review · Big-O Breakdown"]
+    subgraph ORCHESTRATION["5. Dual-Persona LLM Synthesis (Cloud)"]
+        direction TB
+        M4["Model 4: LLM Orchestrator\nStaff Architect vs ELI5 Student\nExecutive Review / Big-O Breakdown"]
     end
 
-    RESPONSE["📤 Full Unified Quality Report & Remediation Diff"]
+    RESPONSE["Full Unified Quality Report and Remediation Diff"]
 
     INPUT --> AST
     INPUT --> SEC
@@ -122,37 +127,37 @@ flowchart TD
 - **Dataset:** CodeXGLUE Devign Benchmark (27,318 C/C++ functions extracted from Linux Kernel, Wireshark, QEMU, FFmpeg)
 - **Hugging Face Checkpoint:** [`wraithklu/codesentinel-defect-sentinel`](https://huggingface.co/wraithklu/codesentinel-defect-sentinel)
 
-#### 🧠 GraphCodeBERT Dual-Modality DFG Architecture:
+#### 🧠 GraphCodeBERT Dual-Modality DFG Architecture
 
 ```mermaid
 flowchart TD
     subgraph INPUT_MODALITIES["Dual-Modality Source Representation"]
-        SRC["💻 Raw C/C++ Source Function<br/><code>int process(int* arr, int n) { ... }</code>"]
-        TOKENS["🔤 Source Tokens (BPE)<br/>[CLS], int, process, (, int, *, arr, ..."]
-        DFG["🕸️ Data Flow Graph (DFG)<br/>Nodes: Variables {arr_0, n_0, i_0, sum_0}<br/>Edges: (arr_0 → val_0), (sum_0 → sum_1)"]
+        SRC["Raw C/C++ Source Function\nint process(int arr, int n)"]
+        TOKENS["Source Tokens via BPE\nCLS, int, process, int, arr"]
+        DFG["Data Flow Graph (DFG)\nNodes: Variables arr, n, i, sum\nEdges: arr to val, sum to sum_next"]
         SRC --> TOKENS
         SRC --> DFG
     end
 
     subgraph ENCODER["GraphCodeBERT 12-Layer Transformer Encoder"]
-        EMB["Unified Embedding Space<br/>Token Embeddings + Position + Variable Node Embeddings"]
+        EMB["Unified Embedding Space\nToken + Position + Variable Node Embeddings"]
         TOKENS --> EMB
         DFG --> EMB
-        ATTN["Graph-Guided Self-Attention<br/>Mask M: Token ↔ Variables ↔ Data Flow Edges"]
+        ATTN["Graph-Guided Self-Attention\nMask M: Token to Variables to Data Flow Edges"]
         EMB --> ATTN
-        POOL["[CLS] Representation Vector h_cls in R^768"]
+        POOL["CLS Representation Vector h_cls in R^768"]
         ATTN --> POOL
     end
 
     subgraph CLASSIFIER["Binary Classification Head"]
-        DENSE["Dense Linear Layer (768 → 256) + GELU + Dropout (0.1)"]
-        LOGITS["Classification Logits (Clean vs Smelly)"]
+        DENSE["Dense Linear Layer 768 to 256 + GELU + Dropout 0.1"]
+        LOGITS["Classification Logits: Clean vs Smelly"]
         SOFTMAX["Softmax Probability Distribution"]
         POOL --> DENSE --> LOGITS --> SOFTMAX
         PRED{"ArgMax Decision"}
         SOFTMAX --> PRED
-        PRED -->|Class 0| CLEAN["✅ Clean Code (P >= 0.50)"]
-        PRED -->|Class 1| SMELLY["⚠️ Vulnerable / Smelly (P > 0.50)"]
+        PRED -->|Class 0| CLEAN["Clean Code (P >= 0.50)"]
+        PRED -->|Class 1| SMELLY["Vulnerable or Smelly (P > 0.50)"]
     end
 
     style SRC fill:#1e293b,color:#f8fafc,stroke:#38bdf8
@@ -164,7 +169,21 @@ flowchart TD
     style SMELLY fill:#7f1d1d,color:#fef2f2,stroke:#f87171,stroke-width:2px
 ```
 
-#### 📊 Actual Training Run Telemetry (Google Colab T4 GPU):
+#### How GraphCodeBERT Works — Step by Step
+
+**Step 1 — Tokenization (BPE):**
+The raw C/C++ function is broken into subword tokens using Byte-Pair Encoding (BPE). A special `[CLS]` token is prepended. Example: `int process(int* arr, int n)` → `[CLS], int, process, (, int, *, arr, ,, int, n, )`
+
+**Step 2 — Data Flow Graph Construction:**
+The source is parsed into a Data Flow Graph (DFG) where every variable is a node, and every assignment/read creates a directed edge. For example, `sum += arr[i]` creates an edge from `arr_read` → `sum_write`. These variable nodes are appended to the token sequence.
+
+**Step 3 — Graph-Guided Self-Attention:**
+A special attention mask `M` is applied. Token positions can attend to: (a) adjacent tokens within a window, (b) the global `[CLS]` token, and (c) their corresponding variable node in the DFG. Variable nodes can attend to other nodes connected by data flow edges. This forces the model to learn **how data moves through the code**, not just the token surface.
+
+**Step 4 — Classification:**
+The `[CLS]` representation $h_{cls} \in \mathbb{R}^{768}$ is passed through a linear head (768 → 256 → 2). The ArgMax of the softmax output determines `Clean` vs `Smelly`.
+
+#### 📊 Actual Training Run Telemetry (Google Colab T4 GPU)
 
 | Parameter | Recorded Telemetry | Optimization Strategy |
 |---|---|---|
@@ -173,9 +192,9 @@ flowchart TD
 | **Sample Throughput** | **43.79 samples / sec** | Batch size = 16 with gradient accumulation |
 | **Total Training Runtime** | **1,497.18 seconds (~24.95 mins)** | PyTorch pin-memory asynchronous streaming |
 | **Total Computational Work** | **1.2938 × 10¹⁶ FLOPs** | 12 transformer layers × 12 attention heads |
-| **Final Training Loss** | **0.5966** | AdamW optimizer ($\beta_1=0.9, \beta_2=0.999$) |
+| **Final Training Loss** | **0.5966** | AdamW optimizer (β₁=0.9, β₂=0.999) |
 
-#### 📈 Epoch-by-Epoch Convergence Table:
+#### 📈 Epoch-by-Epoch Convergence Table
 
 | Epoch | Training Loss | Validation Loss | Accuracy | Precision | Recall | F1-Score | Learning Dynamics |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|---|
@@ -183,17 +202,17 @@ flowchart TD
 | **2** | 0.588899 | 0.588271 | 65.81% | 65.79% | 44.40% | 0.5302 | Precision spike; conservative false-positive rate |
 | **3** | **0.506062** | **0.621157** | **66.03%** | **61.45%** | **58.55%** | **0.5997** | 🏆 **Optimal balance (F1: ~0.60, Acc: 66.03%)** |
 
-#### 🧪 Official CodeXGLUE Devign Holdout Test Set Evaluation (2,732 Functions):
+#### 🧪 Official CodeXGLUE Devign Holdout Test Set Evaluation (2,732 Functions)
 
 ```text
 ================================================================================
-🧪 CodeXGLUE Devign Test Benchmark (86/86 batches, 16.0s elapsed)
+CodeXGLUE Devign Test Benchmark (86/86 batches, 16.0s elapsed)
 ================================================================================
-  • Test Accuracy:    64.93%  [Published SOTA: ~64.0% - 66.2%]
-  • Test Precision:   62.95%  [Reliable detection of true defects]
-  • Test Recall:      57.53%  [Captures memory corruption & buffer overflows]
-  • Test F1-Score:    60.12%  [Exceeds Microsoft CodeBERT baseline: 58.0%]
-  • Test Cross Loss:  0.6431  [Stable generalization across foreign repos]
+  Test Accuracy:    64.93%  [Published SOTA: ~64.0% - 66.2%]
+  Test Precision:   62.95%  [Reliable detection of true defects]
+  Test Recall:      57.53%  [Captures memory corruption & buffer overflows]
+  Test F1-Score:    60.12%  [Exceeds Microsoft CodeBERT baseline: 58.0%]
+  Test Cross Loss:  0.6431  [Stable generalization across foreign repos]
 ================================================================================
 ```
 
@@ -201,10 +220,9 @@ flowchart TD
 
 ### 🏆 The Official CodeXGLUE Leaderboard (And Why ~65% Matches SOTA)
 
-> ### The Short Answer:
 > **Your model did not underperform — it actually matched the published State-of-the-Art benchmark on CodeXGLUE!**
 
-At first glance, coming from classic NLP (like spam detection or sentiment analysis where scores are 90%+), an accuracy of **66.03%** and loss of **0.50–0.62** looks modest. But in **automated software vulnerability & defect detection**, this is right at the competitive frontier.
+At first glance, coming from classic NLP (like spam detection or sentiment analysis where scores are 90%+), an accuracy of **64.93%** on the holdout test set looks modest. But in **automated software vulnerability & defect detection**, this is right at the competitive frontier.
 
 #### What the Official CodeXGLUE Leaderboard Looks Like
 
@@ -217,10 +235,10 @@ Here is what **Microsoft Research** and top AI research labs achieved on this ex
 | **CodeBERT** | **~62.1%** | 0.58 |
 | **GraphCodeBERT (Published SOTA Baseline)** | **~64.0% – 66.2%** | **0.60** |
 | Top Competition Submissions (massive ensembling) | ~66.8% | 0.61 |
-| **Our Fine-Tuned Model (Epoch 3)** | **66.03% (Holdout: 64.93%)** | **0.6012** ✅ |
+| **Our Fine-Tuned Model (Epoch 3 val / Holdout Test)** | **66.03% / 64.93%** | **0.6012** ✅ |
 
-Notice: In our [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md#8-verification-testing--acceptance-criteria), our target acceptance criteria was:
-> *Phase 1 Validation: **Accuracy $> 65\%$**, F1-score $> 0.58$ (matches published CodeXGLUE baseline)*
+Notice: In our [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md), our target acceptance criteria was:
+> *Phase 1 Validation: **Accuracy > 65%**, F1-score > 0.58 (matches published CodeXGLUE baseline)*
 
 **Our trained GraphCodeBERT model successfully matched the published world baseline!**
 
@@ -234,11 +252,11 @@ Notice: In our [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md#8
 2. **Missing Global Context**:
    - The model only sees a single function snippet in isolation. It cannot see external header files, struct definitions, or callers. Even senior human security researchers only get **~65–70% accuracy** when given isolated function snippets without the whole codebase.
 3. **Inherently Ambiguous Real-World Code**:
-   - Real C/C++ open-source code has multiple coding styles, macro expansions, and subtle edge cases, which naturally keeps cross-entropy loss around $0.55 - 0.62$.
+   - Real C/C++ open-source code has multiple coding styles, macro expansions, and subtle edge cases, which naturally keeps cross-entropy loss around 0.55 – 0.62.
 
 ---
 
-### 🛡️ How 66% Translates to Over 90% Composite Confidence
+### 🛡️ How 65% Translates to Over 90% Composite Confidence
 
 CodeSentinel AI does **not** rely on Model 1 in isolation:
 
@@ -250,7 +268,7 @@ CodeSentinel AI does **not** rely on Model 1 in isolation:
                    │
                    ▼
 ┌──────────────────────────────────────┐
-│ Model 1: GraphCodeBERT               │ ──▶ Adds 66% semantic intuition on hidden
+│ Model 1: GraphCodeBERT               │ ──▶ Adds 65% semantic intuition on hidden
 │ (Fine-Tuned Devign Classifier)       │     defects, memory leaks & anti-patterns
 └──────────────────┬───────────────────┘
                    │
@@ -272,23 +290,23 @@ When the static AST flags deep nesting AND GraphCodeBERT flags a 70%+ defect pro
 - **Dataset:** CodeXGLUE BigCloneBench (Java / multi-language function pairs)
 - **Hugging Face Checkpoint:** [`wraithklu/codesentinel-clone-detector`](https://huggingface.co/wraithklu/codesentinel-clone-detector)
 
-#### 👯 Siamese Twin Latent Projection Architecture:
+#### 👯 Siamese Twin Latent Projection Architecture
 
 ```mermaid
 flowchart LR
-    FUNC_A["📄 Function A<br/>(e.g., bubble_sort)"] --> CODEBERT_A["🔷 CodeBERT Encoder<br/>Shared Weights"]
-    FUNC_B["📄 Function B<br/>(e.g., sort_ascending)"] --> CODEBERT_B["🔷 CodeBERT Encoder<br/>Shared Weights"]
+    FUNC_A["Function A\nbubble_sort implementation"] --> CODEBERT_A["CodeBERT Encoder A\nShared Weights"]
+    FUNC_B["Function B\nsort_ascending implementation"] --> CODEBERT_B["CodeBERT Encoder B\nShared Weights"]
 
     CODEBERT_A --> VEC_A["Dense Vector u in R^768"]
     CODEBERT_B --> VEC_B["Dense Vector v in R^768"]
 
-    VEC_A --> COS["📐 Cosine Similarity Metric<br/>sim(u, v) = dot(u, v) / norm(u)*norm(v)"]
+    VEC_A --> COS["Cosine Similarity Metric\nsim u,v = dot(u,v) / norm(u) x norm(v)"]
     VEC_B --> COS
 
-    COS --> DECISION{"Cosine Similarity<br/>Score >= 0.85?"}
+    COS --> DECISION{"Cosine Similarity\nScore >= 0.85?"}
 
-    DECISION -->|Yes| CLONE["⚠️ Semantic Clone Detected!<br/>Recommend extracting shared utility"]
-    DECISION -->|No| UNIQUE["✅ Unique Function Logic"]
+    DECISION -->|Yes| CLONE["Semantic Clone Detected!\nRecommend extracting shared utility"]
+    DECISION -->|No| UNIQUE["Unique Function Logic"]
 
     style CODEBERT_A fill:#1b5e20,color:#fff,stroke:#69f0ae
     style CODEBERT_B fill:#1b5e20,color:#fff,stroke:#69f0ae
@@ -297,7 +315,21 @@ flowchart LR
     style UNIQUE fill:#004d40,color:#fff,stroke:#00e676
 ```
 
-#### 📊 Actual Training Run Telemetry (Google Colab T4 GPU):
+#### How the Siamese Bi-Encoder Works — Step by Step
+
+**Step 1 — Dual Encoding:**
+Both code functions are independently tokenized and fed through the **same** CodeBERT encoder (weight sharing). Each function yields a `[CLS]` representation: vector `u` and vector `v` in ℝ⁷⁶⁸.
+
+**Step 2 — Cosine Similarity Projection:**
+$$\text{sim}(u, v) = \frac{u \cdot v}{\|u\| \cdot \|v\|}$$
+
+A score of 1.0 means identical semantic meaning. A score of 0.0 means completely unrelated. The model is trained with **Multiple Negatives Ranking (MNR) loss**, which pushes semantically similar pairs toward cosine similarity = 1.0 and unrelated pairs toward 0.0.
+
+**Step 3 — Threshold Decision:**
+- **≥ 0.85**: Semantic clone detected. Extract to shared utility function.
+- **< 0.85**: Unique logic, no duplication.
+
+#### 📊 Actual Training Run Telemetry (Google Colab T4 GPU)
 
 | Step | Training Loss | Pearson Cosine | Spearman Cosine | Checkpoint Status |
 |:---:|:---:|:---:|:---:|---|
@@ -308,7 +340,7 @@ flowchart LR
 | **624** | **0.090111** | 0.905019 | 0.834296 | 🏆 Loss minimization plateau |
 | **626** | **0.090111** | **0.905012** | **0.834289** | 🏁 Final checkpoint saved & pushed to HF |
 
-#### 🔬 Live Verification on Real-World Code Snippets:
+#### 🔬 Live Verification on Real-World Code Snippets
 
 ```python
 # Real Test Vectors Evaluated Live via Cosine Similarity:
@@ -328,50 +360,25 @@ Similarity(BubbleSort, DBQueryFunction)  = 32.24%  ==> SUCCESS: Correctly identi
 - **Dataset:** CodeXGLUE code-refinement (65,454 buggy-clean method pairs)
 - **Hugging Face Checkpoint:** [`wraithklu/codesentinel-codet5-refiner`](https://huggingface.co/wraithklu/codesentinel-codet5-refiner) (242 MB `safetensors`)
 
-#### 📊 Actual Training Run Telemetry (Google Colab T4 GPU):
-
-| Parameter | Recorded Telemetry | Optimization Strategy |
-|---|---|---|
-| **Model Checkpoint** | `Salesforce/codet5-small` | 60M Parameters (Seq2Seq Transformer) |
-| **Dataset & Task** | CodeXGLUE Code-Refinement | 65,454 Buggy-to-Clean paired methods |
-| **Total Global Steps** | **19,638 steps** (3 epochs) | 34 mins 02 secs on T4 GPU |
-| **Sample Throughput** | **76.88 samples / sec** | High-throughput subword tokenization |
-| **Step Throughput** | **9.611 steps / sec** | Accelerated autoregressive generation |
-| **Total Computational Work** | **6.7130 × 10¹⁴ FLOPs** | Cross-attention encoder-decoder |
-| **Final Validation Loss** | **0.079525** | High-fidelity token-level reconstruction |
-
-#### 📈 Loss Progression Across 19,638 Steps:
-
-| Epoch | Training Loss | Validation Loss | Convergence State |
-|:---:|:---:|:---:|---|
-| **1** | 0.098849 | 0.088204 | 🟡 Rapid initial syntax alignment & identifier binding |
-| **2** | 0.083486 | 0.081530 | 🟢 High-precision semantic repair & modularization |
-| **3** | **0.083692** | **0.079525** | 🏆 **Optimal Minimized Loss (0.0795) — Safe for Code Refactoring** |
-
-#### ☁️ Hugging Face Hub Deployment:
-- **Repository:** [`wraithklu/codesentinel-codet5-refiner`](https://huggingface.co/wraithklu/codesentinel-codet5-refiner)
-- **Artifact Size:** `242 MB model.safetensors`
-- **Upload Bandwidth:** `17.7 MB/s` via `huggingface_hub` OAuth
-
-#### How the Seq2Seq Transformer Generates Clean Refactors:
+#### How the Seq2Seq Transformer Generates Clean Refactors
 
 ```mermaid
 flowchart LR
-    BUGGY["⚠️ Smelly Source Code<br/>• Monolithic loop<br/>• Deep nesting<br/>• Missing type hints"]
+    BUGGY["Smelly Source Code\nMonolithic loop\nDeep nesting\nMissing type hints"]
 
     subgraph S_ENCODER["CodeT5 Encoder"]
         E_TOK["BPE Tokenizer + Identifier Tagging"]
-        E_ATTN["Bidirectional Self-Attention Layers<br/>Captures token syntax & data flow"]
+        E_ATTN["Bidirectional Self-Attention Layers\nCaptures token syntax and data flow"]
         E_TOK --> E_ATTN
     end
 
-    subgraph S_DECODER["CodeT5 Decoder (KV Cache + Beam Search)"]
+    subgraph S_DECODER["CodeT5 Decoder with KV Cache and Beam Search"]
         D_CROSS["Cross-Attention over Encoder representations"]
-        D_AUTOREG["Autoregressive Generation<br/>Beam width = 2, early stopping"]
+        D_AUTOREG["Autoregressive Generation\nBeam width = 2, early stopping"]
         D_CROSS --> D_AUTOREG
     end
 
-    REFACTORED["✨ Clean, Production-Grade Refactor<br/>• Decomposed pure helpers<br/>• Linear complexity<br/>• Type annotations & docstrings"]
+    REFACTORED["Clean Production-Grade Refactor\nDecomposed pure helpers\nLinear complexity\nType annotations and docstrings"]
 
     BUGGY --> E_TOK
     E_ATTN --> D_CROSS
@@ -384,6 +391,42 @@ flowchart LR
     style D_AUTOREG fill:#1e1b4b,color:#fff,stroke:#82b1ff
     style REFACTORED fill:#064e3b,color:#fff,stroke:#00e676
 ```
+
+#### How CodeT5 Seq2Seq Works — Step by Step
+
+**Step 1 — Encoder Reads Buggy Code:**
+The smelly input function is tokenized with BPE. CodeT5 uses **identifier-aware tokenization** — it splits camelCase and snake_case identifiers into subtokens (`processData` → `process`, `##Data`). The encoder runs 6 bidirectional transformer layers, producing a hidden representation $H \in \mathbb{R}^{L \times 512}$ where $L$ is the token sequence length.
+
+**Step 2 — Decoder Generates Clean Code:**
+The decoder autoregressively generates one token at a time. At each step, **cross-attention** looks at the entire encoder output $H$ to decide which part of the smelly code to attend to. Beam search (width=2) maintains the top-2 candidate refactors simultaneously, outputting the highest-probability clean function.
+
+**Step 3 — Identifier Binding:**
+The model preserves variable names and semantic intent from the original code while restructuring loops into helper functions, flattening deep nesting, and inserting missing type hints.
+
+#### 📊 Actual Training Run Telemetry (Google Colab T4 GPU)
+
+| Parameter | Recorded Telemetry | Optimization Strategy |
+|---|---|---|
+| **Model Checkpoint** | `Salesforce/codet5-small` | 60M Parameters (Seq2Seq Transformer) |
+| **Dataset & Task** | CodeXGLUE Code-Refinement | 65,454 Buggy-to-Clean paired methods |
+| **Total Global Steps** | **19,638 steps** (3 epochs) | 34 mins 02 secs on T4 GPU |
+| **Sample Throughput** | **76.88 samples / sec** | High-throughput subword tokenization |
+| **Step Throughput** | **9.611 steps / sec** | Accelerated autoregressive generation |
+| **Total Computational Work** | **6.7130 × 10¹⁴ FLOPs** | Cross-attention encoder-decoder |
+| **Final Validation Loss** | **0.079525** | High-fidelity token-level reconstruction |
+
+#### 📈 Loss Progression Across 19,638 Steps
+
+| Epoch | Training Loss | Validation Loss | Convergence State |
+|:---:|:---:|:---:|---|
+| **1** | 0.098849 | 0.088204 | 🟡 Rapid initial syntax alignment & identifier binding |
+| **2** | 0.083486 | 0.081530 | 🟢 High-precision semantic repair & modularization |
+| **3** | **0.083692** | **0.079525** | 🏆 **Optimal Minimized Loss (0.0795) — Safe for Code Refactoring** |
+
+#### ☁️ Hugging Face Hub Deployment
+- **Repository:** [`wraithklu/codesentinel-codet5-refiner`](https://huggingface.co/wraithklu/codesentinel-codet5-refiner)
+- **Artifact Size:** `242 MB model.safetensors`
+- **Upload Bandwidth:** `17.7 MB/s` via `huggingface_hub` OAuth
 
 ---
 
@@ -404,25 +447,25 @@ The LLM Orchestrator (powered by Cohere / OpenRouter) receives the structured ou
 
 > **File:** [`backend/security/secret_scanner.py`](backend/security/secret_scanner.py)
 
-CodeSentinel scans code in $<1\text{ ms}$ for leaked credentials using a hybrid approach combining 11 high-precision regex signatures with information-theoretic Shannon entropy:
+CodeSentinel scans code in <1 ms for leaked credentials using a hybrid approach combining 11 high-precision regex signatures with information-theoretic Shannon entropy:
 
 ```mermaid
 flowchart LR
-    LIT["📄 String Literal / Token<br/>Candidate extracted from code AST"] --> CHECK_REGEX{"Matches High-Precision Regex?<br/>AWS, GitHub, Slack, OpenAI, Private Key"}
-    
-    CHECK_REGEX -->|Yes| FLAG_REGEX["🚨 Flagged: Known Pattern Secret<br/>Severity: Critical | Debt: +45 mins<br/>Mask with ******** and generate .env template"]
-    
-    CHECK_REGEX -->|No| CALC_ENTROPY["📐 Calculate Shannon Entropy<br/>H(X) = -sum(P(c) * log2(P(c)))"]
-    
-    CALC_ENTROPY --> CHECK_HEX{"Hexadecimal String?<br/>Length >= 32 chars?"}
-    
+    LIT["String Literal or Token\nCandidate extracted from code AST"] --> CHECK_REGEX{"Matches High-Precision Regex?\nAWS, GitHub, Slack, OpenAI, Private Key"}
+
+    CHECK_REGEX -->|Yes| FLAG_REGEX["Flagged: Known Pattern Secret\nSeverity: Critical\nDebt: +45 mins"]
+
+    CHECK_REGEX -->|No| CALC_ENTROPY["Calculate Shannon Entropy\nH(X) = -sum(P(c) x log2(P(c)))"]
+
+    CALC_ENTROPY --> CHECK_HEX{"Hexadecimal String?\nLength >= 32 chars?"}
+
     CHECK_HEX -->|Yes| THRESH_HEX{"Entropy >= 3.3 bits?"}
-    CHECK_HEX -->|No| THRESH_B64{"Length >= 20 chars?<br/>Entropy >= 4.5 bits?"}
-    
-    THRESH_HEX -->|Yes| FLAG_ENTROPY["🚨 Flagged: High-Entropy Hex Token<br/>Severity: Critical | Debt: +45 mins"]
+    CHECK_HEX -->|No| THRESH_B64{"Length >= 20 chars?\nEntropy >= 4.5 bits?"}
+
+    THRESH_HEX -->|Yes| FLAG_ENTROPY["Flagged: High-Entropy Hex Token\nSeverity: Critical\nDebt: +45 mins"]
     THRESH_B64 -->|Yes| FLAG_ENTROPY
-    
-    THRESH_HEX -->|No| SAFE_TOKEN["✅ Clean String Literal<br/>Normal identifier, URL, or label"]
+
+    THRESH_HEX -->|No| SAFE_TOKEN["Clean String Literal\nNormal identifier, URL, or label"]
     THRESH_B64 -->|No| SAFE_TOKEN
 
     style LIT fill:#1e293b,color:#f8fafc,stroke:#38bdf8
@@ -432,13 +475,16 @@ flowchart LR
     style SAFE_TOKEN fill:#064e3b,color:#ecfdf5,stroke:#10b981
 ```
 
-- **Mathematical Entropy Formulation**:
-  $$H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$$
-  where $P(x_i)$ is the empirical probability of character $x_i$ occurring in the string of length $L$.
-- **Empirical Entropy Bounds**:
-  - English Prose / CamelCase Identifiers: $H(X) \approx 1.8 - 2.8\text{ bits}$ (Low randomness)
-  - Random 32-char Hex Tokens: Maximum theoretical entropy is $\log_2(16) = 4.0\text{ bits}$ $\rightarrow$ Threshold set to **$3.3\text{ bits}$**
-  - Base64 High-Entropy API Keys: Maximum theoretical entropy is $\log_2(64) = 6.0\text{ bits}$ $\rightarrow$ Threshold set to **$4.5\text{ bits}$**
+**Mathematical Entropy Formulation:**
+
+$$H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$$
+
+where $P(x_i)$ is the empirical probability of character $x_i$ occurring in the string of length $L$.
+
+**Empirical Entropy Bounds:**
+- English Prose / CamelCase Identifiers: H(X) ≈ 1.8 – 2.8 bits (Low randomness)
+- Random 32-char Hex Tokens: Maximum theoretical entropy is log₂(16) = 4.0 bits → Threshold set to **3.3 bits**
+- Base64 High-Entropy API Keys: Maximum theoretical entropy is log₂(64) = 6.0 bits → Threshold set to **4.5 bits**
 
 ---
 
@@ -450,18 +496,18 @@ Performs automated Software Composition Analysis (SCA) on dependency manifests (
 
 ```mermaid
 flowchart TD
-    MANIFEST["📦 Manifest File<br/>requirements.txt / package.json / go.mod"] --> PARSE["🔍 Manifest Parser<br/>Extract package name & pinned version"]
-    
-    PARSE --> CACHE{"In-Memory CVE Cache?<br/>(1-hour TTL LRU)"}
-    
-    CACHE -->|Cache Hit| RESULT["📊 Immediate CVE Report"]
-    
-    CACHE -->|Cache Miss| OSV["🌐 Google OSV.dev API<br/>POST api.osv.dev/v1/query"]
-    
+    MANIFEST["Manifest File\nrequirements.txt / package.json / go.mod"] --> PARSE["Manifest Parser\nExtract package name and pinned version"]
+
+    PARSE --> CACHE{"In-Memory CVE Cache?\n1-hour TTL LRU"}
+
+    CACHE -->|Cache Hit| RESULT["Immediate CVE Report"]
+
+    CACHE -->|Cache Miss| OSV["Google OSV.dev API\nPOST api.osv.dev/v1/query"]
+
     OSV --> EVAL{"Vulnerability Found?"}
-    
-    EVAL -->|Yes| CVE_FOUND["🚨 Flag CVE Vulnerability<br/>Extract CVE-ID, severity, summary & patch version<br/>e.g., requests==2.19.0 -> CVE-2018-18074 (Patch: 2.20.0)"]
-    EVAL -->|No| CVE_CLEAN["✅ Package Secure & Up-to-Date"]
+
+    EVAL -->|Yes| CVE_FOUND["Flag CVE Vulnerability\nExtract CVE-ID, severity, summary and patch version\nrequests 2.19.0 -> CVE-2018-18074 (Patch: 2.20.0)"]
+    EVAL -->|No| CVE_CLEAN["Package Secure and Up-to-Date"]
 
     style MANIFEST fill:#1e293b,color:#f8fafc,stroke:#38bdf8
     style OSV fill:#0d3b66,color:#fff,stroke:#4fc3f7
@@ -475,19 +521,19 @@ flowchart TD
 
 > **File:** [`backend/parser/universal_ast.py`](backend/parser/universal_ast.py)
 
-Calculates **McCabe Cyclomatic Complexity ($M = E - N + 2P$)** and maximum nesting depth across 6 languages (Python, JavaScript, TypeScript, Java, C++, Go) in $<1\text{ ms}$:
+Calculates **McCabe Cyclomatic Complexity (M = E − N + 2P)** and maximum nesting depth across 6 languages (Python, JavaScript, TypeScript, Java, C++, Go) in <1 ms:
 
 ```mermaid
 flowchart TD
-    ENTRY["▶️ Function Entry"] --> D1{"Decision Branch 1<br/><code>if (condition)</code>"}
-    
-    D1 -->|True| D2{"Nested Branch 2<br/><code>if (condition_b)</code>"}
+    ENTRY["Function Entry"] --> D1{"Decision Branch 1\nif condition_a"}
+
+    D1 -->|True| D2{"Nested Branch 2\nif condition_b"}
     D1 -->|False| E1["Else Fallback Statement"]
-    
-    D2 -->|True| LOOP["Decision Branch 3<br/><code>for (item in items)</code>"]
+
+    D2 -->|True| LOOP{"Decision Branch 3\nfor item in items"}
     D2 -->|False| E2["Branch Statement"]
-    
-    LOOP --> EXIT["⏹️ Function Return"]
+
+    LOOP --> EXIT["Function Return"]
     E1 --> EXIT
     E2 --> EXIT
 
@@ -497,10 +543,13 @@ flowchart TD
     style EXIT fill:#1e293b,color:#f8fafc,stroke:#38bdf8
 ```
 
-- **McCabe Mathematical Derivation**:
-  $$M = E - N + 2P$$
-  Where $E$ = number of edges in the control flow graph, $N$ = number of nodes, and $P$ = connected components ($P=1$ for single functions).
-- **Practical Code Sentinel Rule**: Every decision keyword (`if`, `elif`, `for`, `while`, `catch`, `case`, `&&`, `||`) increments $M$ by 1.
+**McCabe Mathematical Derivation:**
+
+$$M = E - N + 2P$$
+
+Where $E$ = number of edges in the control flow graph, $N$ = number of nodes, and $P$ = connected components ($P=1$ for single functions).
+
+**Practical Code Sentinel Rule:** Every decision keyword (`if`, `elif`, `for`, `while`, `catch`, `case`, `&&`, `||`) increments $M$ by 1.
   - $M \le 5$: Simple, low risk, easily testable.
   - $M = 6 - 10$: Moderate complexity, acceptable with thorough unit tests.
   - $M > 10$: **High complexity code smell** — flagged for refactoring and modular decomposition.
@@ -515,17 +564,17 @@ Implements the industry-standard **SQALE (Software Quality Assessment based on L
 
 ```mermaid
 flowchart TD
-    FINDINGS["📋 Consolidated Pipeline Findings<br/>AST Smells + Secret Leaks + CVEs + Clones"] --> CAT{"Categorize Severity"}
-    
-    CAT -->|Critical: 45 min/item| C_COST["Secrets, CVEs, Syntax Errors<br/>Remediation: 45m × Count"]
-    CAT -->|Warning: 20 min/item| W_COST["Deep Nesting, O(N²) Loops, Smelly AST<br/>Remediation: 20m × Count"]
-    CAT -->|Suggestion: 5 min/item| S_COST["Style Smells, Long Lines, Unresolved TODOs<br/>Remediation: 5m × Count"]
-    CAT -->|Clone: 30 min/item| D_COST["CodeBERT Semantic Clones (Sim >= 85%)<br/>Remediation: 30m × Count"]
+    FINDINGS["Consolidated Pipeline Findings\nAST Smells + Secret Leaks + CVEs + Clones"] --> CAT{"Categorize Severity"}
 
-    C_COST & W_COST & S_COST & D_COST --> TOTAL["⏱️ Total Remediation Minutes<br/>Minutes = 45C + 20W + 5S + 30D"]
-    TOTAL --> HOURS["⏳ Total Debt Hours = Minutes / 60"]
-    HOURS --> COST["💰 Remediation Dollar Cost = Hours × $85/hr"]
-    HOURS --> GRADE["🏆 SQALE Maintainability Grade (A to F)"]
+    CAT -->|"Critical: 45 min/item"| C_COST["Secrets, CVEs, Syntax Errors\nRemediation: 45m x Count"]
+    CAT -->|"Warning: 20 min/item"| W_COST["Deep Nesting, O(N2) Loops, Smelly AST\nRemediation: 20m x Count"]
+    CAT -->|"Suggestion: 5 min/item"| S_COST["Style Smells, Long Lines, Unresolved TODOs\nRemediation: 5m x Count"]
+    CAT -->|"Clone: 30 min/item"| D_COST["CodeBERT Semantic Clones Sim >= 85%\nRemediation: 30m x Count"]
+
+    C_COST & W_COST & S_COST & D_COST --> TOTAL["Total Remediation Minutes\nMinutes = 45C + 20W + 5S + 30D"]
+    TOTAL --> HOURS["Total Debt Hours = Minutes / 60"]
+    HOURS --> COST["Remediation Dollar Cost = Hours x 85 per hr"]
+    HOURS --> GRADE["SQALE Maintainability Grade A to F"]
 
     style TOTAL fill:#1e293b,color:#f8fafc,stroke:#38bdf8,stroke-width:2px
     style HOURS fill:#0f172a,color:#e2e8f0,stroke:#38bdf8
@@ -537,22 +586,22 @@ $$\text{Remediation Time (Minutes)} = 45 C + 20 W + 5 S + 30 D$$
 
 | Severity Category | Standard Remediation Coefficient | Real Examples in CodeSentinel |
 |---|:---:|---|
-| **Critical ($C$)** | **45 minutes** | Exposed AWS keys, CVE-2018-18074 in requests, syntax errors |
-| **Warning ($W$)** | **20 minutes** | Nesting depth $> 4$, quadratic loops ($O(N^2)$), GraphCodeBERT smelly tag |
-| **Suggestion ($S$)** | **5 minutes** | Lines $> 100$ characters, untracked TODO comments, missing docstring |
-| **Clone / Duplication ($D$)** | **30 minutes** | CodeBERT semantic clone pairs with cosine similarity $\ge 85\%$ |
+| **Critical (C)** | **45 minutes** | Exposed AWS keys, CVE-2018-18074 in requests, syntax errors |
+| **Warning (W)** | **20 minutes** | Nesting depth > 4, quadratic loops O(N²), GraphCodeBERT smelly tag |
+| **Suggestion (S)** | **5 minutes** | Lines > 100 characters, untracked TODO comments, missing docstring |
+| **Clone / Duplication (D)** | **30 minutes** | CodeBERT semantic clone pairs with cosine similarity ≥ 85% |
 
 **Maintainability Index Rating Matrix:**
 
 | Maintainability Grade | Total Technical Debt | Architectural Recommendation |
 |:---:|:---:|---|
-| **Grade A (Pristine)** | $\le 30$ minutes | Code is clean, production-ready, and maintainable. |
-| **Grade B (Good)** | $31 - 60$ minutes | Minor cosmetic fixes; safe to merge. |
-| **Grade C (Technical Debt)** | $61 - 120$ minutes | Noticeable smells; schedule cleanup in next sprint. |
-| **Grade D (High Debt)** | $121 - 240$ minutes | Significant design problems; refactoring strongly advised. |
-| **Grade F (Severe Debt)** | $> 240$ minutes | Architectural liability; redesign or automated CodeT5 refactor required. |
+| **Grade A (Pristine)** | ≤ 30 minutes | Code is clean, production-ready, and maintainable. |
+| **Grade B (Good)** | 31 – 60 minutes | Minor cosmetic fixes; safe to merge. |
+| **Grade C (Technical Debt)** | 61 – 120 minutes | Noticeable smells; schedule cleanup in next sprint. |
+| **Grade D (High Debt)** | 121 – 240 minutes | Significant design problems; refactoring strongly advised. |
+| **Grade F (Severe Debt)** | > 240 minutes | Architectural liability; redesign or automated CodeT5 refactor required. |
 
-**Dollar Cost**: Standard engineering rate of **$85/hr** ($\text{Cost} = \text{Debt Hours} \times \$85$).
+**Dollar Cost**: Standard engineering rate of **$85/hr** (Cost = Debt Hours × $85).
 
 ---
 
@@ -569,18 +618,18 @@ torch.set_num_threads(2)
 torch.set_num_interop_threads(1)
 ```
 
-### Measured Component Latency Budget:
+### Measured Component Latency Budget
 
 | Pipeline Stage | Processor | Measured Latency | Memory Footprint |
 |---|:---:|:---:|:---:|
-| Secret Scanner & Shannon Entropy | CPU | $< 1\text{ ms}$ | $< 1\text{ MB}$ |
-| Multi-Language Universal AST Parser | CPU | $\sim 0.5\text{ ms}$ | $\sim 15\text{ MB}$ |
-| **Model 1: GraphCodeBERT (INT8)** | CPU | $\sim 25\text{ ms}$ | $\sim 115\text{ MB}$ |
-| **Model 2: CodeBERT Bi-Encoder (INT8)** | CPU | $\sim 18\text{ ms}$ | $\sim 115\text{ MB}$ |
-| **Model 3: CodeT5-Small Refactor (INT8)** | CPU | $\sim 140\text{ ms}$ | $\sim 90\text{ MB}$ |
-| SQALE Technical Debt Engine | CPU | $< 1\text{ ms}$ | $< 1\text{ MB}$ |
-| **TOTAL LOCAL PIPELINE** | CPU | **$< 190\text{ ms}$** | **$\sim 450\text{ MB}$ / 16 GB** |
-| Model 4: LLM Orchestrator (Streamed) | Remote API | $\sim 2.0\text{ s}$ | $0\text{ MB}$ (Remote) |
+| Secret Scanner & Shannon Entropy | CPU | < 1 ms | < 1 MB |
+| Multi-Language Universal AST Parser | CPU | ~0.5 ms | ~15 MB |
+| **Model 1: GraphCodeBERT (INT8)** | CPU | ~25 ms | ~115 MB |
+| **Model 2: CodeBERT Bi-Encoder (INT8)** | CPU | ~18 ms | ~115 MB |
+| **Model 3: CodeT5-Small Refactor (INT8)** | CPU | ~140 ms | ~90 MB |
+| SQALE Technical Debt Engine | CPU | < 1 ms | < 1 MB |
+| **TOTAL LOCAL PIPELINE** | CPU | **< 190 ms** | **~450 MB / 16 GB** |
+| Model 4: LLM Orchestrator (Streamed) | Remote API | ~2.0 s | 0 MB (Remote) |
 
 ---
 
@@ -602,16 +651,16 @@ The frontend (built with React 18, Vite, and Monaco Editor) includes:
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Dev as 👨‍💻 Developer
-    participant FE as 🖥️ React Frontend
-    participant API as ⚡ FastAPI Backend
-    participant SEC as 🛡️ Secret and CVE Engine
-    participant AST as 🌳 Universal AST
-    participant M1 as 🧠 Model 1: GraphCodeBERT
-    participant M2 as 👯 Model 2: CodeBERT Clone
-    participant M3 as ✨ Model 3: CodeT5 Refactor
-    participant SQALE as ⏱️ SQALE Debt Engine
-    participant M4 as 💬 Model 4: LLM Orchestrator
+    actor Dev as Developer
+    participant FE as React Frontend
+    participant API as FastAPI Backend
+    participant SEC as Secret and CVE Engine
+    participant AST as Universal AST
+    participant M1 as Model 1 GraphCodeBERT
+    participant M2 as Model 2 CodeBERT Clone
+    participant M3 as Model 3 CodeT5 Refactor
+    participant SQALE as SQALE Debt Engine
+    participant M4 as Model 4 LLM Orchestrator
 
     Dev->>FE: Submit source code in Live Studio
     FE->>API: POST /api/analyze-editor {code, persona}
@@ -620,24 +669,24 @@ sequenceDiagram
         API->>SEC: scan_for_secrets() + audit_dependencies()
         SEC-->>API: Leaked credentials and CVE findings
         API->>AST: parse_ast_multi_language()
-        AST-->>API: Cyclomatic complexity & nesting depth
+        AST-->>API: Cyclomatic complexity and nesting depth
     end
 
     par Parallel Neural Triage (25-40ms)
-        API->>M1: classify_defect(code) [INT8]
-        M1-->>API: P(Clean)=0.12, P(Smelly)=0.88
-        API->>M2: detect_code_clones() [INT8]
+        API->>M1: classify_defect(code) INT8
+        M1-->>API: P(Clean)=0.35, P(Smelly)=0.65
+        API->>M2: detect_code_clones() INT8
         M2-->>API: Semantic clone pairs (85%+ similarity)
     end
 
-    API->>M3: generate_refactor(code) [INT8] (approx 140ms)
+    API->>M3: generate_refactor(code) INT8 approx 140ms
     M3-->>API: Production-grade clean refactored candidate
 
     API->>SQALE: calculate_technical_debt(all_findings)
     SQALE-->>API: Debt: 2.6 hrs, Cost: $221, Health Score: 68%
 
     API->>M4: Synthesize review notes (conditioned on Persona)
-    M4-->>API: Structured Markdown: Summary, Anti-patterns, Big-O, Remediation
+    M4-->>API: Structured Markdown Summary Anti-patterns Big-O Remediation
 
     API-->>FE: Full JSON Response
     FE-->>Dev: Animate Health Score, Xcode Diff, and Review Notes
@@ -770,19 +819,19 @@ python scripts/verify_acceptance_criteria.py
 Outputs complete verification across all 8 acceptance criteria:
 ```
 ==============================================================================
-🏁 SECTION 8 VERIFICATION & ACCEPTANCE CRITERIA SUMMARY
+SECTION 8 VERIFICATION & ACCEPTANCE CRITERIA SUMMARY
 ==============================================================================
-  [PASS ✅] 1 Graphcodebert
-  [PASS ✅] 2 Codet5
-  [PASS ✅] 3 Secret Scanner
-  [PASS ✅] 4 Osv Cve
-  [PASS ✅] 5 Universal Ast
-  [PASS ✅] 6 Tech Debt
-  [PASS ✅] 7 Hosting Health
-  [PASS ✅] 8 Live Fix Playground
+  [PASS] 1 Graphcodebert
+  [PASS] 2 Codet5
+  [PASS] 3 Secret Scanner
+  [PASS] 4 Osv Cve
+  [PASS] 5 Universal Ast
+  [PASS] 6 Tech Debt
+  [PASS] 7 Hosting Health
+  [PASS] 8 Live Fix Playground
 
 TOTAL: 8/8 ACCEPTANCE CRITERIA PASSED (100.0%)
-🏆 ALL ACCEPTANCE CRITERIA IN SECTION 8 VERIFIED AND SATISFIED!
+ALL ACCEPTANCE CRITERIA IN SECTION 8 VERIFIED AND SATISFIED!
 ==============================================================================
 ```
 
