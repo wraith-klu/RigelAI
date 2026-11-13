@@ -19,13 +19,13 @@ SECRET_PATTERNS = [
     (r"(?i)aws_secret_access_key\s*[:=]\s*['\"]?([A-Za-z0-9/+=]{40})['\"]?", "AWS Secret Access Key", "critical"),
     (r"gh[pousr]_[A-Za-z0-9_]{36,255}", "GitHub Personal Access Token", "critical"),
     (r"glpat-[A-Za-z0-9\-]{20,}", "GitLab Personal Access Token", "critical"),
-    (r"sk-[a-zA-Z0-9]{20,T3BlbkFJ[a-zA-Z0-9]{20,}", "OpenAI Secret Key", "critical"),
+    (r"sk-(?:proj-|live-)?[a-zA-Z0-9_\-]{20,}", "OpenAI Secret Key", "critical"),
     (r"sk-or-v1-[a-f0-9]{64}", "OpenRouter Secret Key", "critical"),
     (r"xox[baprs]-[0-9]{10,13}-[a-zA-Z0-9-]{24,}", "Slack Token", "critical"),
     (r"AIza[0-9A-Za-z\\-_]{35}", "Google API Key", "critical"),
     (r"-----BEGIN (?:RSA|OPENSSH|DSA|EC|PGP) PRIVATE KEY-----", "Private Cryptographic Key", "critical"),
     (r"(?i)(?:postgres|mysql|mongodb(?:\+srv)?):\/\/[^:\s]+:[^@\s]+@[^\s\/]+", "Database Connection String with Credentials", "critical"),
-    (r"(?i)(?:api_key|secret_key|client_secret|auth_token|access_token|password|passwd|pwd)\s*[:=]\s*['\"][A-Za-z0-9\-_.~!@#$%^&*+=]{12,}['\"]", "Hardcoded Credential / Secret", "warning"),
+    (r"(?i)(?:api_key|secret_key|client_secret|auth_token|access_token|entropy_token|token|password|passwd|pwd)\s*[:=]\s*['\"](?:Bearer\s+)?[A-Za-z0-9\-_.~!@#$%^&*+=]{12,}['\"]", "Hardcoded Credential / Secret", "warning"),
 ]
 
 
@@ -91,7 +91,10 @@ def scan_for_secrets(code: str, filename: str = "editor input") -> List[Dict[str
             if any(f.get("line") == line_idx for f in findings):
                 continue
             entropy = shannon_entropy(s)
-            if entropy >= 4.5:
+            is_hex = bool(re.fullmatch(r"[0-9a-fA-F]+", s))
+            # Max possible entropy for 16-char hex alphabet is 4.0; threshold 3.3 for 32+ char hex
+            entropy_threshold = 3.3 if is_hex and len(s) >= 32 else 4.5
+            if entropy >= entropy_threshold:
                 redacted = s[:4] + "*" * (len(s) - 8) + s[-4:] if len(s) > 8 else "****"
                 findings.append({
                     "id": f"{filename}:entropy:{line_idx}",

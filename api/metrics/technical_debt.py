@@ -3,21 +3,32 @@ CodeSentinel AI — SQALE Technical Debt & Remediation Estimator
 ==============================================================
 Implements the industry-standard SQALE (Software Quality Assessment based
 on Lifecycle Expectations) methodology to quantify technical debt:
-1. Debt Remediation Hours (broken down by severity)
-2. Estimated Dollar Remediation Cost ($85/hr standard engineering rate)
-3. SQALE Maintainability Rating (A through E)
-4. Dynamic Code Health Score (0 to 100)
+1. Standard Remediation Time Coefficients (Section 5.4 / Section 8):
+   - Critical (Syntax error, CVE, Secret leak): 45 minutes
+   - Warning (High complexity, Deep nesting, GraphCodeBERT defect): 20 minutes
+   - Suggestion (Long line, TODO comment, code style): 5 minutes
+   - Clone / Duplication: 30 minutes
+2. Formula: Remediation Time (Minutes) = 45 C + 20 W + 5 S + 30 D
+3. Remediation Hours = round(Minutes / 60.0, 1) -> e.g. 155 mins = 2.6 hrs
+4. Estimated Remediation Dollar Cost ($85/hr standard engineering rate)
+5. SQALE Maintainability Rating (Grade A through E based on debt per LoC)
 """
 
 from typing import List, Dict, Any
 
 HOURLY_ENGINEERING_RATE = 85.0  # USD / hour standard baseline
 
+SEVERITY_EFFORT_MINUTES = {
+    "critical": 45,    # Security leaks, CVEs, syntax errors, critical defects
+    "warning": 20,     # Deep nesting, inefficient loops, code smells
+    "suggestion": 5,   # Minor style issues, long lines, TODOs
+    "clone": 30,       # Semantic duplication / code clone
+    "info": 0,
+}
+
+# Compatibility hour coefficients
 SEVERITY_EFFORT_HOURS = {
-    "critical": 2.5,   # Security leaks, crash bugs, critical defects
-    "warning": 0.75,   # Deep nesting, inefficient loops, code smells
-    "suggestion": 0.25, # Long lines, style violations, TODOs
-    "info": 0.0,
+    k: round(v / 60.0, 3) for k, v in SEVERITY_EFFORT_MINUTES.items()
 }
 
 
@@ -30,55 +41,69 @@ def calculate_technical_debt(
     Calculates technical debt metrics from static and neural review findings.
     
     Parameters:
-      findings: List of finding dictionaries with 'severity' key
-      loc: Lines of code analyzed (used to calculate Technical Debt Ratio)
+      findings: List of finding dictionaries with 'severity' key (and optional 'clone' indicator)
+      loc: Lines of code analyzed (used to calculate Maintainability Index rating)
       hourly_rate: Cost per developer hour (default $85/hr)
 
     Returns:
-      Dictionary with debt hours, remediation cost, SQALE rating, and breakdown.
+      Dictionary with debt minutes, debt hours, remediation cost, SQALE rating, and breakdown.
     """
-    total_hours = 0.0
-    breakdown = {"critical": 0.0, "warning": 0.0, "suggestion": 0.0}
+    total_minutes = 0
+    breakdown_minutes = {"critical": 0, "warning": 0, "suggestion": 0, "clone": 0}
 
     for f in findings:
         sev = f.get("severity", "suggestion").lower()
-        hours = SEVERITY_EFFORT_HOURS.get(sev, 0.25)
-        total_hours += hours
-        if sev in breakdown:
-            breakdown[sev] += hours
+        title = (f.get("title") or "").lower()
 
-    total_hours = round(total_hours, 2)
-    remediation_cost_usd = round(total_hours * hourly_rate, 2)
+        # Check if finding is a clone
+        if "clone" in sev or "clone" in title or f.get("is_clone"):
+            minutes = SEVERITY_EFFORT_MINUTES["clone"]
+            breakdown_minutes["clone"] += minutes
+        else:
+            minutes = SEVERITY_EFFORT_MINUTES.get(sev, 5)
+            if sev in breakdown_minutes:
+                breakdown_minutes[sev] += minutes
 
-    # Base development effort estimation: ~0.08 hours per line of code
-    estimated_dev_hours = max(loc * 0.08, 1.0)
-    debt_ratio = (total_hours / estimated_dev_hours) * 100.0
+        total_minutes += minutes
 
-    # SQALE Rating calculation
-    if debt_ratio <= 5.0 and total_hours < 1.0:
+    # Debt hours rounded to 1 decimal place (e.g., 155 mins -> 2.6 hrs)
+    debt_hours = round(total_minutes / 60.0, 1)
+    remediation_cost_usd = round(debt_hours * hourly_rate, 2)
+
+    # Maintainability Index (MI) Rating based on debt minutes per 1,000 LoC (Section 5.4):
+    # Grade A: < 30 mins debt per 1,000 LoC
+    # Grade B: 30 - 60 mins debt per 1,000 LoC
+    # Grade C: 60 - 120 mins debt per 1,000 LoC
+    # Grade D/F: > 120 mins debt per 1,000 LoC
+    effective_loc = max(loc, 10)
+    debt_per_1000_loc = (total_minutes / effective_loc) * 1000.0
+
+    if debt_per_1000_loc < 30.0:
         sqale_rating = "A"
         maintainability_label = "High Maintainability"
-    elif debt_ratio <= 10.0:
+    elif debt_per_1000_loc <= 60.0:
         sqale_rating = "B"
         maintainability_label = "Good Maintainability"
-    elif debt_ratio <= 20.0:
+    elif debt_per_1000_loc <= 120.0:
         sqale_rating = "C"
         maintainability_label = "Technical Debt Noticeable"
-    elif debt_ratio <= 50.0:
+    elif debt_per_1000_loc <= 300.0:
         sqale_rating = "D"
         maintainability_label = "High Debt Remediation Required"
     else:
-        sqale_rating = "E"
+        sqale_rating = "F"
         maintainability_label = "Severe Debt / Redesign Recommended"
 
     return {
-        "debt_hours": total_hours,
+        "debt_minutes": total_minutes,
+        "debt_hours": debt_hours,
         "remediation_cost_usd": remediation_cost_usd,
         "sqale_rating": sqale_rating,
         "maintainability_label": maintainability_label,
-        "debt_ratio_pct": round(debt_ratio, 1),
+        "debt_per_1000_loc": round(debt_per_1000_loc, 1),
         "hourly_rate": hourly_rate,
-        "effort_breakdown_hours": breakdown,
+        "effort_breakdown_minutes": breakdown_minutes,
+        "effort_breakdown_hours": {k: round(v / 60.0, 2) for k, v in breakdown_minutes.items()},
     }
 
 
