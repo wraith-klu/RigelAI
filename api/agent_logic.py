@@ -886,6 +886,16 @@ def analyze_user_query(
 
     if not code.strip():
         # ---------- PURE CHAT with multi-turn history (Can discuss ANY topic) ----------
+        formatting_rules = (
+            "\n\nFORMATTING & PRESENTATION INSTRUCTIONS:\n"
+            "- Structure your response with clean Markdown for maximum readability.\n"
+            "- Use bold subheadings (### Title) to break up sections.\n"
+            "- Use bullet points (* or -) for readability, leaving blank lines between distinct blocks.\n"
+            "- If you output a comparison or data table, ALWAYS put every row on its own new line and ensure a blank line precedes and follows the table.\n"
+            "- Use code blocks (```language) for snippets with syntax highlighting.\n"
+            "- Provide thorough, well-spaced, high-quality answers with clean visual hierarchy."
+        )
+
         if persona == "student":
             sys_msg = (
                 "You are Rigel AI Copilot — an intelligent, friendly, and engaging AI assistant. "
@@ -897,6 +907,7 @@ def analyze_user_query(
                 "SLOT-FILLING: If the user's question is genuinely under-specified or missing critical information "
                 "(e.g. 'how do I fix the error' without stating the error or code), give your best helpful response "
                 "and ask 2–3 friendly clarifying questions to gather the missing details."
+                + formatting_rules
             )
         else:
             sys_msg = (
@@ -908,6 +919,7 @@ def analyze_user_query(
                 "Tone: sharp, articulate, insightful, and structured. "
                 "SLOT-FILLING: If a query is ambiguous or missing key parameters to give a definitive answer, "
                 "provide a solid analytical breakdown and ask 2–3 targeted clarifying questions to fill the missing slots."
+                + formatting_rules
             )
 
         # Build the full messages array for multi-turn

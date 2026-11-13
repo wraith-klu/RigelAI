@@ -27,9 +27,69 @@ const PERSONA_OPTIONS = [
   { id: "student",   label: "🎓 ELI5 Student",   desc: "Friendly analogies, beginner-safe" },
 ];
 
+/* ── Smart Markdown Preprocessor ───────────────── */
+function normalizeMarkdown(text) {
+  if (!text) return "";
+  let s = String(text);
+
+  // 1. Normalize escaped newlines
+  s = s.replace(/\\n/g, "\n");
+
+  // 2. Fix collapsed markdown tables (e.g. text: | Aspect | ... | |---|---| | Readability | ...)
+  s = s.replace(/([^\n])\s*\n*(\|[\s\S]+?\|)/g, (match, prefix, tablePart) => {
+    if (tablePart.includes("|---") || tablePart.includes("|:---") || tablePart.includes("| ---")) {
+      return `${prefix}\n\n${tablePart}`;
+    }
+    return match;
+  });
+
+  // Split multiple table rows joined on a single line
+  s = s.replace(/\|\s*\|\s*([A-Za-z0-9_*#])/g, "|\n| $1");
+
+  // Ensure table separator row has proper newlines
+  s = s.replace(/\|\s*([-:]{2,}\s*\|\s*[-:]{2,}[-| :]*)\|\s*/g, "|\n|$1|\n");
+
+  // 3. Fix headers stuck directly to preceding text
+  s = s.replace(/([^\n])\n(#{1,4}\s+[^\n]+)/g, "$1\n\n$2");
+
+  // 4. Fix lists stuck directly to preceding text
+  s = s.replace(/([^\n])\n([*-]\s+[^\n]+)/g, "$1\n\n$2");
+
+  return s;
+}
+
 /* ── Markdown renderer ──────────────────────────── */
 function MarkdownMessage({ content }) {
+  const normalized = useMemo(() => normalizeMarkdown(content), [content]);
+
   const components = {
+    h1({ children }) {
+      return <h2 className="chat-msg-h1">{children}</h2>;
+    },
+    h2({ children }) {
+      return <h3 className="chat-msg-h2">{children}</h3>;
+    },
+    h3({ children }) {
+      return <h4 className="chat-msg-h3">{children}</h4>;
+    },
+    h4({ children }) {
+      return <h5 className="chat-msg-h4">{children}</h5>;
+    },
+    p({ children }) {
+      return <p className="chat-msg-p">{children}</p>;
+    },
+    ul({ children }) {
+      return <ul className="chat-msg-ul">{children}</ul>;
+    },
+    ol({ children }) {
+      return <ol className="chat-msg-ol">{children}</ol>;
+    },
+    li({ children }) {
+      return <li className="chat-msg-li">{children}</li>;
+    },
+    blockquote({ children }) {
+      return <blockquote className="chat-msg-quote">{children}</blockquote>;
+    },
     code({ node, inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
       const str = String(children).replace(/\n$/, "");
@@ -39,12 +99,29 @@ function MarkdownMessage({ content }) {
       return <code className="chat-inline-code" {...props}>{children}</code>;
     },
     table({ children }) {
-      return <div className="chat-table-wrap"><table className="chat-table">{children}</table></div>;
+      return (
+        <div className="chat-table-wrap">
+          <table className="chat-table">{children}</table>
+        </div>
+      );
+    },
+    th({ children }) {
+      return <th className="chat-th">{children}</th>;
+    },
+    td({ children }) {
+      return <td className="chat-td">{children}</td>;
+    },
+    strong({ children }) {
+      return <strong className="chat-strong">{children}</strong>;
+    },
+    hr() {
+      return <hr className="chat-hr" />;
     },
   };
+
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-      {content}
+      {normalized}
     </ReactMarkdown>
   );
 }
