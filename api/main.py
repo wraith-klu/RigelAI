@@ -481,6 +481,12 @@ def root():
         return FileResponse(index_file)
     return {"status": "CodeSentinel AI API running", "version": "3.0-MoS"}
 
+FAVICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <rect width="32" height="32" rx="6" fill="#1d1d1f"/>
+  <path d="M16 6L24 16L16 26L8 16Z" stroke="#fbfbfa" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="16" cy="16" r="3" fill="#0066cc"/>
+</svg>"""
+
 @app.get("/favicon.svg")
 @app.get("/favicon.ico")
 def favicon():
@@ -488,7 +494,7 @@ def favicon():
     if os.path.exists(fav_file):
         return FileResponse(fav_file, media_type="image/svg+xml")
     from fastapi import Response
-    return Response(status_code=204)
+    return Response(content=FAVICON_SVG, media_type="image/svg+xml")
 
 assets_dir = os.path.join(FRONTEND_DIST, "assets")
 if os.path.exists(assets_dir):

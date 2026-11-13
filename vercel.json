@@ -3,7 +3,6 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/index.py" },
-    { "source": "/favicon.:ext", "destination": "/api/index.py" },
-    { "source": "/((?!assets/|favicon\\.).*)", "destination": "/index.html" }
+    { "source": "/((?!assets/|favicon\\.|.*\\.svg$).*)", "destination": "/index.html" }
   ]
 }

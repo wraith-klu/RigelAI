@@ -35,24 +35,44 @@ function normalizeMarkdown(text) {
   // 1. Normalize escaped newlines
   s = s.replace(/\\n/g, "\n");
 
-  // 2. Fix collapsed markdown tables (e.g. text: | Aspect | ... | |---|---| | Readability | ...)
-  s = s.replace(/([^\n])\s*\n*(\|[\s\S]+?\|)/g, (match, prefix, tablePart) => {
+  // 2. Clean weird trailing pipes in headers: '| | |---' -> '|\n|---'
+  s = s.replace(/\|\s*\|\s*\|-+/g, "|\n|---");
+  s = s.replace(/\|\s*\|-+/g, "|\n|---");
+
+  // 3. Split multiple table rows joined on a single line: '||' or '| |'
+  s = s.replace(/\|\s*\|\s*/g, "|\n| ");
+
+  // 4. Ensure table headers have clean blank line before table
+  s = s.replace(/([^\n])\n*(\|[\s\S]*?\|)/g, (match, prefix, tablePart) => {
     if (tablePart.includes("|---") || tablePart.includes("|:---") || tablePart.includes("| ---")) {
       return `${prefix}\n\n${tablePart}`;
     }
     return match;
   });
 
-  // Split multiple table rows joined on a single line
-  s = s.replace(/\|\s*\|\s*([A-Za-z0-9_*#])/g, "|\n| $1");
+  // 5. Ensure table separator row has proper newlines
+  s = s.replace(/\n\s*\|[-| :]{3,}\|\s*/g, (match) => {
+    return "\n" + match.trim() + "\n";
+  });
 
-  // Ensure table separator row has proper newlines
-  s = s.replace(/\|\s*([-:]{2,}\s*\|\s*[-:]{2,}[-| :]*)\|\s*/g, "|\n|$1|\n");
+  // 6. Ensure lines with multiple pipes are proper rows with leading and trailing pipes
+  const lines = s.split("\n");
+  const processed = lines.map((line) => {
+    const trimmed = line.trim();
+    if (trimmed && trimmed.includes("|") && !trimmed.startsWith("```")) {
+      let l = trimmed;
+      if (!l.startsWith("|")) l = "| " + l;
+      if (!l.endsWith("|")) l = l + " |";
+      return l;
+    }
+    return line;
+  });
+  s = processed.join("\n");
 
-  // 3. Fix headers stuck directly to preceding text
+  // 7. Fix headers stuck directly to preceding text
   s = s.replace(/([^\n])\n(#{1,4}\s+[^\n]+)/g, "$1\n\n$2");
 
-  // 4. Fix lists stuck directly to preceding text
+  // 8. Fix lists stuck directly to preceding text
   s = s.replace(/([^\n])\n([*-]\s+[^\n]+)/g, "$1\n\n$2");
 
   return s;

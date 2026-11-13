@@ -887,13 +887,16 @@ def analyze_user_query(
     if not code.strip():
         # ---------- PURE CHAT with multi-turn history (Can discuss ANY topic) ----------
         formatting_rules = (
-            "\n\nFORMATTING & PRESENTATION INSTRUCTIONS:\n"
-            "- Structure your response with clean Markdown for maximum readability.\n"
-            "- Use bold subheadings (### Title) to break up sections.\n"
-            "- Use bullet points (* or -) for readability, leaving blank lines between distinct blocks.\n"
-            "- If you output a comparison or data table, ALWAYS put every row on its own new line and ensure a blank line precedes and follows the table.\n"
-            "- Use code blocks (```language) for snippets with syntax highlighting.\n"
-            "- Provide thorough, well-spaced, high-quality answers with clean visual hierarchy."
+            "\n\nFORMATTING & STRUCTURAL PRESENTATION RULES:\n"
+            "- Always complete your entire answer thoroughly. Never cut off or truncate mid-thought.\n"
+            "- Structure content using clean Markdown sections with bold subheadings (e.g. ### 1. Player Name or ### Section Title).\n"
+            "- Use clean bullet points (- **Key:** Value) for detailed profiles, highlights, and breakdowns.\n"
+            "- When presenting comparisons or tables:\n"
+            "  * Prefer structured profile cards with bullet points for dense descriptions.\n"
+            "  * If using a Markdown table, keep it to 3–5 columns, strictly place each row on its own line, and ensure proper header separator (|---|---|).\n"
+            "  * Never join rows onto a single line with '||'.\n"
+            "  * Leave a blank line before and after the table.\n"
+            "- Provide complete, structured, beautifully presented answers from start to finish."
         )
 
         if persona == "student":
@@ -942,8 +945,8 @@ def analyze_user_query(
                 completion = client.chat.completions.create(
                     model=OPENROUTER_MODEL,
                     messages=messages_for_llm,
-                    temperature=0.6,
-                    max_tokens=1400,
+                    temperature=0.5,
+                    max_tokens=3500,
                 )
                 llm_response = completion.choices[0].message.content
             except Exception as e:
