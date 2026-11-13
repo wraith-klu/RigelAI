@@ -369,7 +369,23 @@ export default function CodeInputPanel({ onAnalyze }) {
       </div>
 
       {inputMode === "editor" && (
-        <div className="studio-editor-container">
+        <div className="studio-editor-container mac-window">
+          {/* Authentic macOS Window Chrome */}
+          <div className="mac-editor-titlebar">
+            <div className="mac-traffic-lights" aria-label="macOS Window Controls">
+              <span className="mac-traffic-dot dot-close" title="Close"><span className="dot-glyph">✕</span></span>
+              <span className="mac-traffic-dot dot-minimize" title="Minimize"><span className="dot-glyph">−</span></span>
+              <span className="mac-traffic-dot dot-expand" title="Expand"><span className="dot-glyph">+</span></span>
+            </div>
+            <div className="mac-title-center">
+              <span className="mac-title-file">solution{LANGUAGES.find(l => l.id === lang)?.ext || ".py"}</span>
+              <span className="category-pill">Neural Audit</span>
+            </div>
+            <div className="mac-title-right">
+              <span className="mac-engine-tag">GraphCodeBERT INT8 &bull; ~24ms</span>
+            </div>
+          </div>
+
           {/* Editor Control Toolbar */}
           <div className="editor-control-bar">
             <div className="control-bar-left">
@@ -448,7 +464,7 @@ export default function CodeInputPanel({ onAnalyze }) {
 
               <button
                 type="button"
-                className="btn-primary"
+                className="btn-primary shimmer-accent-btn"
                 onClick={handleAnalyze}
                 disabled={loading}
               >

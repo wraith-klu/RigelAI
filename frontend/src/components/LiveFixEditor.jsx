@@ -50,11 +50,15 @@ export default function LiveFixEditor({
   };
 
   return (
-    <div className="live-fix-editor-container">
+    <div className="live-fix-editor-container mac-window">
       <div className="live-fix-toolbar">
         <div className="live-fix-meta">
-          <span className="live-fix-badge">
-            <span className="live-fix-dot"></span>
+          <div className="mac-traffic-lights" aria-hidden="true" style={{ marginRight: '6px' }}>
+            <span className="mac-traffic-dot dot-close"><span className="dot-glyph">✕</span></span>
+            <span className="mac-traffic-dot dot-minimize"><span className="dot-glyph">−</span></span>
+            <span className="mac-traffic-dot dot-expand"><span className="dot-glyph">+</span></span>
+          </div>
+          <span className="category-pill">
             <span>Live Fix Playground</span>
           </span>
           <div className="live-fix-scores">
@@ -113,7 +117,7 @@ export default function LiveFixEditor({
             automaticLayout: true,
             tabSize: 4,
             padding: { top: 8, bottom: 8 },
-            fontFamily: "Fira Code, Menlo, Monaco, 'Courier New', monospace",
+            fontFamily: "'JetBrains Mono', ui-monospace, Menlo, Monaco, Consolas, monospace",
           }}
         />
       </div>

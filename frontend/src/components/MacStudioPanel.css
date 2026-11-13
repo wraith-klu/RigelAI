@@ -1,0 +1,672 @@
+/* ==========================================================================
+   MacStudioPanel — Unified macOS-style Code Audit Window
+   Mobbin + Linear + "Editorial Craftsmanship meets Silicon Precision"
+   ========================================================================== */
+
+/* ── Outer Stage ── */
+.mac-studio-stage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 48px 0;
+  position: relative;
+}
+
+/* Ambient cyan glow behind the window */
+.mac-studio-stage::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 820px;
+  height: 520px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(6, 182, 212, 0.13) 0%, transparent 65%),
+              radial-gradient(ellipse at 20% 60%, rgba(224, 122, 56, 0.09) 0%, transparent 55%),
+              radial-gradient(ellipse at 80% 60%, rgba(129, 140, 248, 0.09) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── The macOS Window Frame ── */
+.mac-studio-window {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1160px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-rule-hover);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 0 60px rgba(6, 182, 212, 0.12),
+    0 0 120px rgba(6, 182, 212, 0.06),
+    var(--app-shadow-lg);
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+/* ── Window Title Bar ── */
+.mac-studio-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 44px;
+  background: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--app-rule);
+  box-shadow: var(--mac-specular);
+  flex-shrink: 0;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Traffic lights */
+.mac-traffic-lights {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.mac-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 900;
+  color: transparent;
+  transition: color 0.15s ease;
+  cursor: default;
+}
+.mac-dot-close    { background: #ff5f57; border: 1px solid rgba(0,0,0,0.15); }
+.mac-dot-minimize { background: #febc2e; border: 1px solid rgba(0,0,0,0.12); }
+.mac-dot-expand   { background: #28c840; border: 1px solid rgba(0,0,0,0.12); }
+
+.mac-traffic-lights:hover .mac-dot-close    { color: rgba(0,0,0,0.6); }
+.mac-traffic-lights:hover .mac-dot-minimize { color: rgba(0,0,0,0.5); }
+.mac-traffic-lights:hover .mac-dot-expand   { color: rgba(0,0,0,0.5); }
+
+/* File tab chip in titlebar */
+.mac-title-file-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-rule-hover);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--app-ink-muted);
+  font-family: var(--font-mono);
+}
+.mac-title-file-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--app-accent);
+  flex-shrink: 0;
+}
+
+.mac-title-center {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-ink-subtle);
+  letter-spacing: 0.03em;
+}
+
+.mac-engine-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  background: rgba(129, 140, 248, 0.12);
+  border: 1px solid rgba(129, 140, 248, 0.25);
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-ai);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mac-engine-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-ai);
+  animation: pulse-ai 2s infinite;
+}
+@keyframes pulse-ai {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ── Tab Bar ── */
+.mac-tab-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 40px;
+  background: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--app-rule);
+  gap: 2px;
+  overflow-x: auto;
+}
+@supports (scrollbar-width: none) {
+  .mac-tab-bar {
+    scrollbar-width: none;
+  }
+}
+.mac-tab-bar::-webkit-scrollbar { display: none; }
+
+.mac-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--app-ink-subtle);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+}
+.mac-tab:hover {
+  color: var(--app-ink-muted);
+  background: var(--app-surface-hover);
+}
+.mac-tab.active {
+  color: var(--app-ink);
+  background: var(--app-surface);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.mac-tab-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+.mac-tab.active .mac-tab-icon { opacity: 1; }
+
+/* ── Split Body ── */
+.mac-studio-body {
+  display: flex;
+  height: 580px;
+  overflow: hidden;
+}
+
+/* ── Left: Editor Pane ── */
+.mac-editor-pane {
+  flex: 1 1 62%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--app-rule);
+  background: #0d1117;
+}
+
+.mac-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #0d1117;
+  border-bottom: 1px solid var(--app-rule);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mac-editor-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--app-ink-subtle);
+}
+.mac-editor-breadcrumb span { color: var(--app-ink-muted); }
+.mac-editor-breadcrumb .sep { opacity: 0.4; }
+
+.mac-lang-badge {
+  padding: 2px 8px;
+  background: var(--app-accent-soft);
+  border: 1px solid rgba(224, 122, 56, 0.25);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--app-accent);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mac-editor-wrap {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Persona + Action bar at bottom of editor */
+.mac-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #0d1117;
+  border-top: 1px solid var(--app-rule);
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.mac-persona-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mac-persona-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--app-rule-hover);
+  background: var(--app-surface);
+  color: var(--app-ink-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-sans);
+}
+.mac-persona-btn:hover {
+  background: var(--app-surface-hover);
+  color: var(--app-ink);
+}
+.mac-persona-btn.selected {
+  border-color: var(--app-accent);
+  background: var(--app-accent-soft);
+  color: var(--app-accent);
+}
+
+/* ── Run Analysis — Shimmer Button ── */
+.mac-run-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  background: linear-gradient(90deg, #0ea5e9, #06b6d4, #e07a38, #0ea5e9);
+  background-size: 300% 100%;
+  animation: shimmer-gradient 3s linear infinite;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.35), 0 2px 8px rgba(0,0,0,0.3);
+  transition: box-shadow 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+.mac-run-btn:hover {
+  box-shadow: 0 0 32px rgba(6, 182, 212, 0.55), 0 4px 12px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+}
+.mac-run-btn:active { transform: translateY(0); }
+.mac-run-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  animation: none;
+  background: var(--app-surface);
+  box-shadow: none;
+  color: var(--app-ink-subtle);
+}
+@keyframes shimmer-gradient {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* ── Right: Audit Panel ── */
+.mac-audit-pane {
+  flex: 0 0 38%;
+  width: 38%;
+  display: flex;
+  flex-direction: column;
+  background: var(--app-surface);
+  overflow-y: auto;
+}
+@supports (scrollbar-width: thin) {
+  .mac-audit-pane {
+    scrollbar-width: thin;
+    scrollbar-color: var(--app-rule-hover) transparent;
+  }
+}
+.mac-audit-pane::-webkit-scrollbar       { width: 4px; }
+.mac-audit-pane::-webkit-scrollbar-track { background: transparent; }
+.mac-audit-pane::-webkit-scrollbar-thumb { background: var(--app-rule-hover); border-radius: 2px; }
+
+.mac-audit-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--app-rule);
+  flex-shrink: 0;
+}
+.mac-audit-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--app-ink-subtle);
+  margin-bottom: 2px;
+}
+.mac-audit-subtitle {
+  font-size: 12px;
+  color: var(--app-ink-muted);
+}
+
+/* ── Radial Health Gauge ── */
+.mac-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 18px 16px;
+  gap: 14px;
+}
+
+.mac-gauge-svg-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.mac-gauge-svg {
+  width: 140px;
+  height: 140px;
+  transform: rotate(-90deg);
+}
+
+.mac-gauge-track {
+  fill: none;
+  stroke: var(--app-rule-hover);
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.mac-gauge-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              stroke 0.4s ease;
+}
+
+/* Score overlay in center of gauge */
+.mac-gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.mac-gauge-score {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  font-family: var(--font-sans);
+  color: var(--app-ink);
+}
+.mac-gauge-grade {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Gauge glow ring */
+.mac-gauge-svg-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.mac-gauge-svg-wrap.glow-emerald::after {
+  box-shadow: 0 0 24px rgba(52, 211, 153, 0.4);
+  opacity: 1;
+}
+.mac-gauge-svg-wrap.glow-amber::after {
+  box-shadow: 0 0 24px rgba(251, 191, 36, 0.4);
+  opacity: 1;
+}
+.mac-gauge-svg-wrap.glow-rose::after {
+  box-shadow: 0 0 24px rgba(248, 113, 113, 0.4);
+  opacity: 1;
+}
+
+/* ── Micro-pill Tags ── */
+.mac-micro-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+.mac-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+}
+
+.mac-pill.pill-ai {
+  background: rgba(129, 140, 248, 0.12);
+  border: 1px solid rgba(129, 140, 248, 0.28);
+  color: var(--accent-ai);
+}
+.mac-pill.pill-green {
+  background: var(--status-success-bg);
+  border: 1px solid var(--status-success-border);
+  color: var(--status-success);
+}
+.mac-pill.pill-amber {
+  background: var(--status-warning-bg);
+  border: 1px solid var(--status-warning-border);
+  color: var(--status-warning);
+}
+.mac-pill.pill-cyan {
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  color: #22d3ee;
+}
+.mac-pill.pill-orange {
+  background: var(--app-accent-soft);
+  border: 1px solid rgba(224, 122, 56, 0.28);
+  color: var(--app-accent);
+}
+
+/* ── Audit divider ── */
+.mac-audit-divider {
+  height: 1px;
+  background: var(--app-rule);
+  margin: 0 18px;
+  flex-shrink: 0;
+}
+
+/* ── Findings List ── */
+.mac-findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 10px 0 0;
+  flex: 1;
+}
+
+.mac-finding-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--app-rule);
+  transition: background 0.15s;
+  cursor: default;
+}
+.mac-finding-item:hover { background: var(--app-surface-hover); }
+.mac-finding-item:last-child { border-bottom: none; }
+
+.mac-finding-sev {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+.mac-finding-sev.sev-critical  { background: var(--status-critical); box-shadow: 0 0 6px var(--status-critical); }
+.mac-finding-sev.sev-warning   { background: var(--status-warning);  box-shadow: 0 0 6px var(--status-warning); }
+.mac-finding-sev.sev-suggestion{ background: var(--accent-ai);       box-shadow: 0 0 6px var(--accent-ai); }
+
+.mac-finding-body { flex: 1; min-width: 0; }
+.mac-finding-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-ink);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mac-finding-meta {
+  font-size: 11px;
+  color: var(--app-ink-subtle);
+  font-family: var(--font-mono);
+}
+
+.mac-finding-line-badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  background: var(--app-surface-hover);
+  border: 1px solid var(--app-rule-hover);
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--app-ink-subtle);
+}
+
+/* ── Empty / Idle State ── */
+.mac-audit-idle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--app-ink-subtle);
+}
+.mac-audit-idle-icon {
+  font-size: 36px;
+  opacity: 0.3;
+  margin-bottom: 4px;
+}
+.mac-audit-idle-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-ink-muted);
+}
+.mac-audit-idle-desc {
+  font-size: 11px;
+  color: var(--app-ink-subtle);
+  line-height: 1.6;
+  max-width: 200px;
+}
+
+/* ── Loading Shimmer ── */
+.mac-loading-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+  background-size: 200% 100%;
+  animation: loading-sweep 1.2s linear infinite;
+}
+@keyframes loading-sweep {
+  0%   { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Status bar at bottom ── */
+.mac-studio-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 28px;
+  background: var(--app-surface-subtle);
+  border-top: 1px solid var(--app-rule);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--app-ink-subtle);
+  flex-shrink: 0;
+}
+.mac-statusbar-left,
+.mac-statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mac-statusbar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--status-success);
+  box-shadow: 0 0 6px var(--status-success);
+}
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .mac-studio-body {
+    flex-direction: column;
+    height: auto;
+  }
+  .mac-editor-pane {
+    flex: none;
+    height: 340px;
+    border-right: none;
+    border-bottom: 1px solid var(--app-rule);
+  }
+  .mac-audit-pane {
+    flex: none;
+    width: 100%;
+    max-height: 420px;
+  }
+  .mac-studio-window {
+    border-radius: 10px;
+  }
+  .mac-studio-stage::before {
+    display: none;
+  }
+}

@@ -16,6 +16,7 @@
   background-color: #252526;
   padding: 0.45rem 0.85rem;
   border-bottom: 1px solid #333338;
+  -webkit-user-select: none;
   user-select: none;
 }
 

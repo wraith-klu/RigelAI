@@ -143,21 +143,28 @@
 .nav-theme-toggle {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--app-rule);
-  background: transparent;
+  background: var(--app-surface);
   color: var(--app-ink-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  box-shadow: var(--app-shadow-sm);
+  flex-shrink: 0;
 }
 
 .nav-theme-toggle:hover {
   background: var(--app-surface-hover);
   color: var(--app-ink);
-  border-color: var(--app-rule-hover);
+  border-color: var(--app-accent);
+  transform: scale(1.04);
+}
+
+.nav-theme-toggle:active {
+  transform: scale(0.96);
 }
 
 .navbar-actions .btn-primary,

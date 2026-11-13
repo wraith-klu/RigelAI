@@ -1,6 +1,6 @@
 /* ==========================================================================
    MASTER DESIGN SYSTEM TOKENS — Rigel AI
-   "Editorial Craftsmanship meets Silicon Precision"
+   "Editorial Craftsmanship meets Silicon Precision" & Mobbin macOS Design System
    ========================================================================== */
 
 :root,
@@ -26,7 +26,7 @@
   --app-ink-subtle:    #94a3b8;
   --app-ink-inverse:   #080c16;
 
-  /* Brand Accent: Warm Terracotta Amber */
+  /* Brand Accent: Warm Amber Terracotta Clay */
   --app-accent:        #e07a38;
   --app-accent-hover:  #ea8b4e;
   --app-accent-soft:   rgba(224, 122, 56, 0.15);
@@ -40,6 +40,12 @@
   --app-shadow-sm:     0 2px 8px rgba(0, 0, 0, 0.35);
   --app-shadow-md:     0 8px 24px rgba(0, 0, 0, 0.45);
   --app-shadow-lg:     0 20px 48px -12px rgba(0, 0, 0, 0.55);
+
+  /* Mobbin macOS Specular Highlight */
+  --mac-specular:      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --ambient-mesh:      radial-gradient(at 15% 0%, rgba(224, 122, 56, 0.12) 0px, transparent 55%),
+                       radial-gradient(at 85% 10%, rgba(129, 140, 248, 0.10) 0px, transparent 55%),
+                       radial-gradient(at 50% 100%, rgba(14, 165, 233, 0.08) 0px, transparent 65%);
 
   /* Feedback Palette */
   --status-critical:        #f87171;
@@ -96,7 +102,7 @@
   --app-surface-raised:#FAF7F2;
   --app-surface-subtle:#E7E0D6;
 
-  /* Text & Inks */
+  /* Text & Inks (Charcoal Carbon Ink) */
   --app-ink:           #1A1916;
   --app-ink-muted:     #3D3A35;
   --app-ink-subtle:    #6B6762;
@@ -116,6 +122,12 @@
   --app-shadow-sm:     0 2px 8px rgba(26, 25, 22, 0.06);
   --app-shadow-md:     0 8px 24px rgba(26, 25, 22, 0.09);
   --app-shadow-lg:     0 20px 48px -12px rgba(26, 25, 22, 0.14);
+
+  /* Mobbin Light Specular Highlight */
+  --mac-specular:      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --ambient-mesh:      radial-gradient(at 50% 0%, rgba(163, 83, 32, 0.06) 0px, transparent 65%),
+                       radial-gradient(at 10% 50%, rgba(194, 154, 110, 0.08) 0px, transparent 50%),
+                       radial-gradient(at 90% 100%, rgba(120, 113, 108, 0.05) 0px, transparent 60%);
 
   /* Feedback Palette */
   --status-critical:        #B91C1C;
@@ -461,6 +473,173 @@ code, pre, kbd {
 .text-input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ==========================================================================
+   BLENDED MOBBIN × EDITORIAL DESIGN SYSTEM UTILITIES
+   ========================================================================== */
+
+/* Ambient Mesh Background */
+.ambient-mesh-canvas {
+  background-image: var(--ambient-mesh);
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+/* macOS Frosted Specular Glass Card */
+.mac-window,
+.specular-glass-card {
+  background-color: var(--app-surface);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--app-rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--mac-specular), var(--app-shadow-lg);
+  overflow: hidden;
+  transition: border-color var(--transition-quick), box-shadow var(--transition-quick);
+}
+
+/* Authentic macOS Traffic Light Chrome */
+.mac-traffic-lights {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mac-traffic-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  position: relative;
+}
+
+.mac-traffic-dot:hover {
+  transform: scale(1.08);
+}
+
+.mac-traffic-dot .dot-glyph {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.mac-traffic-lights:hover .mac-traffic-dot .dot-glyph {
+  opacity: 0.85;
+}
+
+.mac-traffic-dot.dot-close {
+  background-color: #ff5f56;
+  border: 1px solid #e0443e;
+  color: #4a0002;
+}
+
+.mac-traffic-dot.dot-minimize {
+  background-color: #ffbd2e;
+  border: 1px solid #dea123;
+  color: #533000;
+}
+
+.mac-traffic-dot.dot-expand {
+  background-color: #27c93f;
+  border: 1px solid #1aab29;
+  color: #013b0c;
+}
+
+/* Mobbin Shimmer Button */
+@keyframes accentGradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.btn-shimmer,
+.shimmer-accent-btn {
+  background: linear-gradient(115deg, var(--app-accent), var(--app-accent-hover), #f59e0b, var(--app-accent));
+  background-size: 260% 100%;
+  color: #ffffff !important;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  padding: 10px 18px;
+  box-shadow: 0 4px 14px var(--app-accent-soft);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  animation: accentGradientShift 8s ease infinite;
+}
+
+.btn-shimmer:hover,
+.shimmer-accent-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--app-accent-soft);
+  filter: brightness(1.05);
+}
+
+.btn-shimmer:active,
+.shimmer-accent-btn:active {
+  transform: scale(0.98);
+}
+
+/* Category Badge / Pill (Section 3: 11px, weight 700, all-caps, 0.1em letter-spacing) */
+.category-pill {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--app-accent);
+  background: var(--app-accent-soft);
+  border: 1px solid var(--app-accent-soft);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+/* Dedicated 36x36px Square Theme Switcher Button (Section 4) */
+.theme-toggle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-rule);
+  color: var(--app-ink-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--app-surface-hover);
+  color: var(--app-ink);
+  border-color: var(--app-rule-hover);
+  transform: scale(1.04);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.96);
+}
+
+/* Radial Score Ring SVG */
+.radial-score-ring {
+  transition: stroke-dashoffset 0.85s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Reduced Motion Preference Enforcement */

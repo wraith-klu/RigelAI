@@ -402,6 +402,7 @@ class FollowupRequest(BaseModel):
 class ChatRequest(BaseModel):
     user_query: str
     persona: str = "architect"
+    history: list[dict] = []   # [{role: "user"|"assistant", content: str}, ...]
 
 
 class RepositoryRequest(BaseModel):
@@ -524,7 +525,7 @@ def detect_clones_endpoint(req: CloneDetectionRequest):
         return {"error": str(e), "clones": []}
 
 
-# ⭐ CHAT — NO CODE REQUIRED
+# ⭐ CHAT — NO CODE REQUIRED (multi-turn, slot-filling, last-50 context)
 @app.post("/chat")
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
@@ -533,6 +534,7 @@ async def chat(req: ChatRequest):
             analyze_user_query,
             user_query=req.user_query,
             persona=req.persona,
+            history=req.history[-50:],  # cap at 50 turns
         )
         return JSONResponse(content=result)
 

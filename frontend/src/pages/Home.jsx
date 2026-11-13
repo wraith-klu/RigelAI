@@ -8,12 +8,12 @@ import LegalPrivacy from "../components/LegalPrivacy";
 import LegalTerms from "../components/LegalTerms";
 import DomainSetupModal from "../components/DomainSetupModal";
 import CommandPalette from "../components/CommandPalette";
-import { 
-  IconTerminal, 
-  IconCode, 
-  IconDownload, 
-  IconCopy, 
-  IconCheck, 
+import {
+  IconTerminal,
+  IconCode,
+  IconDownload,
+  IconCopy,
+  IconCheck,
   IconExternalLink,
   IconShield,
   IconPlay,
@@ -131,7 +131,7 @@ export default function Home() {
   const [mode, setMode] = useState("analyze"); // "analyze" | "chat"
   const [result, setResult] = useState(null);
   const [copiedCli, setCopiedCli] = useState(false);
-  
+
   // Modals
   const [isIdeModalOpen, setIsIdeModalOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
@@ -200,11 +200,11 @@ export default function Home() {
   };
 
   return (
-    <div className="site-layout">
+    <div className="site-layout ambient-mesh-canvas">
       {/* Universal Top Header */}
-      <Navbar 
-        mode={mode} 
-        setMode={setMode} 
+      <Navbar
+        mode={mode}
+        setMode={setMode}
         onOpenIdeModal={() => setIsIdeModalOpen(true)}
         onOpenDomainModal={() => setIsDomainOpen(true)}
         onOpenPalette={() => setIsPaletteOpen(true)}
@@ -219,7 +219,7 @@ export default function Home() {
                 <span className="hero-pill-dot" aria-hidden="true"></span>
                 <span>Static Analysis &amp; Vector ML Intelligence</span>
               </div>
-              
+
               <h1 className="hero-headline">
                 Code review with syntactic<br className="hero-headline-break" />
                 <span className="hero-headline-accent">and architectural precision.</span>
@@ -261,11 +261,11 @@ export default function Home() {
               </div>
 
               {/* Apple-grade Product Preview Window */}
-              <div 
-                className="hero-showcase-window" 
-                onClick={handleLoadSample} 
-                role="button" 
-                tabIndex={0} 
+              <div
+                className="hero-showcase-window"
+                onClick={handleLoadSample}
+                role="button"
+                tabIndex={0}
                 onKeyDown={(e) => { if (e.key === "Enter") handleLoadSample(); }}
                 title="Click to load and inspect this sample in Live Studio"
               >
@@ -509,9 +509,9 @@ export default function Home() {
             <div className="footer-brand-column">
               <div className="footer-brand-title">
                 <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                  <rect width="32" height="32" rx="6" fill="#1d1d1f"/>
-                  <path d="M16 6L24 16L16 26L8 16Z" stroke="#fbfbfa" strokeWidth="2" strokeLinejoin="round"/>
-                  <circle cx="16" cy="16" r="3" fill="#0066cc"/>
+                  <rect width="32" height="32" rx="6" fill="#1d1d1f" />
+                  <path d="M16 6L24 16L16 26L8 16Z" stroke="#fbfbfa" strokeWidth="2" strokeLinejoin="round" />
+                  <circle cx="16" cy="16" r="3" fill="#0066cc" />
                 </svg>
                 <strong>Rigel AI</strong>
               </div>

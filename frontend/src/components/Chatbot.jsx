@@ -1,255 +1,354 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
-  IconSend,
-  IconTrash,
-  IconCopy,
-  IconCheck,
-  IconChat,
-  IconAlertTriangle,
-  IconDownload
+  IconSend, IconTrash, IconCopy, IconCheck,
+  IconAlertTriangle, IconDownload, IconRefresh
 } from "./Icons";
 import { sendChatMessage, downloadPDF } from "../services/api";
 import CodeBlock from "./CodeBlock";
 import "./Chatbot.css";
 
-const STORAGE_KEY = "rigelai_chat_history";
+/* ── Constants ─────────────────────────────────── */
+const STORAGE_KEY = "rigelai_chat_v2";
+const MAX_HISTORY  = 50;
 
 const STARTER_PROMPTS = [
-  {
-    title: "Refactor Long Method",
-    desc: "How do I decompose a high-cognitive-complexity batch processor into small single-responsibility functions?",
-  },
-  {
-    title: "Eliminate Data Clumps",
-    desc: "What parameter object patterns should be used when multiple functions share identical signature groups?",
-  },
-  {
-    title: "Cyclomatic Complexity Reduction",
-    desc: "Provide techniques to flatten deeply nested conditional loops into early returns or lookup strategies.",
-  },
-  {
-    title: "Dependency Injection Design",
-    desc: "How can I decouple external API clients in Python or TypeScript to make unit testing deterministic?",
-  },
+  { icon: "🔧", title: "Refactor Long Method",        desc: "How do I break a high-complexity batch processor into single-responsibility helpers?" },
+  { icon: "🔍", title: "Detect Code Clones",          desc: "What patterns help identify and eliminate semantic code duplication across modules?" },
+  { icon: "⚡", title: "Cyclomatic Complexity",       desc: "How do I flatten deeply nested conditionals to reduce cyclomatic complexity below 10?" },
+  { icon: "🏛", title: "Dependency Injection",        desc: "How do I decouple external API clients in Python to make unit tests deterministic?" },
+  { icon: "🔐", title: "Credential Security",         desc: "What entropy thresholds does Rigel AI use to detect hardcoded API keys and tokens?" },
+  { icon: "📊", title: "SQALE Debt Score",            desc: "Explain the SQALE remediation formula and how maintainability grades A–F are calculated." },
 ];
 
+const PERSONA_OPTIONS = [
+  { id: "architect", label: "🏛 Staff Architect", desc: "Deep technical, enterprise-grade" },
+  { id: "student",   label: "🎓 ELI5 Student",   desc: "Friendly analogies, beginner-safe" },
+];
+
+/* ── Markdown renderer ──────────────────────────── */
+function MarkdownMessage({ content }) {
+  const components = {
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || "");
+      const str = String(children).replace(/\n$/, "");
+      if (!inline && (match || str.includes("\n"))) {
+        return <CodeBlock code={str} language={match?.[1] || "python"} showLineNumbers />;
+      }
+      return <code className="chat-inline-code" {...props}>{children}</code>;
+    },
+    table({ children }) {
+      return <div className="chat-table-wrap"><table className="chat-table">{children}</table></div>;
+    },
+  };
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      {content}
+    </ReactMarkdown>
+  );
+}
+
+/* ── Typing indicator ───────────────────────────── */
+function TypingIndicator({ stage }) {
+  const stages = [
+    "Analyzing context…",
+    "Running slot-fill check…",
+    "Querying LLM…",
+    "Composing response…",
+  ];
+  return (
+    <div className="chat-typing-indicator">
+      <div className="chat-typing-dots">
+        <span /><span /><span />
+      </div>
+      <span className="chat-typing-stage">{stages[stage % stages.length]}</span>
+    </div>
+  );
+}
+
+/* ── Message bubble ─────────────────────────────── */
+function MessageBubble({ msg, idx, onCopy, copied, isClarifying }) {
+  const isUser = msg.role === "user";
+  return (
+    <div className={`chat-bubble-row ${isUser ? "user" : "assistant"}${isClarifying ? " clarifying" : ""}`}>
+      {!isUser && (
+        <div className="chat-avatar ai-avatar" aria-hidden="true">
+          <span>R</span>
+        </div>
+      )}
+      <div className="chat-bubble-wrap">
+        <div className="chat-bubble-meta">
+          <span className="chat-sender">{isUser ? "You" : "Rigel AI"}</span>
+          {msg.timestamp && <span className="chat-time">{msg.timestamp}</span>}
+          {isClarifying && <span className="chat-clarify-tag">Needs clarification</span>}
+          <button
+            className="chat-copy-btn"
+            onClick={() => onCopy(msg.content, idx)}
+            title="Copy"
+          >
+            {copied ? <IconCheck size={11} /> : <IconCopy size={11} />}
+          </button>
+        </div>
+        <div className={`chat-bubble ${isUser ? "bubble-user" : "bubble-ai"}`}>
+          {isUser
+            ? <p>{msg.content}</p>
+            : <MarkdownMessage content={msg.content} />
+          }
+        </div>
+      </div>
+      {isUser && (
+        <div className="chat-avatar user-avatar" aria-hidden="true">
+          <span>U</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Main Chatbot ───────────────────────────────── */
 export default function Chatbot({ initialInput = null }) {
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return [];
-      const parsed = JSON.parse(saved);
+      const parsed = saved ? JSON.parse(saved) : [];
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   });
 
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [copiedIndex, setCopiedIndex] = useState(null);
-  const messagesEndRef = useRef(null);
+  const [input,       setInput]       = useState("");
+  const [persona,     setPersona]     = useState("architect");
+  const [loading,     setLoading]     = useState(false);
+  const [typingStage, setTypingStage] = useState(0);
+  const [error,       setError]       = useState("");
+  const [copiedIdx,   setCopiedIdx]   = useState(null);
+  const [showPersona, setShowPersona] = useState(false);
+  const [charCount,   setCharCount]   = useState(0);
 
-  // Safe array reference
+  const messagesEndRef = useRef(null);
+  const inputRef       = useRef(null);
+  const typingTimer    = useRef(null);
+
   const safeMessages = Array.isArray(messages) ? messages : [];
 
-  const markdownComponents = {
-    code({ node, inline, className, children, ...props }) {
-      const match = /language-(\w+)/.exec(className || "");
-      const codeString = String(children).replace(/\n$/, "");
-      if (!inline && (match || codeString.includes("\n"))) {
-        return (
-          <CodeBlock
-            code={codeString}
-            language={match ? match[1] : "python"}
-            showLineNumbers={true}
-          />
-        );
-      }
-      return (
-        <code className="inline-code-badge" {...props}>
-          {children}
-        </code>
-      );
-    },
-  };
-
+  /* Persist to localStorage */
   useEffect(() => {
-    try {
-      if (Array.isArray(messages)) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    } catch (e) {
-      console.warn("Could not save chat history to localStorage", e);
-    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(safeMessages.slice(-MAX_HISTORY))); }
+    catch { /* ignore */ }
   }, [messages]);
 
+  /* Auto-scroll */
   useEffect(() => {
-    if (initialInput && !loading) {
-      setInput(initialInput);
-    }
-  }, [initialInput, loading]);
-
-  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
   }, [messages, loading]);
 
-  const handleSend = async (textToSend) => {
-    const query = (textToSend || input).trim();
+  /* Typing stage animation while loading */
+  useEffect(() => {
+    if (loading) {
+      typingTimer.current = setInterval(() => setTypingStage(s => s + 1), 1200);
+    } else {
+      clearInterval(typingTimer.current);
+      setTypingStage(0);
+    }
+    return () => clearInterval(typingTimer.current);
+  }, [loading]);
+
+  /* Seed initialInput */
+  useEffect(() => {
+    if (initialInput && !loading) setInput(initialInput);
+  }, [initialInput, loading]);
+
+  const handleInputChange = (e) => {
+    setInput(e.target.value);
+    setCharCount(e.target.value.length);
+  };
+
+  /* ── Send message ── */
+  const handleSend = useCallback(async (overrideText) => {
+    const query = (overrideText ?? input).trim();
     if (!query || loading) return;
 
-    const userMessage = {
+    const userMsg = {
       role: "user",
       content: query,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const nextMessages = [...safeMessages, userMsg];
+    setMessages(nextMessages);
     setInput("");
+    setCharCount(0);
     setError("");
     setLoading(true);
+    inputRef.current?.focus();
 
     try {
-      const data = await sendChatMessage(query);
-      const assistantMessage = {
+      // Send full history for multi-turn context (last 50)
+      const data = await sendChatMessage(query, nextMessages, persona);
+      const reply = data.response || data.reply || data.llm_analysis?.llm_response || "No response received.";
+      const isClarifying = Boolean(data.clarifying || data.llm_analysis?.clarifying);
+
+      const aiMsg = {
         role: "assistant",
-        content: data.response || data.reply || "No response received.",
+        content: reply,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        clarifying: isClarifying,
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, aiMsg]);
     } catch (err) {
-      setError(err.message || "Failed to reach AI assistant. Ensure the backend is reachable.");
+      setError(err.message || "Failed to reach Rigel AI backend. Is the server running on port 8000?");
     } finally {
       setLoading(false);
     }
+  }, [input, loading, safeMessages, persona]);
+
+  /* ── Keyboard shortcuts ── */
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
-  const handleClearHistory = () => {
+  const handleClear = () => {
     setMessages([]);
     localStorage.removeItem(STORAGE_KEY);
+    setError("");
+    inputRef.current?.focus();
   };
 
-  const handleCopyMessage = (text, idx) => {
+  const handleCopy = (text, idx) => {
     navigator.clipboard.writeText(text);
-    setCopiedIndex(idx);
-    setTimeout(() => setCopiedIndex(null), 2000);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2000);
   };
 
-  const handleExportPDF = async () => {
-    if (messages.length === 0) return;
-    const transcript = messages
-      .map((m) => `[${m.role.toUpperCase()}] (${m.timestamp || ""}):\n${m.content}\n`)
-      .join("\n---\n\n");
+  const handleExport = async () => {
+    if (safeMessages.length === 0) return;
+    const transcript = safeMessages
+      .map(m => `[${m.role.toUpperCase()}] ${m.timestamp || ""}\n${m.content}`)
+      .join("\n\n---\n\n");
     await downloadPDF(transcript);
   };
 
+  const selectedPersona = PERSONA_OPTIONS.find(p => p.id === persona);
+
+  /* ── Render ── */
   return (
-    <div className="copilot-container card">
-      {/* Header */}
+    <div className="copilot-root">
+
+      {/* ── Header ── */}
       <div className="copilot-header">
         <div className="copilot-header-left">
-          <div className="copilot-title-group">
-            <h3>Rigel AI Copilot</h3>
-            <span className="copilot-status-badge">Ready</span>
+          <div className="copilot-logo">
+            <div className="copilot-logo-ring">R</div>
           </div>
-          <p className="copilot-subtitle">
-            Contextual code review assistant for refactoring strategy and architecture questions.
-          </p>
+          <div>
+            <div className="copilot-title-row">
+              <h3 className="copilot-title">Rigel AI Copilot</h3>
+              <span className={`copilot-status ${loading ? "status-thinking" : "status-ready"}`}>
+                {loading ? "Thinking…" : "Ready"}
+              </span>
+            </div>
+            <p className="copilot-subtitle">
+              Multi-turn · Slot-fill · Last {Math.min(safeMessages.length, MAX_HISTORY)} messages in context
+            </p>
+          </div>
         </div>
 
         <div className="copilot-header-actions">
+          {/* Persona selector */}
+          <div className="persona-dropdown-wrap">
+            <button
+              className="persona-toggle-btn"
+              onClick={() => setShowPersona(p => !p)}
+              title="Switch persona"
+            >
+              <span>{selectedPersona?.label}</span>
+              <span className="persona-caret">{showPersona ? "▲" : "▼"}</span>
+            </button>
+            {showPersona && (
+              <div className="persona-dropdown">
+                {PERSONA_OPTIONS.map(p => (
+                  <button
+                    key={p.id}
+                    className={`persona-option${persona === p.id ? " active" : ""}`}
+                    onClick={() => { setPersona(p.id); setShowPersona(false); }}
+                  >
+                    <span className="persona-opt-label">{p.label}</span>
+                    <span className="persona-opt-desc">{p.desc}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {safeMessages.length > 0 && (
             <>
-              <button
-                type="button"
-                className="btn-secondary compact"
-                onClick={handleExportPDF}
-                title="Export discussion as PDF"
-              >
+              <button className="copilot-action-btn" onClick={handleExport} title="Export PDF">
                 <IconDownload size={13} />
-                <span>Export PDF</span>
               </button>
-              <button
-                type="button"
-                className="btn-secondary compact"
-                onClick={handleClearHistory}
-                title="Clear discussion"
-              >
+              <button className="copilot-action-btn" onClick={handleClear} title="Clear chat">
                 <IconTrash size={13} />
-                <span>Clear</span>
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* Messages Scroll Area */}
-      <div className="copilot-messages-area">
-        {safeMessages.length === 0 ? (
-          <div className="copilot-empty-state">
-            <div className="empty-copilot-text">
-              <h4>Start a Technical Discussion</h4>
-              <p>Ask questions about code smell remediation, performance bottlenecks, or clean architecture.</p>
-            </div>
+      {/* Context counter */}
+      {safeMessages.length > 0 && (
+        <div className="copilot-context-bar">
+          <span className="context-dot" />
+          <span>{Math.min(safeMessages.length, MAX_HISTORY)} messages in context — Rigel AI remembers this conversation</span>
+        </div>
+      )}
 
-            <div className="starter-prompts-grid">
-              {STARTER_PROMPTS.map((prompt, idx) => (
+      {/* ── Messages area ── */}
+      <div className="copilot-messages">
+        {safeMessages.length === 0 ? (
+          <div className="copilot-empty">
+            <div className="copilot-empty-logo">✦</div>
+            <h4 className="copilot-empty-title">Start a Technical Discussion</h4>
+            <p className="copilot-empty-desc">
+              Multi-turn conversations, slot-filling for ambiguous queries, and deep context from your last {MAX_HISTORY} messages.
+            </p>
+            <div className="starter-grid">
+              {STARTER_PROMPTS.map((s, i) => (
                 <button
-                  key={idx}
-                  type="button"
-                  className="starter-prompt-card"
-                  onClick={() => handleSend(prompt.desc)}
+                  key={i}
+                  className="starter-card"
+                  onClick={() => handleSend(s.desc)}
                 >
-                  <strong className="starter-title">{prompt.title}</strong>
-                  <p className="starter-desc">{prompt.desc}</p>
+                  <span className="starter-icon">{s.icon}</span>
+                  <span className="starter-title">{s.title}</span>
+                  <span className="starter-desc">{s.desc}</span>
                 </button>
               ))}
             </div>
           </div>
         ) : (
           <div className="message-stream">
-            {safeMessages.map((m, idx) => (
-              <div key={idx} className={`copilot-bubble-row ${m.role}`}>
-                <div className="bubble-wrapper">
-                  <div className="bubble-meta">
-                    <span className="bubble-sender">{m.role === "user" ? "You" : "Rigel AI"}</span>
-                    {m.timestamp && <span className="bubble-time">{m.timestamp}</span>}
-                    <button
-                      type="button"
-                      className="btn-copy-bubble"
-                      onClick={() => handleCopyMessage(m.content, idx)}
-                      title="Copy response"
-                    >
-                      {copiedIndex === idx ? <IconCheck size={12} /> : <IconCopy size={12} />}
-                    </button>
-                  </div>
-                  <div className="bubble-content">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                      {m.content}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              </div>
+            {safeMessages.map((msg, idx) => (
+              <MessageBubble
+                key={idx}
+                msg={msg}
+                idx={idx}
+                onCopy={handleCopy}
+                copied={copiedIdx === idx}
+                isClarifying={Boolean(msg.clarifying)}
+              />
             ))}
 
             {loading && (
-              <div className="copilot-bubble-row assistant">
-                <div className="bubble-wrapper">
-                  <div className="bubble-meta">
-                    <span className="bubble-sender">Rigel AI</span>
-                    <span className="bubble-time">Processing...</span>
+              <div className="chat-bubble-row assistant">
+                <div className="chat-avatar ai-avatar"><span>R</span></div>
+                <div className="chat-bubble-wrap">
+                  <div className="chat-bubble-meta">
+                    <span className="chat-sender">Rigel AI</span>
                   </div>
-                  <div className="bubble-content loading-dots">
-                    Thinking and reviewing code context...
+                  <div className="chat-bubble bubble-ai">
+                    <TypingIndicator stage={typingStage} />
                   </div>
                 </div>
               </div>
@@ -259,39 +358,61 @@ export default function Chatbot({ initialInput = null }) {
         )}
       </div>
 
-      {/* Error Note */}
+      {/* ── Error banner ── */}
       {error && (
-        <div className="copilot-error-banner" role="alert">
-          <IconAlertTriangle size={15} />
+        <div className="copilot-error-bar">
+          <IconAlertTriangle size={14} />
           <span>{error}</span>
+          <button className="error-dismiss" onClick={() => setError("")}>✕</button>
         </div>
       )}
 
-      {/* Input Field */}
-      <form
-        className="copilot-input-bar"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSend();
-        }}
-      >
-        <input
-          type="text"
-          className="text-input"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a technical question about your code or architecture..."
-          disabled={loading}
-        />
-        <button
-          type="submit"
-          className="btn-primary"
-          disabled={!input.trim() || loading}
+      {/* ── Input bar ── */}
+      <div className="copilot-input-wrap">
+        {/* Slot-fill hint when input is short */}
+        {input.length > 0 && input.length < 15 && (
+          <div className="slot-fill-hint">
+            💡 Tip: Be specific — mention language, error, or code pattern for a better answer
+          </div>
+        )}
+
+        <form
+          className="copilot-input-bar"
+          onSubmit={e => { e.preventDefault(); handleSend(); }}
         >
-          <IconSend size={14} />
-          <span>Send</span>
-        </button>
-      </form>
+          <div className="copilot-textarea-wrap">
+            <textarea
+              ref={inputRef}
+              className="copilot-textarea"
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask about code smells, refactoring, architecture, security… (Shift+Enter for newline)"
+              disabled={loading}
+              rows={1}
+              maxLength={4000}
+            />
+            <span className="char-count">{charCount > 0 ? `${charCount}/4000` : ""}</span>
+          </div>
+
+          <button
+            type="submit"
+            className="copilot-send-btn"
+            disabled={!input.trim() || loading}
+            title="Send (Enter)"
+          >
+            {loading
+              ? <span className="send-spinner" />
+              : <IconSend size={16} />
+            }
+          </button>
+        </form>
+
+        <div className="copilot-footer-note">
+          <span>⌨ <strong>Enter</strong> to send · <strong>Shift+Enter</strong> for newline · Persona: {selectedPersona?.label}</span>
+        </div>
+      </div>
+
     </div>
   );
 }

@@ -13,22 +13,18 @@ export class CancelledError extends Error {
 }
 
 
-// POST /chat  (JSON)
-export async function sendChatMessage(query) {
+// POST /chat  (JSON) — multi-turn with history
+export async function sendChatMessage(query, history = [], persona = "architect") {
   const res = await fetch(`${API_URL}/chat`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       user_query: query,
+      persona,
+      history: history.slice(-50).map(m => ({ role: m.role, content: m.content })),
     }),
   });
-
-  if (!res.ok) {
-    throw new Error("Chat failed");
-  }
-
+  if (!res.ok) throw new Error("Chat failed");
   return res.json();
 }
 

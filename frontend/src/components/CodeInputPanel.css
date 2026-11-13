@@ -446,9 +446,9 @@
 .persona-toggle-container {
   display: inline-flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 980px;
+  background: var(--app-surface-subtle);
+  border: 1px solid var(--app-rule);
+  border-radius: var(--radius-pill);
   padding: 2px;
   gap: 2px;
 }
@@ -459,23 +459,24 @@
   padding: 0.3rem 0.75rem;
   font-size: 0.78125rem;
   font-weight: 500;
-  color: var(--text-secondary, #6e6e73);
-  border-radius: 980px;
+  color: var(--app-ink-muted);
+  border-radius: var(--radius-pill);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-sans);
 }
 
 .persona-chip-btn:hover {
-  color: var(--text-primary, #1d1d1f);
+  color: var(--app-ink);
 }
 
 .persona-chip-btn.active {
-  background: #ffffff;
-  color: #0071e3;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.09);
+  background: var(--app-surface-raised);
+  color: var(--app-accent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   font-weight: 600;
 }
 
@@ -488,6 +489,7 @@
   background: linear-gradient(180deg, #fbfbfd 0%, #f4f4f7 100%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.07);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -575,4 +577,47 @@
   background: rgba(52, 199, 89, 0.12);
   color: #1e7033;
   font-weight: 600;
+}
+
+/* Authentic macOS Title Bar Chrome */
+.mac-editor-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1.25rem;
+  background-color: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--app-rule);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mac-title-center {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mac-title-file {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--app-ink);
+  letter-spacing: -0.01em;
+}
+
+.mac-title-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mac-engine-tag {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--status-success);
+  background: var(--status-success-bg);
+  border: 1px solid var(--status-success-border);
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
 }

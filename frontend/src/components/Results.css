@@ -228,7 +228,7 @@
 
 .health-ring-bg {
   fill: none;
-  stroke: rgba(0, 0, 0, 0.06);
+  stroke: var(--app-rule);
   stroke-width: 6;
 }
 
@@ -236,26 +236,26 @@
   fill: none;
   stroke-width: 6;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: stroke-dashoffset 0.85s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .health-ring-progress.emerald {
-  stroke: #137333;
-  filter: drop-shadow(0 0 4px rgba(19, 115, 51, 0.3));
+  stroke: var(--status-success);
+  filter: drop-shadow(0 0 6px var(--status-success-border));
 }
 
 .health-ring-progress.amber {
-  stroke: #b45309;
-  filter: drop-shadow(0 0 4px rgba(180, 83, 9, 0.3));
+  stroke: var(--status-warning);
+  filter: drop-shadow(0 0 6px var(--status-warning-border));
 }
 
 .health-ring-progress.rose {
-  stroke: #c5221f;
-  filter: drop-shadow(0 0 4px rgba(197, 34, 31, 0.3));
+  stroke: var(--status-critical);
+  filter: drop-shadow(0 0 6px var(--status-critical-border));
 }
 
 .health-ring-progress.neutral {
-  stroke: var(--text-tertiary);
+  stroke: var(--app-ink-subtle);
 }
 
 .health-ring-center {
@@ -813,13 +813,13 @@
 
 /* Notes Panel - macOS Style */
 .macos-window-card {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  border-radius: 12px;
+  background: var(--app-surface);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--app-rule);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.08), 0 2px 8px -1px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--mac-specular), var(--app-shadow-lg);
 }
 
 .macos-window-titlebar {
@@ -827,8 +827,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.65rem 1rem;
-  background: linear-gradient(180deg, #fbfbfd 0%, #f2f2f6 100%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--app-rule);
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -867,19 +868,20 @@
   gap: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #1d1d1f;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  color: var(--app-ink);
+  font-family: var(--font-sans);
   letter-spacing: -0.01em;
 }
 
 .macos-window-badge {
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #007aff;
-  background: rgba(0, 122, 255, 0.1);
+  color: var(--accent-ai);
+  background: var(--accent-ai-tint);
   padding: 0.2rem 0.55rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 122, 255, 0.2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent-ai-border);
   letter-spacing: 0.02em;
 }
 
@@ -890,26 +892,32 @@
 }
 
 .macos-jump-code-btn {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, #34c759 0%, #28a745 100%);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
-  padding: 0.22rem 0.65rem;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--app-accent);
+  background: var(--app-accent-soft);
+  border: 1px solid var(--app-accent);
+  border-radius: var(--radius-sm);
+  padding: 0.28rem 0.75rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 4px rgba(40, 167, 69, 0.25);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  transition: all 0.15s ease;
+  font-family: var(--font-sans);
 }
 
 .macos-jump-code-btn:hover {
-  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  background: var(--app-accent);
+  color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(40, 167, 69, 0.35);
+  box-shadow: 0 4px 12px var(--app-accent-soft);
+}
+
+.macos-jump-code-btn:active {
+  transform: scale(0.98);
 }
 
 .macos-prose {
@@ -1240,14 +1248,15 @@
 
 /* Secret Alert Banner */
 .secret-alert-banner {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.04) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  border-radius: 10px;
+  background: var(--status-critical-bg);
+  border: 1px solid var(--status-critical-border);
+  border-radius: var(--radius-md);
   padding: 0.85rem 1.15rem;
   margin-bottom: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  box-shadow: 0 4px 14px var(--status-critical-bg);
 }
 
 .secret-alert-header {
@@ -1264,7 +1273,7 @@
 }
 
 .secret-shield-pulse {
-  color: #ef4444;
+  color: var(--status-critical);
   display: flex;
   align-items: center;
   padding-top: 2px;
@@ -1273,7 +1282,7 @@
 .secret-alert-icon-title strong {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #dc2626;
+  color: var(--status-critical);
   display: block;
 }
 

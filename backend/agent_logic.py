@@ -869,7 +869,11 @@ def analyze_user_query(
     code: str = "",
     session_id: str | None = None,
     persona: str = "architect",
+    history: list | None = None,
 ) -> dict:
+    if history is None:
+        history = []
+
     # ---------- SESSION ----------
     if session_id:
         stored = get_code(session_id)
@@ -880,22 +884,121 @@ def analyze_user_query(
     else:
         session_id = create_session(code)
 
-    if not code.strip():
-        prompt = f"""
-        You are CodeSentinel AI / Rigel AI, an expert programming assistant and code intelligence engine.
+    # ---------- SLOT-FILLING: detect vague / off-topic / under-specified queries ----------
+    CLARIFICATION_TRIGGERS = [
+        # Too short / vague
+        len(user_query.strip().split()) < 4,
+        # Off-topic (non-code topics)
+        any(kw in user_query.lower() for kw in [
+            "messi", "football", "cricket", "bollywood", "movie", "weather",
+            "recipe", "cooking", "sport", "game", "news", "politics",
+            "stock", "share price", "invest", "astrology",
+        ]),
+    ]
 
-        USER QUESTION:
-        {user_query}
+    # Build slot-filling clarification question when triggered
+    if any(CLARIFICATION_TRIGGERS) and not code.strip():
+        # Determine which slot is missing
+        is_vague   = len(user_query.strip().split()) < 4
+        is_offtopic = any(kw in user_query.lower() for kw in [
+            "messi", "football", "cricket", "bollywood", "movie", "weather",
+            "recipe", "cooking", "sport", "game", "news", "politics",
+            "stock", "share price", "invest", "astrology",
+        ])
 
-        Answer clearly, constructively, and concisely. Provide code examples where appropriate.
-        """
+        clarify_prompt = f"""You are Rigel AI Copilot — an expert code review and software engineering assistant.
 
-        llm_response = call_llm(
-            prompt=prompt,
-            system_message="You are a helpful and expert programming assistant.",
-            temperature=0.3,
-            max_tokens=1200,
+The user sent this message: "{user_query}"
+
+{"This message appears to be off-topic or unrelated to programming, code review, or software engineering." if is_offtopic else ""}
+{"This message is too vague or short to give a precise technical answer." if is_vague else ""}
+
+Your task: Ask the user 2–3 friendly, specific clarifying questions using slot-filling to understand what they actually need.
+Focus these questions around:
+1. What programming language or framework are they using?
+2. What specific problem or code smell are they trying to solve?
+3. What is the expected behavior vs actual behavior?
+
+If the message is off-topic, politely redirect to code-related assistance and still ask how you can help them with their code or architecture.
+
+Keep the tone warm and professional. Format as a short paragraph followed by a numbered question list.
+"""
+        clarify_response = call_llm(
+            prompt=clarify_prompt,
+            system_message=(
+                "You are Rigel AI Copilot — a smart, conversational code review assistant that uses "
+                "slot-filling to gather missing information before answering. You are NOT able to help "
+                "with sports, entertainment, weather, finance, or other non-programming topics."
+            ),
+            temperature=0.5,
+            max_tokens=400,
         )
+        return {
+            "llm_analysis": {
+                "session_id": session_id,
+                "llm_response": clarify_response,
+                "persona": persona,
+                "clarifying": True,
+            },
+            "reply": clarify_response,
+            "llm_response": clarify_response,
+            "clarifying": True,
+        }
+
+    if not code.strip():
+        # ---------- PURE CHAT with multi-turn history ----------
+        # Build conversation messages list (last 50 turns)
+        conversation = []
+
+        # System prompt
+        if persona == "student":
+            sys_msg = (
+                "You are Rigel AI Copilot — a friendly, expert programming mentor. "
+                "Explain concepts clearly using real-world analogies. "
+                "Help with code review, refactoring, architecture, debugging, and software engineering. "
+                "You remember everything discussed in this conversation. "
+                "If a question is vague, ask a targeted clarifying question before answering."
+            )
+        else:
+            sys_msg = (
+                "You are Rigel AI Copilot — an elite Principal Software Engineer and AI code review assistant. "
+                "You have deep expertise in software architecture, algorithms, security, DevSecOps, and clean code principles. "
+                "You help with code smells, refactoring, BigO complexity, design patterns, and best practices. "
+                "You remember all previous context in this conversation and build on it. "
+                "If a question is ambiguous, ask a precise clarifying question to gather missing information."
+            )
+
+        # Build the full messages array for multi-turn
+        messages_for_llm = [{"role": "system", "content": sys_msg}]
+
+        # Inject history (capped at 50)
+        for h in history[-50:]:
+            role = h.get("role", "user")
+            content = h.get("content", "")
+            if role in ("user", "assistant") and content.strip():
+                messages_for_llm.append({"role": role, "content": content})
+
+        # Add current user message
+        messages_for_llm.append({"role": "user", "content": user_query})
+
+        # Call LLM with full history
+        llm_response = "No response received."
+        if client:
+            try:
+                completion = client.chat.completions.create(
+                    model=OPENROUTER_MODEL,
+                    messages=messages_for_llm,
+                    temperature=0.4,
+                    max_tokens=1400,
+                )
+                llm_response = completion.choices[0].message.content
+            except Exception as e:
+                llm_response = f"❌ LLM call failed: {e}"
+        else:
+            llm_response = (
+                "⚠️ **Backend LLM not configured.** "
+                "Please set `OPENROUTER_API_KEY` in your `.env` file and restart the backend."
+            )
 
         return {
             "llm_analysis": {
