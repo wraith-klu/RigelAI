@@ -16,6 +16,198 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,400&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <title>Rigel AI — Code Analysis and Developer Assistant</title>
+
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("rigel_theme");
+        var theme = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.classList.add(theme);
+      } catch (e) {}
+    })();
+  </script>
+
+  <style>
+    :root, [data-theme="dark"], .dark {
+      --splash-bg: #080c16;
+      --splash-card: #111726;
+      --splash-ink: #f8fafc;
+      --splash-muted: #94a3b8;
+      --splash-subtle: #64748b;
+      --splash-rule: rgba(255, 255, 255, 0.08);
+      --splash-accent: #e07a38;
+      --splash-beam: linear-gradient(90deg, transparent, #38bdf8, #e07a38, transparent);
+      --splash-glow: radial-gradient(circle at 50% 50%, rgba(224, 122, 56, 0.16) 0%, rgba(56, 189, 248, 0.1) 40%, transparent 70%);
+    }
+
+    [data-theme="light"], .light {
+      --splash-bg: #F4EFE8;
+      --splash-card: #FAF7F2;
+      --splash-ink: #1A1916;
+      --splash-muted: #595652;
+      --splash-subtle: #8C867E;
+      --splash-rule: rgba(26, 25, 22, 0.1);
+      --splash-accent: #A35320;
+      --splash-beam: linear-gradient(90deg, transparent, #0071e3, #A35320, transparent);
+      --splash-glow: radial-gradient(circle at 50% 50%, rgba(163, 83, 32, 0.1) 0%, rgba(0, 113, 227, 0.06) 40%, transparent 70%);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--splash-bg);
+      color: var(--splash-ink);
+      font-family: -apple-system, BlinkMacSystemFont, "DM Sans", "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #root {
+      min-height: 100vh;
+    }
+
+    .app-loading-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--splash-bg);
+      background-image: var(--splash-glow);
+      z-index: 9999;
+      user-select: none;
+      -webkit-user-select: none;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .splash-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 360px;
+      width: 100%;
+      padding: 2.25rem 2rem;
+      border-radius: 18px;
+      background: var(--splash-card);
+      border: 1px solid var(--splash-rule);
+      box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.35);
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .splash-icon-wrap {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .splash-icon-halo {
+      position: absolute;
+      inset: -6px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(224, 122, 56, 0.45), rgba(56, 189, 248, 0.45));
+      opacity: 0.6;
+      filter: blur(8px);
+      animation: pulse-halo 2.5s infinite ease-in-out;
+    }
+
+    .splash-icon-svg {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      border-radius: 13px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    .splash-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .splash-brand-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--splash-ink);
+      margin: 0;
+    }
+
+    .splash-brand-pill {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 980px;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .splash-subtitle {
+      font-size: 0.8125rem;
+      color: var(--splash-muted);
+      margin: 0 0 1.75rem;
+      line-height: 1.45;
+    }
+
+    .splash-progress-track {
+      width: 170px;
+      height: 3px;
+      background: var(--splash-rule);
+      border-radius: 980px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 0.85rem;
+    }
+
+    .splash-progress-beam {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 55%;
+      background: var(--splash-beam);
+      border-radius: 980px;
+      animation: splash-shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    .splash-status-text {
+      font-size: 0.75rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--splash-subtle);
+      margin: 0;
+      letter-spacing: 0.01em;
+    }
+
+    @keyframes splash-shimmer {
+      0% {
+        transform: translateX(-120%);
+      }
+      100% {
+        transform: translateX(240%);
+      }
+    }
+
+    @keyframes pulse-halo {
+      0%, 100% {
+        opacity: 0.45;
+        transform: scale(0.98);
+      }
+      50% {
+        opacity: 0.85;
+        transform: scale(1.05);
+      }
+    }
+  </style>
   <script type="module" crossorigin src="/assets/index-Dqvands6.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-BdpxVFsa.css">
 </head>
@@ -23,7 +215,25 @@
 <body>
   <div id="root">
     <div class="app-loading-screen">
-      Loading Rigel AI Studio...
+      <div class="splash-card">
+        <div class="splash-icon-wrap">
+          <div class="splash-icon-halo"></div>
+          <svg class="splash-icon-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect width="32" height="32" rx="7" fill="#1d1d1f"></rect>
+            <path d="M16 6L24 16L16 26L8 16Z" stroke="#fbfbfa" stroke-width="2" stroke-linejoin="round"></path>
+            <circle cx="16" cy="16" r="3" fill="#0066cc"></circle>
+          </svg>
+        </div>
+        <div class="splash-title-row">
+          <h1 class="splash-brand-title">Rigel AI</h1>
+          <span class="splash-brand-pill">Studio</span>
+        </div>
+        <p class="splash-subtitle">Deterministic AST Parsing &amp; Code Intelligence</p>
+        <div class="splash-progress-track">
+          <div class="splash-progress-beam"></div>
+        </div>
+        <p class="splash-status-text">Initializing workspace…</p>
+      </div>
     </div>
   </div>
 </body>
