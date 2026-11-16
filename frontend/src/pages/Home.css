@@ -107,24 +107,25 @@
 .hero-showcase-window {
   width: 100%;
   max-width: 960px;
-  background: var(--bg-surface);
+  background: var(--app-surface);
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--app-rule-hover);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--app-rule);
   overflow: hidden;
   text-align: left;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
   cursor: pointer;
   margin-bottom: 3.5rem;
 }
 
 .hero-showcase-window:hover {
   transform: translateY(-2px);
-  box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-color: var(--app-rule-strong);
+  box-shadow: 0 28px 64px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--app-rule-hover);
 }
 
 .hero-showcase-window:focus-visible {
-  outline: 2px solid var(--accent-primary);
+  outline: 2px solid var(--app-accent);
   outline-offset: 3px;
 }
 
@@ -133,8 +134,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.65rem 1rem;
-  background: #f7f7f8;
-  border-bottom: 1px solid var(--border-subtle);
+  background: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--app-rule);
   -webkit-user-select: none;
   user-select: none;
 }
@@ -168,26 +169,34 @@
 .window-title {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--app-ink-muted);
+}
+
+.window-file-icon {
+  font-size: 0.875rem;
+  line-height: 1;
 }
 
 .window-file-name {
-  color: var(--text-primary);
+  color: var(--app-ink);
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .window-tag {
   font-size: 0.6875rem;
-  padding: 0.1rem 0.4rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
   border-radius: var(--radius-xs);
-  background: var(--bg-surface-raised);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-tertiary);
+  background: var(--app-surface-hover);
+  border: 1px solid var(--app-rule);
+  color: var(--app-ink-subtle);
+  letter-spacing: 0.02em;
 }
 
 .window-badges {
@@ -201,11 +210,11 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--status-critical);
   background: var(--status-critical-bg);
   border: 1px solid var(--status-critical-border);
-  padding: 0.15rem 0.6rem;
+  padding: 0.2rem 0.65rem;
   border-radius: 980px;
 }
 
@@ -214,22 +223,24 @@
   height: 6px;
   border-radius: 50%;
   background-color: var(--status-critical);
+  box-shadow: 0 0 6px var(--status-critical);
 }
 
 .window-body {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: 1.18fr 0.82fr;
   min-height: 230px;
-  background-color: var(--bg-surface);
+  background-color: var(--app-surface);
 }
 
 .window-code-col {
-  padding: 1.25rem 1.25rem;
-  background-color: #ffffff;
-  border-right: 1px solid var(--border-subtle);
+  padding: 1.25rem 1.35rem;
+  background-color: var(--app-bg);
+  color: var(--app-ink);
+  border-right: 1px solid var(--app-rule);
   font-family: var(--font-mono);
   font-size: 0.8125rem;
-  line-height: 1.7;
+  line-height: 1.75;
   overflow-x: auto;
 }
 
@@ -237,12 +248,14 @@
   white-space: pre;
   display: flex;
   align-items: center;
+  color: var(--app-ink);
 }
 
 .code-line .ln {
   display: inline-block;
   width: 28px;
-  color: var(--text-tertiary);
+  color: var(--app-ink-subtle);
+  opacity: 0.65;
   -webkit-user-select: none;
   user-select: none;
   font-size: 0.75rem;
@@ -250,36 +263,69 @@
 }
 
 .code-line-alert {
-  background-color: rgba(197, 34, 31, 0.06);
-  border-left: 2px solid var(--status-critical);
-  margin-left: -1.25rem;
-  padding-left: calc(1.25rem - 2px);
+  background-color: var(--status-critical-bg);
+  border-left: 3px solid var(--status-critical);
+  margin-left: -1.35rem;
+  padding-left: calc(1.35rem - 3px);
   border-radius: 0 4px 4px 0;
 }
 
+/* Syntax Token Highlighting: High-Contrast & Theme-Aware */
 .tok-kw {
-  color: #d73a49;
+  color: #f43f5e;
   font-weight: 600;
 }
 
 .tok-fn {
-  color: #6f42c1;
+  color: #38bdf8;
   font-weight: 600;
 }
 
 .tok-str {
-  color: #032f62;
-}
-
-.tok-cm {
-  color: #c5221f;
-  font-style: italic;
+  color: #34d399;
   font-weight: 500;
 }
 
+.tok-cm {
+  color: #fb923c;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.tok-var {
+  color: var(--app-ink);
+  font-weight: 500;
+}
+
+.tok-param {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+/* Light mode specific token overrides for maximum contrast */
+[data-theme="light"] .tok-kw {
+  color: #cf222e;
+}
+
+[data-theme="light"] .tok-fn {
+  color: #0969da;
+}
+
+[data-theme="light"] .tok-str {
+  color: #1a7f37;
+}
+
+[data-theme="light"] .tok-cm {
+  color: #b91c1c;
+}
+
+[data-theme="light"] .tok-param {
+  color: #953800;
+}
+
 .window-finding-col {
-  padding: 1.25rem;
-  background-color: var(--bg-surface-raised);
+  padding: 1.35rem;
+  background-color: var(--app-surface);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -288,7 +334,7 @@
 .finding-card-preview {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 
 .finding-header {
@@ -300,10 +346,10 @@
 
 .finding-severity-badge {
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.15rem 0.5rem;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.55rem;
   border-radius: 4px;
 }
 
@@ -316,46 +362,47 @@
 .finding-rule {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  color: var(--text-tertiary);
+  color: var(--app-ink-subtle);
 }
 
 .finding-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.3;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--app-ink);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 .finding-desc {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  color: var(--app-ink-muted);
+  line-height: 1.55;
   margin: 0;
 }
 
 .finding-recommendation {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background: var(--app-surface-subtle);
+  border: 1px solid var(--app-rule-hover);
   border-radius: var(--radius-xs);
-  padding: 0.45rem 0.65rem;
+  padding: 0.55rem 0.75rem;
   margin-top: 0.25rem;
 }
 
 .recom-label {
   display: block;
   font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--text-tertiary);
+  font-weight: 700;
+  color: var(--app-ink-subtle);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 0.2rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
 }
 
 .finding-recommendation code {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--accent-ai);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .finding-cta-banner {
@@ -364,22 +411,28 @@
   justify-content: space-between;
   gap: 0.5rem;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--accent-primary);
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-subtle);
+  font-weight: 600;
+  color: var(--app-accent);
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--app-rule);
 }
 
 .arrow-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--accent-tint);
-  font-size: 0.6875rem;
+  background: var(--app-accent-soft);
+  color: var(--app-accent);
+  font-size: 0.75rem;
+  transition: transform 0.15s ease;
+}
+
+.hero-showcase-window:hover .arrow-chip {
+  transform: translateX(2px);
 }
 
 /* Technical Specifications Strip */
@@ -815,7 +868,7 @@
 
   .window-code-col {
     border-right: none;
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--app-rule);
   }
 
   .architecture-grid {

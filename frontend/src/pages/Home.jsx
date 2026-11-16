@@ -290,15 +290,39 @@ export default function Home() {
 
                 <div className="window-body">
                   <div className="window-code-col">
-                    <div className="code-line"><span className="ln">34</span><span className="tok-kw">def</span> <span className="tok-fn">process_order_batch</span>(orders, user, tier):</div>
-                    <div className="code-line"><span className="ln">35</span>  valid_orders = []</div>
+                    <div className="code-line">
+                      <span className="ln">34</span>
+                      <span className="tok-kw">def</span>{" "}
+                      <span className="tok-fn">process_order_batch</span>(
+                      <span className="tok-param">orders</span>,{" "}
+                      <span className="tok-param">user</span>,{" "}
+                      <span className="tok-param">tier</span>):
+                    </div>
+                    <div className="code-line">
+                      <span className="ln">35</span>  <span className="tok-var">valid_orders</span> = []
+                    </div>
                     <div className="code-line code-line-alert">
                       <span className="ln">36</span>
-                      <span className="tok-kw">for</span> order <span className="tok-kw">in</span> orders:  <span className="tok-cm"># Cyclomatic complexity: 17</span>
+                      <span className="tok-kw">for</span>{" "}
+                      <span className="tok-var">order</span>{" "}
+                      <span className="tok-kw">in</span>{" "}
+                      <span className="tok-var">orders</span>:  <span className="tok-cm"># Cyclomatic complexity: 17</span>
                     </div>
-                    <div className="code-line"><span className="ln">37</span>    <span className="tok-kw">if not</span> order.get(<span className="tok-str">"id"</span>): <span className="tok-kw">continue</span></div>
-                    <div className="code-line"><span className="ln">38</span>    total = sum(i[<span className="tok-str">"price"</span>] * i[<span className="tok-str">"qty"</span>] <span className="tok-kw">for</span> i <span className="tok-kw">in</span> order[<span className="tok-str">"items"</span>])</div>
-                    <div className="code-line"><span className="ln">39</span>    <span className="tok-kw">if</span> tier == <span className="tok-str">"GOLD"</span>: total *= 0.85</div>
+                    <div className="code-line">
+                      <span className="ln">37</span>    <span className="tok-kw">if not</span>{" "}
+                      <span className="tok-var">order</span>.<span className="tok-fn">get</span>(<span className="tok-str">"id"</span>):{" "}
+                      <span className="tok-kw">continue</span>
+                    </div>
+                    <div className="code-line">
+                      <span className="ln">38</span>    <span className="tok-var">total</span> = <span className="tok-fn">sum</span>(
+                      <span className="tok-var">i</span>[<span className="tok-str">"price"</span>] * <span className="tok-var">i</span>[<span className="tok-str">"qty"</span>]{" "}
+                      <span className="tok-kw">for</span> <span className="tok-var">i</span> <span className="tok-kw">in</span> <span className="tok-var">order</span>[<span className="tok-str">"items"</span>])
+                    </div>
+                    <div className="code-line">
+                      <span className="ln">39</span>    <span className="tok-kw">if</span>{" "}
+                      <span className="tok-var">tier</span> == <span className="tok-str">"GOLD"</span>:{" "}
+                      <span className="tok-var">total</span> *= 0.85
+                    </div>
                   </div>
 
                   <div className="window-finding-col">
